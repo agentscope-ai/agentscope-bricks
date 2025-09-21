@@ -1,0 +1,3660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Use Agent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 20px;
+        }
+
+        .header-title {
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .quick-cmd-btn{
+            display:inline-block;          /* 像按钮一样排列 */
+            padding:6px 12px;              /* 内边距 */
+            margin:4px;                    /* 按钮之间的间距 */
+            background:#f5f5f5;            /* 灰色底色 */
+            border:1px solid #d0d0d0;      /* 细灰色边框 */
+            border-radius:6px;             /* 圆角 */
+            cursor:pointer;
+            user-select:none;
+            transition:background-color .15s,border-color .15s;
+        }
+        .quick-cmd-btn:hover{
+            background:#e9ecef;            /* 悬停时稍微变深 */
+            border-color:#bcbcbc;
+        }
+
+.card {
+            border-radius: 10px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header:hover {
+            background-color: #f8f9fa;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.collapsed {
+            transform: rotate(180deg);
+        }
+
+        .card-body {
+            transition: all 0.3s ease;
+        }
+
+        .card-body.collapsed {
+            display: none;
+        }
+
+        .preview-container {
+            height: 560px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: #3498db;
+            color: white;
+            margin-left: auto;
+        }
+
+        .assistant-message {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+
+        .status-message {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+        }
+
+        .input-group {
+            margin-top: 15px;
+        }
+
+        .countdown-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--danger-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 9999;
+        }
+
+        .queue-info {
+            background-color: #fff8e1;
+            border-left: 4px solid var(--warning-color);
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .step-message {
+            border-left: 4px solid #9b59b6;
+            background-color: #f5f0fa;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 560px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .screenshot-container {
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 560px;
+        }
+
+        /* 全屏时让 iframe 容器占满视口 */
+        .iframe-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+
+        .screenshot-container img {
+            max-width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            vertical-align: text-bottom;
+            border: 0.2em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border 0.75s linear infinite;
+        }
+
+        @keyframes spinner-border {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .btn-disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            padding: 0.75rem 1.25rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 禁用设备选择的样式 */
+        .device-select-disabled {
+            pointer-events: none;
+            background-color: #e9ecef;
+            opacity: 0.7;
+        }
+
+        /* 推理状态样式 */
+        .analyzing-spinner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            margin: 5px 0;
+            font-style: italic;
+            color: #666;
+        }
+
+        .analyzing-spinner .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #3498db;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border 0.75s linear infinite;
+        }
+
+        /* 分析阶段样式 */
+        .analysis-stages-container {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .analysis-stages-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+
+        .analysis-stages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .analysis-stage {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .analysis-stage.waiting {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+        }
+
+        .analysis-stage.active {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+            color: #1976d2;
+            animation: pulse 1.5s infinite;
+        }
+
+        .analysis-stage.completed {
+            background-color: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .stage-icon {
+            font-size: 16px;
+            margin-right: 8px;
+            min-width: 20px;
+        }
+
+        .stage-name {
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .stage-content {
+            margin-left: 28px;
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* 分析完成状态样式 */
+        .completed-analysis {
+            background-color: #e8f5e8 !important;
+            border: 1px solid #4caf50 !important;
+        }
+
+        .analysis-completed-message {
+            color: #2e7d32;
+            font-size: 14px;
+            text-align: center;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="header-title">🤖 Mobile-Agent-v3</h1>
+
+        <!-- 倒计时显示 -->
+        <div id="countdownContainer" class="countdown-container" style="display: none;">
+            <span id="countdownText">⏳ 剩余时间: 60:00</span>
+        </div>
+
+        <!-- 错误提示区域 -->
+        <div id="errorMessageContainer" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i> <span id="errorMessageText"></span>
+        </div>
+
+        <!-- 配置区域 -->
+        <div class="card mb-4">
+            <div class="card-header" id="configCardHeader">
+                <span><i class="fas fa-cog"></i> 任务配置</span>
+                <i class="fas fa-chevron-down toggle-icon" id="configToggleIcon"></i>
+            </div>
+            <div class="card-body" id="configCardBody">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">设备选择</label>
+                            <select class="form-select" id="deviceSelect">
+                                <option value="pc_wuyin" selected>电脑</option>
+                                <option value="phone_wuyin">手机</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" style="display: none;">
+                            <label class="form-label">是否深度思考</label>
+                            <select class="form-select" id="deepThinkingSelect">
+                                <option value="false" selected>否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="switchEnvironmentContainer" style="display: none;">
+                            <button id="switchEnvironmentBtn" class="btn btn-primary w-100">
+                                <i class="fas fa-sync-alt"></i> 切换到<span id="targetEnvText">手机</span>环境
+                            </button>
+                        </div>
+
+                        <div id="queueInfoContainer" class="queue-info" style="display: none;">
+                            <i class="fas fa-list"></i> 排队中... 位置: <span id="queuePosition">0</span>/<span id="totalWaiting">0</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">最大步数</label>
+                            <input type="number" class="form-control" id="maxStepsInput" min="1" max="100" value="10">
+                        </div>
+
+                        <div class="mb-3" style="display: none;">
+                            <label class="form-label">补充信息</label>
+                            <input type="text" class="form-control" id="addonInfoInput" placeholder="请输入PC_USE模型补充信息">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新增的配置项 -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3" style="display: none;">
+                            <label class="form-label">调用方式</label>
+                            <select class="form-select" id="pipelineTypeSelect">
+                                <option value="e2e">模型直传</option>
+                                <option value="agent" selected>agent框架</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3" style="display: none;">
+                            <label class="form-label">模型名称</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="modelNameInput"
+                                   value="qwen"
+                                   placeholder="请输入模型名称">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3" style="display: none;">
+                            <label class="form-label">Agent框架名称</label>
+                            <input type="text" class="form-control" id="agentFrameworkInput" placeholder="请输入Agent框架名称" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3" style="display: none;">
+                            <label class="form-label">额外参数</label>
+                            <input type="text" class="form-control" id="extraParamsInput" placeholder="请输入额外参数">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button id="activateBtn" class="btn btn-success">
+                        <i class="fas fa-bolt"></i> 激活环境
+                    </button>
+                    <button id="stopTaskBtn" class="btn btn-danger" style="display: none;">
+                        <i class="fas fa-stop"></i> 停止任务
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- 左侧聊天界面 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-comments"></i> 聊天界面
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-container" id="chatContainer">
+                            <div class="text-center text-muted py-5" id="welcomeMessage">
+                                <i class="fas fa-hand-wave fa-2x mb-3"></i>
+                                <h5>欢迎使用Computer Use Agent！</h5>
+                                <p class="mb-0">请在下方输入您想要执行的任务。</p>
+                                <p class="mb-0">示例任务：use the web browser to get the current weather in Hangzhou via Bing Search</p>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="taskInput" placeholder="请输入您想要执行的任务..." disabled>
+                            <button class="btn btn-primary" type="button" id="sendBtn" disabled>
+                                <i class="fas fa-paper-plane"></i> 发送
+                            </button>
+                            <button class="btn btn-secondary" type="button" id="clearBtn">
+                                <i class="fas fa-trash"></i> 清空
+                            </button>
+                        </div>
+                        <!-- 输入框所在 input-group 之后立刻加 ↓ 这段,显示文字-->
+                        <div id="quickCmdContainer" class="mt-2 d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧预览界面 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div><i class="fas fa-desktop"></i></div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="previewScaleHint" class="text-muted" style="font-size: 0.9rem;"></span>
+                            <button id="fullscreenToggleBtn" class="btn btn-sm btn-outline-secondary" title="全屏预览">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="preview-container" id="previewContainer">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-desktop fa-3x mb-3"></i>
+                                <h5>等待Sandbox启动</h5>
+                                <p class="mb-0">请在左侧输入任务以启动Computer Use Agent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 全局对话状态管理器
+        class UserStateManager {
+            constructor() {
+                this.users = {}; // 存储所有对话的状态
+                this.currentUser = null; // 当前活跃对话
+            }
+
+            // 设置当前对话
+            setCurrentUser(chatId) {
+                this.currentUser = chatId;
+                if (!this.users[chatId]) {
+                    this.initializeUserState(chatId);
+                }
+                // 加载该对话的e2e配置
+                setTimeout(loadE2eConfigFromUserState, 0);
+            }
+
+            // 初始化对话状态
+            initializeUserState(chatId) {
+                this.users[chatId] = {
+                    taskId: null,
+                    sse: null,
+                    isActivated: false,
+                    isTaskRunning: false,
+                    isQueued: false,
+                    isSwitching: false,
+                    currentSandboxType: 'pc_wuyin',
+                    messages: [],
+                    countdownStartTime: null,
+                    countdownRemaining: 0,
+                    processedMessages: new Set(),
+                    pollInterval: null,
+                    queueMonitorInterval: null,  // 🔧 新增：排队监控定时器
+                    queueInfo: null,             // 🔧 新增：排队信息
+                    targetSandboxTypeForQueue: null,
+                    // 添加e2e配置
+                    e2eConfig: {
+                        pipelineType: 'agent',
+                        modelName: '',
+                        agentFramework: '',
+                        extraParams: '',
+                        deepThink: false,
+                    },
+                    // 新增等待倒计时相关属性
+                    waitingCountdown: false,
+                    waitingCountdownInterval: null,
+                    // 🔧 新增：跟踪激活过程状态
+                    isActivating: false
+                };
+            }
+
+            // 获取当前对话状态
+            getCurrentUserState() {
+                if (!this.currentUser) return null;
+                return this.users[this.currentUser] || null;
+            }
+
+            // 获取指定对话状态
+            getUserState(chatId) {
+                return this.users[chatId] || null;
+            }
+
+            // 更新当前对话状态
+            updateCurrentUserState(updates) {
+                if (!this.currentUser) return;
+                if (!this.users[this.currentUser]) {
+                    this.initializeUserState(this.currentUser);
+                }
+                Object.assign(this.users[this.currentUser], updates);
+            }
+
+            // 更新指定对话状态
+            updateUserState(chatId, updates) {
+                if (!this.users[chatId]) {
+                    this.initializeUserState(chatId);
+                }
+                Object.assign(this.users[chatId], updates);
+            }
+        }
+
+        // 创建全局对话状态管理器实例
+        const userStateManager = new UserStateManager();
+
+        // 获取当前对话状态的便捷函数
+        function getCurrentUserState() {
+            return userStateManager.getCurrentUserState();
+        }
+
+        // 更新当前对话状态的便捷函数
+        function updateCurrentUserState(updates) {
+            userStateManager.updateCurrentUserState(updates);
+        }
+
+        // 其他全局变量（不依赖对话状态）
+        let heartbeatInterval = null;
+        let countdownInterval = null;
+        let userId = 'user_a'; // 默认用户ID
+        let chatId = 'chat_a'; // 默认对话ID
+
+        // 从URL参数获取userId和chatId
+        function getUserAndChatIdFromUrl() {
+            // 获取当前主机名并存储到变量中
+            const hostname = window.location.hostname;
+            console.log("当前访问的主机名:", hostname);
+            console.log("当前访问的完整URL:", window.location.href);
+
+            // 判断是否为本地环境（可以根据实际需求调整判断条件）
+            const isLocal = hostname === 'localhost' ||
+                           hostname === '127.0.0.1' ||
+                           hostname === '' ||
+                           hostname.startsWith('local');
+
+            if (isLocal) {
+                // 本地环境直接返回本地用户和对话ID
+                console.log("检测为本地环境，使用本地用户和对话ID");
+                return { userId: 'local_user', chatId: 'local_chat' };
+            } else {
+                // 远程环境保持原有逻辑
+                console.log("检测为远程环境，使用远程认证");
+                const urlParams = new URLSearchParams(window.location.search);
+                const studioToken = urlParams.get('studio_token');
+                if (studioToken) {
+                    // 调用后端API验证token并获取userId，chatId随机生成
+                    const chatId = 'chat_' + Math.random().toString(36).substr(2, 9);
+                    validateStudioToken(studioToken, chatId);
+                    return { userId: 'user_a', chatId: chatId }; // 先返回默认值，后续异步更新userId
+                }
+                // 如果没有提供studio_token，返回null表示未登录
+                return null;
+            }
+        }
+
+        // 验证studio token并获取userId
+        async function validateStudioToken(studioToken, generatedChatId) {
+            try {
+                // 使用后端代理避免 CORS 问题
+                const response = await fetch(
+                    `${getBackendUrl()}/cua/proxy/validate-studio-token?studio_token=${studioToken}`
+                );
+
+                if (response.status === 200) {
+                    const data = await response.json();
+                    if (data.Success && data.Data && data.Data.Uuid) {
+                        userId = data.Data.Uuid; // 更新userId
+                        chatId = generatedChatId; // 使用生成的chatId
+                        userStateManager.setCurrentUser(chatId);
+                        console.log(`用户验证成功: userId=${userId}, chatId=${chatId}`);
+                        return { userId, chatId };
+                    } else {
+                        showErrorMessage("Token验证失败，请检查您的Studio Token");
+                    }
+                } else {
+                    showErrorMessage("Token验证失败，请检查您的Studio Token");
+                }
+            } catch (error) {
+                console.error("检查studio token时出错:", error);
+                showErrorMessage("Token验证出错，请稍后重试");
+            }
+            return null;
+        }
+
+
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInfo = getUserAndChatIdFromUrl();
+            if (!userInfo) {
+                // 如果没有用户信息，显示登录提示并禁用所有功能
+                showLoginRequiredMessage();
+                return;
+            }
+
+            // 设置全局变量
+            userId = userInfo.userId;
+            chatId = userInfo.chatId;
+
+            userStateManager.setCurrentUser(chatId);
+            setupEventListeners();
+            setupConfigToggle(); // 添加配置区域折叠功能
+        });
+
+        // 显示需要登录的提示信息
+        function showLoginRequiredMessage() {
+            // 禁用所有操作按钮
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.disabled = true;
+            });
+
+            // 禁用输入框
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+
+            // 在页面顶部显示登录提示信息
+            const loginMessage = document.createElement('div');
+            loginMessage.id = 'loginRequiredMessage';
+            loginMessage.innerHTML = `                <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+                            padding: 15px; border-radius: 5px; margin: 20px; text-align: center;
+                            font-size: 18px; font-weight: bold;">
+                    <i class="fas fa-exclamation-triangle"></i> 请登录后使用系统
+                </div>
+            `;
+
+            // 插入到页面顶部
+            const container = document.querySelector('.container-fluid');
+            if (container) {
+                container.insertBefore(loginMessage, container.firstChild);
+            }
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            document.getElementById('activateBtn').addEventListener('click', activateEnvironment);
+            document.getElementById('sendBtn').addEventListener('click', sendTask);
+            document.getElementById('clearBtn').addEventListener('click', clearChat);
+            document.getElementById('stopTaskBtn').addEventListener('click', stopTask);
+            document.getElementById('switchEnvironmentBtn').addEventListener('click', switchEnvironment);
+            document.getElementById('taskInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendTask();
+                }
+            });
+            document.getElementById('deviceSelect').addEventListener('change', handleDeviceSelectChange);
+
+            // 新增的事件监听器
+            document.getElementById('pipelineTypeSelect').addEventListener('change', function() {
+                console.log('Pipeline type changed to:', this.value);
+                toggleAgentFrameworkInput();
+                saveE2eConfigToUserState();
+            });
+            document.getElementById('modelNameInput').addEventListener('input', saveE2eConfigToUserState);
+            document.getElementById('agentFrameworkInput').addEventListener('input', saveE2eConfigToUserState);
+            document.getElementById('extraParamsInput').addEventListener('input', saveE2eConfigToUserState);
+            document.getElementById('deepThinkingSelect').addEventListener('input', saveE2eConfigToUserState);
+
+            // 页面关闭前释放资源
+            window.addEventListener('beforeunload', handlePageUnload);
+
+            // 🔧 新增：页面初始化完成后，主动调用一次toggleAgentFrameworkInput确保界面状态正确
+            setTimeout(() => {
+                toggleAgentFrameworkInput();
+            }, 100);
+        }
+
+        // 处理设备选择变更
+        function handleDeviceSelectChange() {
+            const selectedValue = document.getElementById('deviceSelect').value;
+            updateCurrentUserState({ currentSandboxType: selectedValue });
+            updateSwitchButton();
+
+            // 当设备类型改变时，如果当前是agent模式，则更新agent框架名称
+            const pipelineType = document.getElementById('pipelineTypeSelect').value;
+            if (pipelineType !== 'e2e') {
+                const agentFrameworkInput = document.getElementById('agentFrameworkInput');
+                // 🔧 修复：设备类型变更时，总是更新agent框架名称（除非对话手动输入了自定义值）
+
+                // 检查当前值是否为默认值或空值，如果是，则更新为新设备类型的默认值
+                const currentValue = agentFrameworkInput.value;
+                const isDefaultValue = currentValue === 'mobile-agent-pipeline' ||
+                                     currentValue === 'pre-pc-agent-e' ||
+                                     !currentValue ||
+                                     currentValue.trim() === '';
+
+                if (isDefaultValue) {
+                    if (selectedValue.includes('phone')) {
+                        agentFrameworkInput.value = 'mobile-agent-pipeline';
+                    } else {
+                        agentFrameworkInput.value = 'pre-pc-agent-e';
+                    }
+                    console.log('Updated agent framework for device change:', agentFrameworkInput.value);
+                    saveE2eConfigToUserState();
+                }
+            }
+
+            /* 新增：重绘快捷按钮 */
+            renderQuickCommands();
+            /* 下面原有代码不动 */
+        }
+
+        // 切换agent框架输入框的启用/禁用状态
+        function toggleAgentFrameworkInput() {
+            const pipelineType = document.getElementById('pipelineTypeSelect').value;
+            const agentFrameworkInput = document.getElementById('agentFrameworkInput');
+            const deviceSelectValue = document.getElementById('deviceSelect').value;
+
+            if (pipelineType === 'e2e') {
+                // 模型直传时禁用agent框架名称输入框并清空值
+                agentFrameworkInput.disabled = true;
+                agentFrameworkInput.classList.add('device-select-disabled');
+                agentFrameworkInput.value = ''; // 清空值，因为模型直传不需要Agent框架
+            } else {
+                // agent框架时启用agent框架名称输入框
+                agentFrameworkInput.disabled = false;
+                agentFrameworkInput.classList.remove('device-select-disabled');
+
+                // 🔧 修复：无论当前值是否为空，都尝试设置默认值（但不覆盖对话手动输入的值）
+                if (!agentFrameworkInput.value || agentFrameworkInput.value.trim() === '') {
+                    if (deviceSelectValue.includes('phone')) {
+                        agentFrameworkInput.value = 'mobile-agent-pipeline';
+                    } else {
+                        agentFrameworkInput.value = 'pre-pc-agent-e';
+                    }
+                    console.log('Auto-filled agent framework:', agentFrameworkInput.value);
+                }
+            }
+            // 无论哪种模式都保存配置状态
+            saveE2eConfigToUserState();
+        }
+
+        // 设置配置区域折叠功能
+        function setupConfigToggle() {
+            const header = document.getElementById('configCardHeader');
+            const body = document.getElementById('configCardBody');
+            const icon = document.getElementById('configToggleIcon');
+
+            header.addEventListener('click', function() {
+                // 切换折叠状态
+                const isCollapsed = body.classList.toggle('collapsed');
+                icon.classList.toggle('collapsed', isCollapsed);
+            });
+        }
+
+        // 页面关闭前处理
+        // 页面关闭前处理
+        function handlePageUnload(event) {
+        const currentUserState = getCurrentUserState();
+        if (currentUserState && (currentUserState.isActivated || currentUserState.isActivating)) {
+            // 构造请求体数据
+            const requestData = {
+                user_id: userId,
+                chat_id: chatId
+            };
+
+            // 使用 sendBeacon 发送释放资源请求，这在页面卸载时更可靠
+            const releaseUrl = `${getBackendUrl()}/cua/release`;
+
+            // 准备发送的数据
+            const data = JSON.stringify(requestData);
+
+            // 尝试使用 sendBeacon（更可靠）
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(releaseUrl, new Blob([data], { type: 'application/json' }));
+            } else {
+                // 降级到 fetch（但可能不会被浏览器等待完成）
+                fetch(releaseUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: data
+                }).catch(error => {
+                    console.error('释放资源失败:', error);
+                });
+            }
+        }
+        stopHeartbeat();
+        stopSSEMonitoring();
+        stopQueueMonitoring();  // 🔧 新增：停止排队监控
+
+        // 🔧 新增：停止等待倒计时
+        if (currentUserState) {
+            stopWaitingCountdown(currentUserState);
+        }
+        }
+
+
+        // 保存深度思考状态
+        function saveDeepThinkingToUserState() {
+            const val = document.getElementById('deepThinkingSelect').value === 'true';
+            updateCurrentUserState({ deepThinking: val });
+        }
+
+        // 显示错误消息
+        function showErrorMessage(message) {
+            const errorContainer = document.getElementById('errorMessageContainer');
+            const errorText = document.getElementById('errorMessageText');
+
+            if (errorContainer && errorText) {
+                errorText.textContent = message;
+                errorContainer.style.display = 'block';
+
+                // 3秒后自动隐藏错误消息
+                setTimeout(() => {
+                    if (errorContainer) {
+                        errorContainer.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        }
+
+        // 隐藏错误消息
+        function hideErrorMessage() {
+            const errorContainer = document.getElementById('errorMessageContainer');
+            if (errorContainer) {
+                errorContainer.style.display = 'none';
+            }
+        }
+
+        // 保存e2e配置到对话状态
+        function saveE2eConfigToUserState() {
+            const config = {
+                pipelineType: document.getElementById('pipelineTypeSelect').value,
+                modelName: document.getElementById('modelNameInput').value,
+                agentFramework: document.getElementById('agentFrameworkInput').value,
+                extraParams: document.getElementById('extraParamsInput').value,
+                deepThink: document.getElementById('deepThinkingSelect').value
+            };
+            updateCurrentUserState({ e2eConfig: config });
+        }
+
+        // 从对话状态加载e2e配置
+        function loadE2eConfigFromUserState() {
+            const currentUserState = getCurrentUserState();
+            const deviceSelectValue = document.getElementById('deviceSelect').value;
+            if (currentUserState && currentUserState.e2eConfig) {
+                const config = currentUserState.e2eConfig;
+                document.getElementById('pipelineTypeSelect').value = config.pipelineType;
+                document.getElementById('modelNameInput').value = config.modelName;
+                document.getElementById('agentFrameworkInput').value = config.agentFramework;
+                document.getElementById('extraParamsInput').value = config.extraParams;
+                document.getElementById('deepThinkingSelect').value = config.deepThink;
+                // 触发agent框架输入框状态更新
+                toggleAgentFrameworkInput();
+            } else {
+                // 如果没有对话状态，设置默认值
+                const pipelineType = document.getElementById('pipelineTypeSelect').value;
+                const modelNameInput = document.getElementById('modelNameInput');
+                const agentFrameworkInput = document.getElementById('agentFrameworkInput');
+                const deepThink = document.getElementById('deepThinkingSelect');
+
+                // 仅当对话未输入时设置默认模型名称
+<!--                if (pipelineType === 'e2e' && !modelNameInput.value) {-->
+<!--                    modelNameInput.value = 'qwen2.5-vl-72b-instruct-agent';-->
+<!--                }-->
+
+                // 仅当对话未输入时设置默认agent框架名称
+                if (pipelineType !== 'e2e' && !agentFrameworkInput.value) {
+                    if (deviceSelectValue.includes('phone')) {
+                        agentFrameworkInput.value = 'mobile-agent-pipeline';
+                    } else {
+                        agentFrameworkInput.value = 'pre-pc-agent-e';
+                    }
+                }
+
+                // 🔧 新增：无论是否有对话状态，都要调用一次toggleAgentFrameworkInput来确保界面状态正确
+                toggleAgentFrameworkInput();
+            }
+        }
+
+        // 构建e2e_info参数
+        function buildE2eInfo() {
+            const currentUserState = getCurrentUserState();
+            let pipelineType, modelName, agentFramework, deviceSelectValue, deepThink;
+
+            // 优先使用对话状态中的配置，如果没有则从DOM获取（向后兼容）
+            if (currentUserState && currentUserState.e2eConfig) {
+                const config = currentUserState.e2eConfig;
+                pipelineType = config.pipelineType;
+                modelName = config.modelName;
+                agentFramework = config.agentFramework;
+                deviceSelectValue = document.getElementById('deviceSelect').value;
+                deepThink = config.deepThink;
+            } else {
+                deviceSelectValue = document.getElementById('deviceSelect').value;
+                modelName = document.getElementById('modelNameInput').value;
+                pipelineType = document.getElementById('pipelineTypeSelect').value;
+                agentFramework = document.getElementById('agentFrameworkInput').value;
+                deepThink = document.getElementById('deepThinkingSelect').value;
+
+            }
+
+            const deviceType = deviceSelectValue.includes('phone') ? 'mobile' : 'pc';
+
+            // 根据调用方式构建不同的e2e_info结构
+            if (pipelineType === 'e2e') {
+                // 模型直传模式
+                // 如果对话没有填写模型名称，则使用默认值
+<!--                if (!modelName) {-->
+<!--                    modelName = 'qwen2.5-vl-72b-instruct-agent';-->
+<!--                }-->
+                return [
+<!--                    {"device_type": deviceType},-->
+                    {"model_name": modelName},
+                    {"pipeline_type": 'e2e'},
+<!--                    {"use_add_info_generate": deepThink}-->
+                ];
+            } else {
+                // agent框架模式
+                // 检查模型名称是否为空
+<!--                if (!modelName) {-->
+<!--                    modelName = 'qwen2.5-vl-72b-instruct-agent';-->
+<!--                }-->
+
+                // 如果对话没有填写框架名称，则根据设备类型自动填充
+                if (!agentFramework) {
+                    if (deviceSelectValue.includes('phone')) {
+                        agentFramework = 'mobile-agent-pipeline';
+                    } else {
+                        agentFramework = 'pre-pc-agent-e';
+                    }
+                }
+                return [
+<!--                    {"device_type": deviceType},-->
+                    {"model_name": modelName},
+                    {"pipeline_type": 'agent'},
+<!--                    {"pipeline_name": agentFramework}-->
+<!--                    {"use_add_info_generate": deepThink}-->
+                ];
+            }
+        }
+
+        // 获取额外参数
+        function getExtraParams() {
+            const currentUserState = getCurrentUserState();
+            // 优先使用对话状态中的配置，如果没有则从DOM获取（向后兼容）
+            if (currentUserState && currentUserState.e2eConfig) {
+                return currentUserState.e2eConfig.extraParams;
+            } else {
+                return document.getElementById('extraParamsInput').value;
+            }
+        }
+
+        // 激活环境
+        async function activateEnvironment() {
+            const activateBtn = document.getElementById('activateBtn');
+            activateBtn.disabled = true;
+            activateBtn.classList.add('btn-disabled');
+            activateBtn.innerHTML = '<span class="loading-spinner"></span> 激活中...';
+
+            // 🔧 新增：设置正在激活状态，确保页面关闭时能正确释放资源
+            updateCurrentUserState({ isActivating: true });
+
+            hideErrorMessage();
+
+            try {
+                // 使用设备选择下拉框的当前值
+                const selectedSandboxType = document.getElementById('deviceSelect').value;
+
+                // 构建e2e_info参数
+                const e2eInfo = buildE2eInfo();
+                const extraParams = getExtraParams();
+
+                const config = {
+                    mode: selectedSandboxType === 'phone_wuyin' ? 'phone_use' : 'pc_use',
+<!--                    sandbox_type: selectedSandboxType,-->
+                    max_steps: parseInt(document.getElementById('maxStepsInput').value),
+                    pc_use_addon_info: document.getElementById('addonInfoInput').value,
+                    user_id: userId,
+                    chat_id: chatId,
+                    e2e_info: e2eInfo,
+                    extra_params: extraParams
+                };
+
+                // 添加提示信息，告知对话初始化可能需要较长时间
+                addMessage('assistant', '⏳ 启动异步环境激活，请耐心等待...', 'status');
+
+                // 🔧 修改：调用新的异步激活接口
+                const response = await fetch(`${getBackendUrl()}/cua/init`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        config: config
+                    })
+                });
+
+                if (response.status === 200) {
+                    const result = await response.json();
+                    const operationId = result.operation_id;
+
+                    // 🔧 新增：启动轮询操作状态
+                    addMessage('assistant', `✅ 异步激活已开始！操作ID: ${operationId}\n正在轮询状态...`, 'status');
+
+                    // 开始轮询操作状态
+                    await pollOperationStatus(operationId, 'init');
+
+                } else if (response.status === 429) {
+                    // 进入排队状态
+                    const errorDetail = await response.json();
+                    if (errorDetail.detail && errorDetail.detail.type === 'queued') {
+                        updateCurrentUserState({
+                            isQueued: true,
+                            isActivating: false, // 🔧 进入排队，清除激活中状态
+                            queueInfo: errorDetail.detail
+                        });
+                        updateQueueInfo(errorDetail.detail);
+                        startHeartbeat();
+
+                        // 🔧 新增：排队状态下也要启动SSE监控来接收资源可用通知
+                        startSSEMonitoring();
+
+                        // 🔧 新增：启动排队状态监控
+                        startQueueMonitoring();
+
+                        // 更新按钮状态为排队状态
+                        activateBtn.innerHTML = '<i class="fas fa-clock"></i> 排队等待中...';
+                        activateBtn.disabled = true;
+                        activateBtn.classList.add('btn-disabled');
+
+                        // 显示排队消息
+                        addMessage('assistant', `⏳ 系统繁忙，已加入排队队列...\n排队位置: ${errorDetail.detail.queue_position}/${errorDetail.detail.total_waiting}`, 'status');
+                    } else {
+                        // 🔧 其他情况也要清除激活中状态
+                        updateCurrentUserState({ isActivating: false });
+                    }
+                } else if (response.status === 401 || response.status === 403) {
+                    // 权限错误
+                    updateCurrentUserState({ isActivating: false }); // 🔧 清除激活中状态
+                    const errorData = await response.json();
+                    showErrorMessage(`权限错误: ${errorData.detail || '登录已过期，请重新登录'}`);
+                    addMessage('assistant', `❌ 权限错误: ${errorData.detail || '登录已过期，请重新登录'}`, 'status');
+                } else if (response.status >= 500) {
+                    // 服务器错误
+                    updateCurrentUserState({ isActivating: false }); // 🔧 清除激活中状态
+                    showErrorMessage('服务器内部错误，请稍后重试');
+                    addMessage('assistant', `❌ 服务器错误: HTTP ${response.status}`, 'status');
+                } else {
+                    // 🔧 其他错误，清除激活中状态并恢复按钮
+                    updateCurrentUserState({ isActivating: false });
+                    const errorText = await response.text();
+                    showErrorMessage(`环境激活失败: HTTP ${response.status}`);
+                    addMessage('assistant', `❌ 环境激活失败: HTTP ${response.status}\n${errorText}`, 'status');
+                    // 激活失败，恢复按钮状态
+                    activateBtn.disabled = false;
+                    activateBtn.classList.remove('btn-disabled');
+                    activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+                }
+            } catch (error) {
+                // 🔧 异常情况，清除激活中状态并恢复按钮
+                updateCurrentUserState({ isActivating: false });
+                showErrorMessage(`连接错误: ${error.message}`);
+                addMessage('assistant', `❌ 连接错误: ${error.message}`, 'status');
+                // 激活失败，恢复按钮状态
+                activateBtn.disabled = false;
+                activateBtn.classList.remove('btn-disabled');
+                activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+            }
+        }
+
+        // 🔧 新增：轮询操作状态函数
+        async function pollOperationStatus(operationId, operationType) {
+            const maxPolls = 60; // 最大轮询次数（5分钟，每5秒一次）
+            const pollInterval = 5000; // 轮询间隔（毫秒）
+            let pollCount = 0;
+
+            // 🔧 新增：确保在轮询期间心跳保持活跃
+            if (!heartbeatInterval) {
+                startHeartbeat();
+            }
+
+            const poll = async () => {
+                try {
+                    pollCount++;
+                    console.log(`轮询操作状态 ${operationId}，第 ${pollCount} 次`);
+
+                    const response = await fetch(`${getBackendUrl()}/cua/operation_status?user_id=${userId}&chat_id=${chatId}&operation_id=${operationId}`);
+
+                    if (response.status === 200) {
+                        const statusData = await response.json();
+                        console.log('操作状态:', statusData);
+
+                        // 🔧 优化：只在操作完成或失败时显示消息，避免中间进度刷屏
+                        // if (statusData.progress !== undefined) {
+                        //     addMessage('assistant', `📊 ${statusData.message} (进度: ${statusData.progress}%)`, 'status');
+                        // } else {
+                        //     addMessage('assistant', `📊 ${statusData.message}`, 'status');
+                        // }
+
+                        // 检查操作是否完成
+                        if (statusData.status === 'completed') {
+                            // 🔧 环境激活成功完成 - 显示最终完成消息
+                            addMessage('assistant', `✅ ${statusData.message}`, 'status');
+                            const result = statusData.result;
+
+                            updateCurrentUserState({
+                                isActivated: true,
+                                isActivating: false, // 🔧 激活成功，清除激活中状态
+                                currentSandboxType: statusData.result?.sandbox_type || document.getElementById('deviceSelect').value
+                            });
+
+                            // 更新状态
+                            updateSandboxPreview(result);
+
+                            // 🔧 移除重复的成功消息，已在上面显示后端消息
+                            // addMessage('assistant', '✅ 环境已激活！', 'status');
+
+                            // 启用任务输入
+                            document.getElementById('taskInput').disabled = false;
+                            document.getElementById('sendBtn').disabled = false;
+
+                            // 显示切换按钮
+                            document.getElementById('switchEnvironmentContainer').style.display = 'block';
+                            updateSwitchButton();
+
+                            // 禁用设备选择
+                            const deviceSelect = document.getElementById('deviceSelect');
+                            deviceSelect.classList.add('device-select-disabled');
+                            deviceSelect.disabled = true;
+
+                            // 启动心跳
+                            startHeartbeat();
+
+                            // 启动倒计时
+                            startCountdown();
+
+                            // 更新激活按钮状态为成功并置灰
+                            const activateBtn = document.getElementById('activateBtn');
+                            activateBtn.innerHTML = '<i class="fas fa-check"></i> 激活成功';
+
+                            return; // 完成，停止轮询
+                        } else if (statusData.status === 'failed') {
+                            // 操作失败
+                            updateCurrentUserState({ isActivating: false }); // 🔧 清除激活中状态
+                            showErrorMessage(`环境激活失败: ${statusData.error || '未知错误'}`);
+                            addMessage('assistant', `❌ 环境激活失败: ${statusData.error || '未知错误'}`, 'status');
+
+                            // 激活失败，恢复按钮状态
+                            const activateBtn = document.getElementById('activateBtn');
+                            activateBtn.disabled = false;
+                            activateBtn.classList.remove('btn-disabled');
+                            activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+
+                            return; // 失败，停止轮询
+                        } else if (statusData.status === 'queued') {
+                            // 🔧 新增：处理排队状态
+                            updateCurrentUserState({
+                                isQueued: true,
+                                isActivating: false,
+                                queueInfo: statusData.data
+                            });
+
+                            // 显示排队信息
+                            addMessage('assistant', `⏳ ${statusData.message}`, 'status');
+
+                            // 更新UI状态
+                            const activateBtn = document.getElementById('activateBtn');
+                            activateBtn.innerHTML = '<i class="fas fa-clock"></i> 排队等待中...';
+                            activateBtn.disabled = true;
+                            activateBtn.classList.add('btn-disabled');
+
+                            // 继续轮询，但延长间隔
+                            if (pollCount < maxPolls) {
+                                setTimeout(poll, pollInterval * 2); // 排队时双倍间隔
+                            } else {
+                                updateCurrentUserState({ isActivating: false });
+                                showErrorMessage('排队等待超时，请刷新页面重试');
+                                addMessage('assistant', '⏰ 排队等待超时，请刷新页面重试', 'status');
+
+                                activateBtn.disabled = false;
+                                activateBtn.classList.remove('btn-disabled');
+                                activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+                            }
+                        } else if (statusData.status === 'waiting_retry') {
+                            // 🔧 新增：处理等待重试状态
+                            addMessage('assistant', `🔄 ${statusData.message}`, 'status');
+
+                            // 更新UI状态
+                            const activateBtn = document.getElementById('activateBtn');
+                            activateBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> 自动重试中...';
+
+                            // 继续轮询
+                            if (pollCount < maxPolls) {
+                                setTimeout(poll, pollInterval);
+                            } else {
+                                updateCurrentUserState({ isActivating: false });
+                                showErrorMessage('自动重试超时，请手动重试');
+
+                                activateBtn.disabled = false;
+                                activateBtn.classList.remove('btn-disabled');
+                                activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+                            }
+                        } else {
+                            // 仍在进行中，继续轮询
+                            if (pollCount < maxPolls) {
+                                setTimeout(poll, pollInterval);
+                            } else {
+                                // 轮询超时
+                                updateCurrentUserState({ isActivating: false }); // 🔧 清除激活中状态
+                                showErrorMessage('环境激活超时，请稍后重试');
+                                addMessage('assistant', '⏰ 环境激活超时，请稍后重试', 'status');
+
+                                // 恢复按钮状态
+                                const activateBtn = document.getElementById('activateBtn');
+                                activateBtn.disabled = false;
+                                activateBtn.classList.remove('btn-disabled');
+                                activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+                            }
+                        }
+                    } else {
+                        // 轮询请求失败
+                        console.error('轮询状态请求失败:', response.status);
+                        if (pollCount < maxPolls) {
+                            setTimeout(poll, pollInterval);
+                        } else {
+                            updateCurrentUserState({ isActivating: false });
+                            showErrorMessage('无法获取操作状态，请刷新页面重试');
+                        }
+                    }
+                } catch (error) {
+                    console.error('轮询状态时出错:', error);
+                    if (pollCount < maxPolls) {
+                        setTimeout(poll, pollInterval);
+                    } else {
+                        updateCurrentUserState({ isActivating: false });
+                        showErrorMessage(`轮询状态错误: ${error.message}`);
+                    }
+                }
+            };
+
+            // 开始第一次轮询
+            setTimeout(poll, 1000); // 1秒后开始第一次轮询
+        }
+
+        // 发送任务 - 适配新的backend /cua/run接口
+        async function sendTask() {
+            const currentUserState = getCurrentUserState();
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+
+            if (!taskText) return;
+
+            // 添加对话消息
+            addMessage('user', taskText);
+            taskInput.value = '';
+
+            // 禁用输入
+            taskInput.disabled = true;
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading-spinner"></span> 执行中...';
+
+            // 任务开始时禁用环境切换按钮
+            const switchEnvironmentBtn = document.getElementById('switchEnvironmentBtn');
+            if (switchEnvironmentBtn) {
+                switchEnvironmentBtn.disabled = true;
+                switchEnvironmentBtn.classList.add('btn-disabled');
+            }
+
+            // 显示停止按钮
+            document.getElementById('stopTaskBtn').style.display = 'inline-block';
+
+            try {
+                // 使用当前对话状态中的环境类型
+                const currentSandboxType = currentUserState.currentSandboxType;
+
+                // 构建e2e_info参数
+                const e2eInfo = buildE2eInfo();
+                const extraParams = getExtraParams();
+
+                // 构建符合ComputerUseRequest格式的请求
+                const backendRequest = {
+                    input: [{
+                        role: "user",
+                        content: [{
+                            type: "text",
+                            text: taskText
+                        }]
+                    }],
+                    config: {
+                        mode: currentSandboxType === 'phone_wuyin' ? 'phone_use' : 'pc_use',
+                        sandbox_type: currentSandboxType,
+                        max_steps: parseInt(document.getElementById('maxStepsInput').value),
+                        pc_use_addon_info: document.getElementById('addonInfoInput').value,
+                        timeout: 120,
+                        user_id: userId,
+                        chat_id: chatId,
+                        e2e_info: e2eInfo,
+                        extra_params: extraParams
+                    },
+                    stream: true
+                };
+
+                // 调用后端的/cua/run接口
+                const response = await fetch(`${getBackendUrl()}/cua/run`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(backendRequest)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 处理流式响应
+                await handleStreamResponse(response);
+
+            } catch (error) {
+                showErrorMessage(`连接错误: ${error.message}`);
+                addMessage('assistant', `❌ 连接错误: ${error.message}`, 'status');
+                resetTaskState();
+            }
+        }
+
+        // 处理流式响应
+        async function handleStreamResponse(response) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+
+                    if (done) {
+                        console.log('流式响应完成');
+                        break;
+                    }
+
+                    // 解码数据块
+                    const chunk = decoder.decode(value, { stream: true });
+                    buffer += chunk;
+
+                    // 处理完整的SSE消息
+                    // 使用\n\n作为消息分隔符，这是SSE的标准格式
+                    while (buffer.includes('\n\n')) {
+                        const messageEndIndex = buffer.indexOf('\n\n');
+                        const completeMessage = buffer.substring(0, messageEndIndex);
+                        buffer = buffer.substring(messageEndIndex + 2);
+
+                        // 处理单条完整消息
+                        const lines = completeMessage.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const jsonData = line.substring(6).trim();
+                                    if (jsonData && jsonData !== '') {
+                                        const data = JSON.parse(jsonData);
+                                        handleStreamData(data);
+                                    }
+                                } catch (e) {
+                                    console.error('JSON parse error:', e, 'Line:', line, 'JsonData:', line.substring(6));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 处理最后可能剩余的不完整消息
+                if (buffer.trim()) {
+                    console.warn('Buffer has remaining data:', buffer);
+                }
+            } catch (error) {
+                console.error('Stream processing error:', error);
+                showErrorMessage(`流式处理错误: ${error.message}`);
+                addMessage('assistant', `❌ 流式处理错误: ${error.message}`, 'status');
+                resetTaskState();
+            }
+        }
+
+        // 生成简单的UUID
+<!--        function generateUUID() {-->
+<!--            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {-->
+<!--                var r = Math.random() * 16 | 0,-->
+<!--                    v = c == 'x' ? r : (r & 0x3 | 0x8);-->
+<!--                return v.toString(16);-->
+<!--            });-->
+<!--        }-->
+
+        // 处理流式数据 - 适配新的后端接口格式
+        function handleStreamData(data) {
+            console.log('Received stream data:', data);
+
+            // 新的接口格式：所有实际数据都在data字段中
+            if (data.object === 'content' && data.type === 'data' && data.data) {
+                const contentData = data.data;
+                console.log('Processing content data:', contentData);
+
+                // 根据contentData的type和stage来处理不同类型的消息
+                if (contentData.type === 'analysis_stage') {
+                    // 处理分析阶段消息
+                    console.log('[DEBUG] Processing analysis_stage message:', contentData);
+                    const formattedData = {
+                        type: 'analysis_stage',
+                        data: {
+                            stage: contentData.stage,
+                            text: contentData.text || contentData.message, // 兼容text和message字段
+                            timestamp: contentData.timestamp,
+                            uuid: contentData.uuid
+                        },
+                        uuid: contentData.uuid,
+                        timestamp: contentData.timestamp
+                    };
+                    formatAnalysisStageMessage(formattedData);
+                } else if (contentData.type === 'analysis_result') {
+                    // 处理分析结果消息（对应原来的STEP消息）
+                    console.log('Processing analysis_result message:', contentData);
+                    const formattedData = {
+                        type: 'STEP',
+                        data: {
+                            step: contentData.step,
+                            observation: contentData.text, // 将text作为observation
+                            auxiliary_info: contentData.auxiliary_info || {}
+                        },
+                        task_id: 'current', // 使用固定值
+                        timestamp: contentData.timestamp || new Date().toISOString(),
+<!--                        uuid: contentData.uuid || generateUUID()-->
+                    };
+                    formatStepMessage(formattedData);
+                } else if (contentData.type === 'human_intervention') {
+                    // 处理人工干预消息
+                    console.log('Processing human intervention message:', contentData);
+                    addMessage('assistant', `🤚 ${contentData.text}`, 'status');
+
+                    // 显示人工干预界面
+                    showHumanInterventionNotice(contentData);
+                } else if (contentData.type === 'text' || contentData.type === 'output') {
+                    // 处理普通文本消息
+                    if (contentData.text) {
+                        addMessage('assistant', contentData.text);
+                    }
+                } else {
+                    // 其他类型的消息，直接显示文本内容
+                    if (contentData.text) {
+                        addMessage('assistant', contentData.text);
+                    }
+                }
+            } else if (data.object === 'message') {
+                // 兼容原有的Message对象格式
+                if (data.content && Array.isArray(data.content)) {
+                    for (const contentItem of data.content) {
+                        if (contentItem.type === 'text') {
+                            addMessage('assistant', contentItem.text);
+                        }
+                    }
+                }
+            } else {
+                // 兼容原有格式，处理backend的SSE消息
+                switch (data.type) {
+                    case 'task_started':
+                        // 任务开始
+                        addMessage('assistant', '✅ 任务已启动！', 'status');
+                        if (data.task_id) {
+                            updateCurrentUserState({
+                                taskId: data.task_id,
+                                processedMessages: new Set()
+                            });
+                            addMessage('assistant', `任务ID: ${data.task_id}`, 'status');
+                        }
+                        // 更新沙盒预览
+                        if (data.equipment_web_url || data.sandbox_url) {
+                            updateSandboxPreview(data);
+                        }
+                        break;
+
+                    case 'task_error':
+                        // 任务错误
+                        if (data.error_code === 429) {
+                            // 排队状态处理
+                            handleQueueState(data);
+                        } else {
+                            showErrorMessage(`任务错误: ${data.message}`);
+                            addMessage('assistant', `❌ 任务错误: ${data.message}`, 'status');
+                            resetTaskState();
+                        }
+                        break;
+
+                    case 'heartbeat':
+                        // 心跳包，保持连接
+                        console.log('Heartbeat received');
+                        break;
+
+                    default:
+                        // 其他状态更新，使用原有的SSE消息处理逻辑
+                        handleSSEMessage(data);
+                }
+            }
+
+            // 检查任务是否完成（当收到完成消息时重置状态）
+            if ((data.object === 'content' && data.type === 'data' && data.data && data.data.text &&
+                 (data.data.text.includes('任务完成') || data.data.text.includes('Task completed') ||
+                  data.data.text.includes('✅ 任务完成') || data.data.text.includes('任务已取消') ||
+                  data.data.text.includes('达到最大步数限制') || data.data.text.includes('任务已停止'))) ||
+                (data.object === 'content' && data.type === 'data' && data.data &&
+                 data.data.stage === 'completed' && data.data.text && data.data.text.includes('达到最大步数限制')) ||
+                (data.type === 'SYSTEM' && data.status === 'stopped')) {
+                console.log('Task completion detected, resetting task state');
+                resetTaskState();
+            }
+        }
+
+        // 处理排队状态
+        function handleQueueState(errorData) {
+            const detail = JSON.parse(errorData.message);
+            if (detail.type === 'queued') {
+                updateCurrentUserState({
+                    isQueued: true,
+                    queueInfo: detail
+                });
+                updateQueueInfo(detail);
+
+                // 启动排队状态监控
+                startQueueMonitoring();
+
+                // 确保心跳监控正在运行
+                if (!heartbeatInterval) {
+                    startHeartbeat();
+                }
+
+                // 显示排队信息
+                const queueMsg = `ℹ️ 系统繁忙，已进入排队等待...\n排队位置: ${detail.queue_position}/${detail.total_waiting}`;
+                addMessage('assistant', queueMsg, 'status');
+            }
+
+            // 重置任务状态，让对话可以重新尝试
+            resetTaskState();
+        }
+
+          // 新的停止任务
+        async function stopTask () {
+          const stopBtn  = document.getElementById('stopTaskBtn');
+          const taskInput = document.getElementById('taskInput');
+          const sendBtn   = document.getElementById('sendBtn');
+
+          // ① 先把按钮设为"停止中…"
+          stopBtn.disabled = true;
+          stopBtn.innerHTML =
+              '<span class="loading-spinner"></span> 停止中...';
+
+          try {
+              const resp = await fetch(
+                  `${getBackendUrl()}/cua/stop?user_id=${userId}&chat_id=${chatId}`,
+                  {method: 'GET'}
+              );
+
+              if (resp.ok) {
+                  // 200 → 已把停止请求发给后端
+                  // 🔧 移除这里的消息显示，让后端SSE消息来处理
+                  // addMessage(
+                  //     'assistant',
+                  //     '⏹️ 已发送停止请求，等待后端确认...',
+                  //     'status'
+                  // );
+              } else {
+                  // 非 2xx 仍当作错误处理
+                  const txt = await resp.text();
+                  throw new Error(`HTTP ${resp.status} ${txt}`);
+              }
+          }
+          catch (err) {
+              // 网络或后端返回非 2xx
+              showErrorMessage(`停止任务失败: ${err.message}`);
+              addMessage(
+                  'assistant',
+                  `❌ 停止任务失败: ${err.message}`,
+                  'status'
+              );
+          }
+          finally {
+              /* ② 不论成功还是失败，都把界面解锁 */
+
+              // 🔧 修复：不要在这里设置isTaskRunning为false，应该等收到后端确认消息
+              // 本地状态置为"未运行"，避免不能再次发送
+              // updateCurrentUserState({isTaskRunning: false});
+
+              // 让输入框、发送按钮重新可用
+              taskInput.disabled = false;
+              sendBtn.disabled   = false;
+              sendBtn.innerHTML  = '<i class="fas fa-paper-plane"></i> 发送';
+
+              // 隐藏停止按钮（如果你想保留可再显示）
+              stopBtn.style.display = 'none';
+              stopBtn.disabled = false;
+              stopBtn.innerHTML = '<i class="fas fa-stop"></i> 停止任务';
+
+              // 还原其他 UI
+              resetTaskState();          // 把聊天等状态清理
+          }
+        }
+
+
+        // 切换环境
+        async function switchEnvironment() {
+            const switchBtn = document.getElementById('switchEnvironmentBtn');
+            const taskInput = document.getElementById('taskInput');
+            const sendBtn = document.getElementById('sendBtn');
+
+            // 禁用切换按钮
+            switchBtn.disabled = true;
+            switchBtn.classList.add('btn-disabled');
+            switchBtn.innerHTML = '<span class="loading-spinner"></span> 切换中...';
+
+            // 禁用发送按钮和输入框，防止在切换过程中发送任务
+            if (taskInput) {
+                taskInput.disabled = true;
+            }
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<span class="loading-spinner"></span> 切换中...';
+            }
+
+            const currentUserState = getCurrentUserState();
+            updateCurrentUserState({ isSwitching: true });
+            hideErrorMessage();
+
+            // 确定目标环境类型
+            const targetSandboxType = currentUserState.currentSandboxType === 'pc_wuyin' ? 'phone_wuyin' : 'pc_wuyin';
+
+            try {
+                // 构建e2e_info参数
+                const e2eInfo = buildE2eInfo();
+                const extraParams = getExtraParams();
+
+                const config = {
+                    mode: targetSandboxType === 'phone_wuyin' ? 'phone_use' : 'pc_use',
+                    sandbox_type: targetSandboxType,
+                    max_steps: parseInt(document.getElementById('maxStepsInput').value),
+                    pc_use_addon_info: document.getElementById('addonInfoInput').value,
+                    timeout: 120,
+                    user_id: userId,
+                    chat_id: chatId,
+                    e2e_info: e2eInfo,
+                    extra_params: extraParams
+                };
+
+                // 添加提示信息，告知对话切换环境可能需要较长时间
+                addMessage('assistant', '⏳ 启动异步环境切换，请耐心等待...', 'status');
+
+                // 🔧 修改：调用新的异步切换接口
+                const response = await fetch(`${getBackendUrl()}/cua/switch_environment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        config: config
+                    })
+                });
+
+                if (response.status === 200) {
+                    const result = await response.json();
+                    const operationId = result.operation_id;
+
+                    // 🔧 新增：启动轮询操作状态
+                    addMessage('assistant', `✅ 异步环境切换已开始！操作ID: ${operationId}\n正在轮询状态...`, 'status');
+
+                    // 开始轮询操作状态，传递目标环境类型用于成功后的状态更新
+                    await pollSwitchOperationStatus(operationId, targetSandboxType);
+
+                } else if (response.status === 429) {
+                    // 进入排队状态
+                    const errorDetail = await response.json();
+                    if (errorDetail.detail && errorDetail.detail.type === 'queued') {
+                        updateCurrentUserState({
+                            isQueued: true,
+                            targetSandboxTypeForQueue: targetSandboxType,
+                            queueInfo: errorDetail.detail
+                        });
+                        updateQueueInfo(errorDetail.detail);
+
+                        // 🔧 新增：排队状态下也要启动SSE监控来接收资源可用通知
+                        if (!getCurrentUserState().sse) {
+                            startSSEMonitoring();
+                        }
+
+                        // 🔧 新增：启动排队状态监控
+                        startQueueMonitoring();
+
+                        // 🔧 新增：确保心跳监控正在运行
+                        if (!heartbeatInterval) {
+                            startHeartbeat();
+                        }
+
+                        // 显示详细的排队信息
+                        const queueMsg = `⏳ 环境切换进入排队等待...\n排队位置: ${errorDetail.detail.queue_position}/${errorDetail.detail.total_waiting}`;
+                        addMessage('assistant', queueMsg, 'status');
+                    }
+                } else if (response.status === 401 || response.status === 403) {
+                    // 权限错误
+                    const errorData = await response.json();
+                    showErrorMessage(`权限错误: ${errorData.detail || '登录已过期，请重新登录'}`);
+                    addMessage('assistant', `❌ 权限错误: ${errorData.detail || '登录已过期，请重新登录'}`, 'status');
+                } else if (response.status >= 500) {
+                    // 服务器错误
+                    showErrorMessage('服务器内部错误，请稍后重试');
+                    addMessage('assistant', `❌ 服务器错误: HTTP ${response.status}`, 'status');
+                } else {
+                    const errorText = await response.text();
+                    showErrorMessage(`环境切换失败: HTTP ${response.status}`);
+                    addMessage('assistant', `❌ 环境切换失败: HTTP ${response.status}\n${errorText}`, 'status');
+                    // 切换失败，恢复按钮状态
+                    resetSwitchButtonState(targetSandboxType);
+                }
+            } catch (error) {
+                let errorMessage = error.message;
+                let statusMessage = `❌ 环境切换错误: ${error.message}`;
+
+                showErrorMessage(errorMessage);
+                addMessage('assistant', statusMessage, 'status');
+                // 异常时恢复按钮状态
+                resetSwitchButtonState(targetSandboxType);
+            } finally {
+                updateCurrentUserState({ isSwitching: false });
+            }
+        }
+
+        // 🔧 新增：轮询切换操作状态函数
+        async function pollSwitchOperationStatus(operationId, targetSandboxType) {
+            const maxPolls = 60; // 最大轮询次数（5分钟，每5秒一次）
+            const pollInterval = 5000; // 轮询间隔（毫秒）
+            let pollCount = 0;
+
+            // 🔧 新增：确保在轮询期间心跳保持活跃
+            if (!heartbeatInterval) {
+                startHeartbeat();
+            }
+
+            const poll = async () => {
+                try {
+                    pollCount++;
+                    console.log(`轮询切换操作状态 ${operationId}，第 ${pollCount} 次`);
+
+                    const response = await fetch(`${getBackendUrl()}/cua/operation_status?user_id=${userId}&chat_id=${chatId}&operation_id=${operationId}`);
+
+                    if (response.status === 200) {
+                        const statusData = await response.json();
+                        console.log('切换操作状态:', statusData);
+
+                        // 🔧 优化：只在操作完成或失败时显示消息，避免中间进度刷屏
+                        // if (statusData.progress !== undefined) {
+                        //     addMessage('assistant', `📊 ${statusData.message} (进度: ${statusData.progress}%)`, 'status');
+                        // } else {
+                        //     addMessage('assistant', `📊 ${statusData.message}`, 'status');
+                        // }
+
+                        // 检查操作是否完成
+                        if (statusData.status === 'completed') {
+                            // 🔧 环境切换成功完成 - 显示最终完成消息
+                            addMessage('assistant', `✅ ${statusData.message}`, 'status');
+                            const result = statusData.result;
+
+                            // 更新状态
+                            updateCurrentUserState({ currentSandboxType: targetSandboxType });
+                            updateSandboxPreview(result);
+                            updateSwitchButton();
+
+                            // 同步更新设备选择下拉框的值
+                            const deviceSelect = document.getElementById('deviceSelect');
+                            if (deviceSelect) {
+                                deviceSelect.value = targetSandboxType;
+                            }
+
+                            // 手动更新Agent框架名称（解决切换环境后框架名称不更新的问题）
+                            const pipelineType = document.getElementById('pipelineTypeSelect').value;
+                            if (pipelineType !== 'e2e') {
+                                const agentFrameworkInput = document.getElementById('agentFrameworkInput');
+                                // 根据新的设备类型更新Agent框架名称
+                                if (targetSandboxType.includes('phone')) {
+                                    agentFrameworkInput.value = 'mobile-agent-pipeline';
+                                } else {
+                                    agentFrameworkInput.value = 'pre-pc-agent-e';
+                                }
+                                saveE2eConfigToUserState();
+                            }
+
+                            // 重新渲染快捷命令按钮
+                            renderQuickCommands();
+
+                            // 显示切换成功消息
+                            addMessage('assistant', '🔄 环境切换成功！', 'status');
+
+                            // 恢复按钮状态
+                            resetSwitchButtonState(targetSandboxType);
+
+                            return; // 完成，停止轮询
+                        } else if (statusData.status === 'failed') {
+                            // 操作失败
+                            showErrorMessage(`环境切换失败: ${statusData.error || '未知错误'}`);
+                            addMessage('assistant', `❌ 环境切换失败: ${statusData.error || '未知错误'}`, 'status');
+
+                            // 切换失败，恢复按钮状态
+                            resetSwitchButtonState(targetSandboxType);
+
+                            return; // 失败，停止轮询
+                        } else if (statusData.status === 'queued') {
+                            // 🔧 新增：处理排队状态
+                            updateCurrentUserState({
+                                isQueued: true,
+                                targetSandboxTypeForQueue: targetSandboxType,
+                                queueInfo: statusData.data
+                            });
+
+                            // 显示排队信息
+                            addMessage('assistant', `⏳ ${statusData.message}`, 'status');
+
+                            // 更新UI状态
+                            const switchBtn = document.getElementById('switchEnvironmentBtn');
+                            if (switchBtn) {
+                                switchBtn.innerHTML = '<i class="fas fa-clock"></i> 排队等待中...';
+                                switchBtn.disabled = true;
+                                switchBtn.classList.add('btn-disabled');
+                            }
+
+                            // 继续轮询，但延长间隔
+                            if (pollCount < maxPolls) {
+                                setTimeout(poll, pollInterval * 2); // 排队时双倍间隔
+                            } else {
+                                showErrorMessage('环境切换排队等待超时，请刷新页面重试');
+                                addMessage('assistant', '⏰ 排队等待超时，请刷新页面重试', 'status');
+                                resetSwitchButtonState(targetSandboxType);
+                            }
+                        } else if (statusData.status === 'waiting_retry') {
+                            // 🔧 新增：处理等待重试状态
+                            addMessage('assistant', `🔄 ${statusData.message}`, 'status');
+
+                            // 更新UI状态
+                            const switchBtn = document.getElementById('switchEnvironmentBtn');
+                            if (switchBtn) {
+                                switchBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> 自动重试中...';
+                            }
+
+                            // 继续轮询
+                            if (pollCount < maxPolls) {
+                                setTimeout(poll, pollInterval);
+                            } else {
+                                showErrorMessage('环境切换自动重试超时，请手动重试');
+                                resetSwitchButtonState(targetSandboxType);
+                            }
+                        } else {
+                            // 仍在进行中，继续轮询
+                            if (pollCount < maxPolls) {
+                                setTimeout(poll, pollInterval);
+                            } else {
+                                // 轮询超时
+                                showErrorMessage('环境切换超时，请稍后重试');
+                                addMessage('assistant', '⏰ 环境切换超时，请稍后重试', 'status');
+
+                                // 恢复按钮状态
+                                resetSwitchButtonState(targetSandboxType);
+                            }
+                        }
+                    } else {
+                        // 轮询请求失败
+                        console.error('轮询切换状态请求失败:', response.status);
+                        if (pollCount < maxPolls) {
+                            setTimeout(poll, pollInterval);
+                        } else {
+                            showErrorMessage('无法获取切换操作状态，请刷新页面重试');
+                            resetSwitchButtonState(targetSandboxType);
+                        }
+                    }
+                } catch (error) {
+                    console.error('轮询切换状态时出错:', error);
+                    if (pollCount < maxPolls) {
+                        setTimeout(poll, pollInterval);
+                    } else {
+                        showErrorMessage(`轮询切换状态错误: ${error.message}`);
+                        resetSwitchButtonState(targetSandboxType);
+                    }
+                }
+            };
+
+            // 开始第一次轮询
+            setTimeout(poll, 1000); // 1秒后开始第一次轮询
+        }
+
+        // 🔧 新增：重置切换按钮状态函数
+        function resetSwitchButtonState(targetSandboxType) {
+            const switchBtn = document.getElementById('switchEnvironmentBtn');
+            const taskInput = document.getElementById('taskInput');
+            const sendBtn = document.getElementById('sendBtn');
+
+            // 重新启用切换按钮
+            if (switchBtn) {
+                switchBtn.disabled = false;
+                switchBtn.classList.remove('btn-disabled');
+
+                // 根据目标环境类型更新按钮文本
+                const targetEnvText = targetSandboxType === 'pc_wuyin' ? '手机' : '电脑';
+                switchBtn.innerHTML = `<i class="fas fa-sync-alt"></i> 切换到${targetEnvText}环境`;
+            }
+
+            // 重新启用发送按钮和输入框
+            const currentUserState = getCurrentUserState();
+            if (taskInput && currentUserState && currentUserState.isActivated) {
+                taskInput.disabled = false;
+            }
+            if (sendBtn && currentUserState && currentUserState.isActivated) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+            }
+        }
+
+        // 启动SSE监控 - 已弃用，现在使用流式接口
+        function startSSEMonitoring() {
+            console.log('SSE monitoring is deprecated, using stream interface instead');
+            // SSE监控功能已经被流式接口取代
+            return;
+        }
+
+
+        // 停止轮询
+        function stopPolling() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            if (currentUserState.pollInterval) {
+                clearInterval(currentUserState.pollInterval);
+                currentUserState.pollInterval = null;
+            }
+        }
+
+        // 停止SSE监控 - 已弃用，现在使用流式接口
+        function stopSSEMonitoring() {
+            console.log('SSE monitoring is deprecated, using stream interface instead');
+            // 停止轮询（如果有）
+            stopPolling();
+            // 停止排队监控
+            stopQueueMonitoring();
+        }
+
+        // 🔧 新增：启动排队状态监控
+        function startQueueMonitoring() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            // 先清理已有的排队监控定时器
+            if (currentUserState.queueMonitorInterval) {
+                clearInterval(currentUserState.queueMonitorInterval);
+                currentUserState.queueMonitorInterval = null;
+            }
+
+            console.log('启动排队状态监控');
+            addMessage('assistant', '🕐 启动排队状态监控，将定期检查资源可用性...', 'status');
+
+            currentUserState.queueMonitorInterval = setInterval(async () => {
+                try {
+                    const userState = getCurrentUserState();
+                    if (!userState || !userState.isQueued) {
+                        // 如果不再处于排队状态，停止监控
+                        stopQueueMonitoring();
+                        return;
+                    }
+
+                    // 获取当前设备选择
+                    const selectedSandboxType = document.getElementById('deviceSelect').value;
+
+                    // 检查队列状态
+                    const response = await fetch(
+                        `${getBackendUrl()}/cua/queue_status?user_id=${userId}&chat_id=${chatId}&sandbox_type=${selectedSandboxType}`
+                    );
+
+                    if (response.ok) {
+                        const queueData = await response.json();
+                        console.log('排队状态检查结果:', queueData);
+
+                        // 更新排队信息显示
+                        if (queueData.position >= 0 && queueData.queue_status === 'queued') {
+                            updateQueueInfo({
+                                queue_position: queueData.position + 1,  // 后端返回的是索引，前端显示时+1
+                                total_waiting: queueData.total_waiting
+                            });
+
+                            // 如果排队位置发生变化，显示更新消息
+                            if (userState.queueInfo &&
+                                userState.queueInfo.queue_position !== (queueData.position + 1)) {
+                                addMessage('assistant',
+                                    `📍 排队位置更新: ${queueData.position + 1}/${queueData.total_waiting}`,
+                                    'status');
+                            }
+
+                            // 更新对话状态中的排队信息
+                            updateCurrentUserState({
+                                queueInfo: {
+                                    queue_position: queueData.position + 1,
+                                    total_waiting: queueData.total_waiting
+                                }
+                            });
+                        } else if (queueData.position === -1) {
+                            // 根据详细状态判断如何处理
+                            if (queueData.queue_status === 'allocated') {
+                                // 对话已有分配的资源，应该自动激活
+                                console.log('检测到对话已有分配的资源，正在尝试重新激活');
+                                addMessage('assistant', '✅ 检测到已分配资源，正在自动激活环境...', 'status');
+
+                                // 停止排队监控
+                                stopQueueMonitoring();
+
+                                // 尝试重新激活环境
+                                setTimeout(autoReactivateEnvironment, 1000);
+                            } else if (queueData.queue_status === 'not_queued') {
+                                // 🔧 优化：对话不在队列且无分配资源时的处理
+                                console.log('对话暂时不在队列，但可能资源即将可用，继续监控...');
+
+                                // 显示等待状态，但不要频繁更新UI
+                                if (!userState.queueInfo || userState.queueInfo.queue_position !== '等待中') {
+                                    updateQueueInfo({
+                                        queue_position: '等待中',
+                                        total_waiting: '检查资源状态...'
+                                    });
+                                }
+
+                                // 开始等待倒计时，如果没有在倒计时中的话
+                                if (!userState.waitingCountdown) {
+                                    startWaitingCountdown(userState);
+                                }
+                            }
+                        }
+                    } else {
+                        console.error('检查排队状态失败:', response.status);
+                    }
+                } catch (error) {
+                    console.error('排队状态监控出错:', error);
+                }
+            }, 10000); // 每10秒检查一次排队状态
+        }
+
+        // 🔧 新增：停止排队状态监控
+        function stopQueueMonitoring() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            if (currentUserState.queueMonitorInterval) {
+                clearInterval(currentUserState.queueMonitorInterval);
+                currentUserState.queueMonitorInterval = null;
+                console.log('停止排队状态监控');
+            }
+        }
+
+        // 🔧 新增：启动等待倒计时功能
+        function startWaitingCountdown(userState) {
+            if (!userState) return;
+
+            // 如果已经在倒计时中，不要重复启动
+            if (userState.waitingCountdown) {
+                return;
+            }
+
+            console.log('启动资源等待倒计时');
+
+            // 设置倒计时时间（60秒）
+            let countdownSeconds = 60;
+            userState.waitingCountdown = true;
+
+            const countdownInterval = setInterval(() => {
+                countdownSeconds--;
+
+                // 更新队列信息显示，显示倒计时
+                updateQueueInfo({
+                    queue_position: `等待中 (${countdownSeconds}s)`,
+                    total_waiting: '资源暂时不可用，即将重试'
+                });
+
+                // 倒计时结束
+                if (countdownSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    userState.waitingCountdown = false;
+
+                    // 自动重试激活环境
+                    console.log('等待倒计时结束，自动重试激活环境');
+                    addMessage('assistant', '⏰ 等待时间已到，正在自动重试激活环境...', 'status');
+
+                    // 尝试自动重新激活
+                    autoRetryActivation();
+                }
+            }, 1000);
+
+            // 将定时器存储到对话状态中，以便需要时清理
+            userState.waitingCountdownInterval = countdownInterval;
+        }
+
+        // 🔧 新增：停止等待倒计时
+        function stopWaitingCountdown(userState) {
+            if (!userState || !userState.waitingCountdown) return;
+
+            if (userState.waitingCountdownInterval) {
+                clearInterval(userState.waitingCountdownInterval);
+                userState.waitingCountdownInterval = null;
+            }
+            userState.waitingCountdown = false;
+            console.log('停止资源等待倒计时');
+        }
+
+        // 🔧 新增：自动重试激活功能
+        async function autoRetryActivation() {
+            try {
+                const currentUserState = getCurrentUserState();
+                if (!currentUserState) return;
+
+                // 检查当前是否已经激活或正在运行任务
+                if (currentUserState.isActivated || currentUserState.isTaskRunning) {
+                    console.log('环境已激活或任务正在运行，跳过自动重试');
+                    return;
+                }
+
+                // 🔧 新增：设置正在激活状态
+                updateCurrentUserState({ isActivating: true });
+
+                // 使用设备选择下拉框的当前值
+                const selectedSandboxType = document.getElementById('deviceSelect').value;
+
+                // 构建e2e_info参数
+                const e2eInfo = buildE2eInfo();
+                const extraParams = getExtraParams();
+
+                const config = {
+                    mode: selectedSandboxType === 'phone_wuyin' ? 'phone_use' : 'pc_use',
+<!--                    sandbox_type: selectedSandboxType,-->
+                    max_steps: parseInt(document.getElementById('maxStepsInput').value),
+                    pc_use_addon_info: document.getElementById('addonInfoInput').value,
+<!--                    timeout: 120,-->
+                    user_id: userId,
+                    chat_id: chatId,
+                    e2e_info: e2eInfo,
+                    extra_params: extraParams
+                };
+
+                const response = await fetch(`${getBackendUrl()}/cua/init`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        config: config
+                    })
+                });
+
+                if (response.status === 200) {
+                    const result = await response.json();
+                    updateCurrentUserState({
+                        isActivated: true,
+                        isActivating: false, // 🔧 激活成功，清除激活中状态
+                        currentSandboxType: config.sandbox_type
+                    });
+
+                    // 停止排队监控
+                    stopQueueMonitoring();
+                    stopWaitingCountdown(currentUserState);
+
+                    // 更新状态
+                    updateSandboxPreview(result);
+
+                    // 显示激活成功消息
+                    addMessage('assistant', '🎉 自动重试成功！环境已激活！', 'status');
+
+                    // 启用任务输入
+                    document.getElementById('taskInput').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
+
+                    // 显示切换按钮
+                    document.getElementById('switchEnvironmentContainer').style.display = 'block';
+                    updateSwitchButton();
+
+                    // 禁用设备选择
+                    const deviceSelect = document.getElementById('deviceSelect');
+                    deviceSelect.classList.add('device-select-disabled');
+                    deviceSelect.disabled = true;
+
+                    // 隐藏排队信息
+                    const queueInfoContainer = document.getElementById('queueInfoContainer');
+                    if (queueInfoContainer) {
+                        queueInfoContainer.style.display = 'none';
+                    }
+
+                    // 启动心跳
+                    startHeartbeat();
+
+                    // 启动倒计时
+                    startCountdown();
+
+                    // 更新激活按钮状态为成功并置灰
+                    const activateBtn = document.getElementById('activateBtn');
+                    if (activateBtn) {
+                        activateBtn.innerHTML = '<i class="fas fa-check"></i> 激活成功';
+                        activateBtn.disabled = true;
+                        activateBtn.classList.add('btn-disabled');
+                    }
+
+                } else if (response.status === 429) {
+                    // 仍然进入排队状态，继续等待
+                    const errorDetail = await response.json();
+                    if (errorDetail.detail && errorDetail.detail.type === 'queued') {
+                        updateCurrentUserState({
+                            isQueued: true,
+                            isActivating: false, // 🔧 进入排队，清除激活中状态
+                            queueInfo: errorDetail.detail
+                        });
+                        updateQueueInfo(errorDetail.detail);
+
+                        addMessage('assistant', `⏳ 自动重试进入排队，继续等待...`, 'status');
+
+                        // 继续监控排队状态
+                        if (!getCurrentUserState().queueMonitorInterval) {
+                            startQueueMonitoring();
+                        }
+                    } else {
+                        // 如果资源仍然不可用，重新开始倒计时
+                        updateCurrentUserState({ isActivating: false }); // 🔧 清除激活中状态
+                        addMessage('assistant', '⏰ 资源仍然不可用，将在60秒后再次重试...', 'status');
+                        startWaitingCountdown(currentUserState);
+                    }
+                } else {
+                    // 其他错误，重新开始倒计时
+                    updateCurrentUserState({ isActivating: false }); // 🔧 清除激活中状态
+                    console.log('自动重试失败，状态码:', response.status);
+                    addMessage('assistant', '⚠️ 自动重试失败，将在60秒后再次重试...', 'status');
+                    startWaitingCountdown(currentUserState);
+                }
+
+            } catch (error) {
+                updateCurrentUserState({ isActivating: false }); // 🔧 异常时清除激活中状态
+                console.error('自动重试激活出错:', error);
+                addMessage('assistant', `⚠️ 自动重试出错: ${error.message}，将在60秒后再次重试...`, 'status');
+
+                // 出错时也重新开始倒计时
+                const currentUserState = getCurrentUserState();
+                if (currentUserState) {
+                    startWaitingCountdown(currentUserState);
+                }
+            }
+        }
+
+        // 处理SSE消息
+        function handleSSEMessage(data) {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            // 过滤其它任务或其它对话的推送
+            if (data.task_id && data.task_id !== currentUserState.taskId){
+                return;           // 忽略
+            }
+
+            // 如果是心跳消息，直接返回
+            if (data.type === 'heartbeat') {
+                return;
+            }
+
+            // 🔧 新增：处理任务开始状态
+            if (data.status === 'starting' || data.status === 'running') {
+                if (currentUserState && !currentUserState.isTaskRunning) {
+                    console.log('任务开始，设置isTaskRunning为true');
+                    updateCurrentUserState({ isTaskRunning: true });
+                }
+            }
+
+            // 🔧 新增：处理资源可用通知
+            if (data.status === 'resource_available') {
+                console.log("收到资源可用通知，自动重新尝试激活环境");
+                addMessage('assistant', '✅ 资源已就绪！正在自动重新激活环境...', 'status');
+
+                // 🔧 新增：停止排队监控
+                stopQueueMonitoring();
+
+                // 🔧 新增：停止等待倒计时
+                if (currentUserState) {
+                    stopWaitingCountdown(currentUserState);
+                }
+
+                // 清除排队状态
+                updateCurrentUserState({ isQueued: false });
+                const queueInfoContainer = document.getElementById('queueInfoContainer');
+                if (queueInfoContainer) {
+                    queueInfoContainer.style.display = 'none';
+                }
+
+                // 自动重新尝试激活环境
+                setTimeout(autoReactivateEnvironment, 1000);
+                return;
+            }
+
+            const msgId = data.uuid || `${data.type}_${data.status}_${data.timestamp}`;
+
+            // 检查消息是否已处理过
+            if (currentUserState.processedMessages.has(msgId)) {
+                return;
+            }
+
+            currentUserState.processedMessages.add(msgId);
+
+            // 防止processedMessages集合过大，定期清理
+            if (currentUserState.processedMessages.size > 1000) {
+                const recentMessages = Array.from(currentUserState.processedMessages).slice(-500);
+                currentUserState.processedMessages = new Set(recentMessages);
+            }
+
+            // 特别处理错误消息，确保错误信息被显示
+            if (data.status === 'error') {
+                // 直接显示错误消息，无论消息类型是什么
+                const errorMessage = data.message || (data.data && data.data.message) || '未知错误';
+                addMessage('assistant', `❌ 任务执行出错: ${errorMessage}`, 'status');
+
+                // 停止监控并更新状态
+                stopSSEMonitoring();
+                updateCurrentUserState({ isTaskRunning: false });
+                resetTaskState();
+
+                // 隐藏停止按钮
+                const stopTaskBtn = document.getElementById('stopTaskBtn');
+                if (stopTaskBtn) {
+                    stopTaskBtn.style.display = 'none';
+                    stopTaskBtn.disabled = false;
+                    stopTaskBtn.innerHTML = '<i class="fas fa-stop"></i> 停止任务';
+                }
+                return;
+            }
+
+            if (data.type === 'STEP') {
+                // 特殊处理：如果STEP消息包含status为error的信息，直接显示错误
+                if (data.status === 'error' && data.message) {
+                    addMessage('assistant', `❌ 任务执行出错: ${data.message}`, 'status');
+                } else {
+                    formatStepMessage(data);
+                }
+            } else if (data.type === 'analysis_stage') {
+                // 处理分析阶段消息
+                formatAnalysisStageMessage(data);
+            } else {
+                formatStatusMessage(data);
+            }
+
+            // 检查任务是否真的在运行中，避免误判初始状态消息
+            // currentUserState already declared at the beginning of this function
+
+            // 特殊处理：只有当任务确实在运行时，才处理这些完成状态
+            if (currentUserState && currentUserState.isTaskRunning) {
+                // 如果收到IDLE状态且消息是"Ready to start"，说明任务已完成
+                if (data.status === 'idle' && data.message && data.message.toLowerCase().includes('ready to start')) {
+                    stopSSEMonitoring();
+                    updateCurrentUserState({ isTaskRunning: false });
+                    resetTaskState();
+                    addMessage('assistant', '✅ 任务执行完成', 'status');
+                    return;
+                }
+
+                // 添加对"Task stopped, resources still allocated"状态的处理
+                if (data.status === 'idle' && data.message && data.message.toLowerCase().includes('task stopped, resources still allocated')) {
+                    stopSSEMonitoring();
+                    updateCurrentUserState({ isTaskRunning: false });
+                    resetTaskState();
+                    addMessage('assistant', '✅ 任务执行完成', 'status');
+                    return;
+                }
+
+                // 🔧 新增：添加对手动停止任务的处理
+                if (data.status === 'idle' && data.message && data.message.toLowerCase().includes('task stopped')) {
+                  stopSSEMonitoring();
+                  updateCurrentUserState({ isTaskRunning: false });
+                  resetTaskState();
+                  addMessage('assistant', '⏹️ 任务已停止', 'status');
+
+                  // 重新启用停止按钮并恢复其状态
+                  const stopTaskBtn = document.getElementById('stopTaskBtn');
+                  if (stopTaskBtn) {
+                      stopTaskBtn.style.display = 'none';
+                      stopTaskBtn.disabled = false;
+                      stopTaskBtn.innerHTML = '<i class="fas fa-stop"></i> 停止任务';
+                  }
+                  return;
+                }
+            }
+
+
+            // 收到其他结束态也停止监控
+            if (['completed', 'stopped'].includes(data.status)) {
+                stopSSEMonitoring();
+                updateCurrentUserState({ isTaskRunning: false });
+                const endMessage = data.status === 'completed' ? '✅ 任务已完成' : '⏹️ 任务已停止';
+                addMessage('assistant', endMessage, 'status');
+                resetTaskState();
+
+                // 在这里重新启用停止按钮并恢复其状态
+                const stopTaskBtn = document.getElementById('stopTaskBtn');
+                if (stopTaskBtn) {
+                    stopTaskBtn.style.display = 'none';
+                    stopTaskBtn.disabled = false;
+                    stopTaskBtn.innerHTML = '<i class="fas fa-stop"></i> 停止任务';
+                }
+
+                return;
+            }
+
+            // 添加对human_help状态的处理
+            if (data.type === 'STEP' && data.data && data.data.human_help_status) {
+                showHumanInterventionNotice(data.data);
+            }
+
+            // 如果没有任何状态更新，添加一条默认消息
+            if (!data.type && !data.status) {
+                console.warn('收到未知格式的消息:', data);
+            }
+        }
+
+        // 🔧 新增：自动重新激活环境（收到资源可用通知后调用）
+        async function autoReactivateEnvironment() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState || currentUserState.isActivated) {
+                console.log("对话状态无效或环境已激活，跳过自动激活");
+                return;
+            }
+
+            const activateBtn = document.getElementById('activateBtn');
+            if (!activateBtn) {
+                console.log("激活按钮不存在，跳过自动激活");
+                return;
+            }
+
+            console.log("开始自动重新激活环境");
+
+            // 🔧 新增：停止排队监控并清除排队状态
+            stopQueueMonitoring();
+            updateCurrentUserState({ isQueued: false });
+            const queueInfoContainer = document.getElementById('queueInfoContainer');
+            if (queueInfoContainer) {
+                queueInfoContainer.style.display = 'none';
+            }
+
+            // 更新按钮状态
+            activateBtn.disabled = true;
+            activateBtn.classList.add('btn-disabled');
+            activateBtn.innerHTML = '<span class="loading-spinner"></span> 自动激活中...';
+
+            try {
+                // 使用设备选择下拉框的当前值
+                const selectedSandboxType = document.getElementById('deviceSelect').value;
+
+                // 构建e2e_info参数
+                const e2eInfo = buildE2eInfo();
+                const extraParams = getExtraParams();
+
+                const config = {
+                    mode: selectedSandboxType === 'phone_wuyin' ? 'phone_use' : 'pc_use',
+<!--                    sandbox_type: selectedSandboxType,-->
+                    max_steps: parseInt(document.getElementById('maxStepsInput').value),
+                    pc_use_addon_info: document.getElementById('addonInfoInput').value,
+<!--                    timeout: 120,-->
+                    user_id: userId,
+                    chat_id: chatId,
+                    e2e_info: e2eInfo,
+                    extra_params: extraParams
+                };
+
+                const response = await fetch(`${getBackendUrl()}/cua/init`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        config: config
+                    })
+                });
+
+                if (response.status === 200) {
+                    const result = await response.json();
+                    updateCurrentUserState({
+                        isActivated: true,
+                        currentSandboxType: config.sandbox_type
+                    });
+
+                    // 更新状态
+                    updateSandboxPreview(result);
+
+                    // 显示激活成功消息
+                    addMessage('assistant', '🎉 环境自动激活成功！现在可以开始使用了！', 'status');
+
+                    // 启用任务输入
+                    document.getElementById('taskInput').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
+
+                    // 显示切换按钮
+                    document.getElementById('switchEnvironmentContainer').style.display = 'block';
+                    updateSwitchButton();
+
+                    // 禁用设备选择
+                    const deviceSelect = document.getElementById('deviceSelect');
+                    deviceSelect.classList.add('device-select-disabled');
+                    deviceSelect.disabled = true;
+
+                    // 启动心跳
+                    startHeartbeat();
+
+                    // 启动倒计时
+                    startCountdown();
+
+                    // 更新激活按钮状态为成功并置灰
+                    activateBtn.innerHTML = '<i class="fas fa-check"></i> 激活成功';
+
+                } else {
+                    // 自动激活失败，恢复按钮状态让对话手动重试
+                    console.log("自动激活失败，状态码:", response.status);
+                    addMessage('assistant', '⚠️ 自动激活失败，请手动点击激活环境按钮重试', 'status');
+
+                    activateBtn.disabled = false;
+                    activateBtn.classList.remove('btn-disabled');
+                    activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+                }
+
+            } catch (error) {
+                console.error("自动激活环境出错:", error);
+                addMessage('assistant', `⚠️ 自动激活出错: ${error.message}，请手动重试`, 'status');
+
+                // 恢复按钮状态
+                activateBtn.disabled = false;
+                activateBtn.classList.remove('btn-disabled');
+                activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+            }
+        }
+
+        // 格式化步骤消息
+        function formatStepMessage(statusData) {
+            const stepData = statusData.data || {};
+            const stepNum = stepData.step || '?';
+            const observation = stepData.observation || '';
+            const actionParsed = stepData.action_parsed || '';
+            const actionExecuted = stepData.action_executed || '';
+            const thought = stepData.thought || '';
+            const auxiliaryInfo = stepData.auxiliary_info || {};
+            // 获取设备ID
+            const equipmentId = stepData.equipment_id || '';
+
+            // 生成步骤的唯一标识符
+            // const stepKey = `task_${statusData.task_id || 'unknown'}_step_${stepNum}_time_${statusData.timestamp || ''}`;
+            const stepKey = `task_${statusData.task_id || 'unknown'}_step_${stepNum}_time_${statusData.timestamp || ''}_uuid_${statusData.uuid || ''}`;
+
+
+            // 构建消息内容
+            let messageParts = [`🔍 **Step ${stepNum}** - ${statusData.timestamp || ''}`];
+
+            if (auxiliaryInfo.request_id) {
+                messageParts.push(`📝 **请求ID**\n${auxiliaryInfo.request_id}`);
+            }
+
+            if (auxiliaryInfo.session_id) {
+                messageParts.push(`📝 **会话ID**\n${auxiliaryInfo.session_id}`);
+            }
+
+            // 显示设备ID
+            if (equipmentId) {
+                messageParts.push(`🖥️ **设备ID**\n${equipmentId}`);
+            }
+
+            // 解析observation为JSON格式并美观地显示
+            if (observation) {
+                try {
+                    const observationData = JSON.parse(observation);
+
+                    // 构建美观的显示格式
+                    let observationParts = [];
+
+                    if (observationData.thought) {
+                        observationParts.push(`💭 **推理思考**\n${observationData.thought}`);
+                    }
+
+                    if (observationData.action) {
+                        observationParts.push(`⚡ **执行动作**\n${observationData.action}`);
+                    }
+
+                    if (observationData.action_params) {
+                        // 美化动作参数显示
+                        const params = observationData.action_params;
+                        observationParts.push(`📋 **动作参数**\n${params}`);
+                    }
+
+                    if (observationData.explanation) {
+                        observationParts.push(`💡 **执行说明**\n${observationData.explanation}`);
+                    }
+
+                    if (observationParts.length > 0) {
+                        messageParts.push(observationParts.join('\n\n'));
+                    }
+
+                    // 处理标注图片
+                    if (observationData.annotated_img_path) {
+                        messageParts.push(`📝 **标注截图**\n<img src="${observationData.annotated_img_path}" alt="Annotated Screenshot" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px;">`);
+                    }
+
+                } catch (e) {
+                    // 如果不是JSON格式，按原来的方式处理
+                    messageParts.push(`🔍 **推理**\n${observation}`);
+                }
+            }
+
+            // 处理auxiliaryInfo中的截图（向后兼容）
+            if (auxiliaryInfo.annotated_img_path && !observation.includes('annotated_img_path')) {
+                messageParts.push(`📝 **截图信息**\n<img src="${auxiliaryInfo.annotated_img_path}" alt="Annotated Screenshot" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px;">`);
+            }
+
+            if (actionParsed) {
+                messageParts.push(`⚡ **动作**\n${actionParsed}`);
+            }
+
+            if (actionExecuted) {
+                messageParts.push(`✅ **执行**\n${actionExecuted}`);
+            }
+
+            const content = messageParts.join('\n\n');
+
+            // 更新或添加步骤消息
+            updateOrAddStepMessage(content, stepKey);
+
+            // 处理截图URL
+            if (stepData.screenshot_url) {
+                updateScreenshot(stepData.screenshot_url);
+            }
+        }
+
+        // 格式化分析阶段消息
+        function formatAnalysisStageMessage(statusData) {
+            console.log('[DEBUG] formatAnalysisStageMessage called with:', statusData);
+            const stageData = statusData.data || {};
+            const stage = stageData.stage || '';
+            const message = stageData.text || '';
+            console.log('[DEBUG] Extracted stage:', stage, 'message:', message);
+
+            // 阶段图标和中文翻译映射
+            const stageConfig = {
+                'screenshot': {
+                    icon: '📸',
+                    name: '截图获取',
+                    messages: {
+                        'capturing': '正在获取屏幕截图...',
+                        'completed': '截图获取完成'
+                    }
+                },
+                'ai_analysis': {
+                    icon: '🧠',
+                    name: 'AI分析',
+                    messages: {
+                        'analyzing': '正在调用AI模型分析截图内容...',
+                        'completed': 'AI分析完成'
+                    }
+                },
+                'image_processing': {
+                    icon: '🖼️',
+                    name: '图像处理',
+                    messages: {
+                        'processing': '正在处理图像标注和坐标计算...',
+                        'completed': '图像处理完成'
+                    }
+                },
+                'completed': {
+                    icon: '✅',
+                    name: '完成',
+                    messages: {
+                        'completed': '截图分析完成，准备执行动作'
+                    }
+                }
+            };
+
+            const config = stageConfig[stage] || {
+                icon: '⚙️',
+                name: stage,
+                messages: { [message]: message }
+            };
+
+            const icon = config.icon;
+            const stageName = config.name;
+            const translatedMessage = config.messages[message] || message;
+            const stageKey = `analysis_stage_${stage}`;
+
+            // 构建阶段显示内容
+            const content = `${icon} **${stageName}**: ${translatedMessage}`;
+
+            // 更新或添加阶段消息
+            updateOrAddAnalysisStageMessage(content, stageKey, stage, message);
+        }
+
+        // 更新或添加分析阶段消息
+        function updateOrAddAnalysisStageMessage(content, stageKey, stage, message) {
+            console.log('[DEBUG] updateOrAddAnalysisStageMessage called with stage:', stage, 'message:', message);
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) {
+                console.error('[DEBUG] No current user state found, aborting analysis stage message update');
+                return;
+            }
+            console.log('[DEBUG] Current user state exists, proceeding with message update');
+
+            // 如果是新的分析开始（screenshot阶段），清理之前的分析阶段消息
+            if (stage === 'screenshot' && message === 'capturing') {
+                currentUserState.messages = currentUserState.messages.filter(msg =>
+                    msg.type !== 'analysis_stages'
+                );
+            }
+
+            // 查找是否已经存在分析阶段的消息容器
+            let analysisMessageIndex = currentUserState.messages.findIndex(msg =>
+                msg.type === 'analysis_stages'
+            );
+
+            if (analysisMessageIndex === -1) {
+                // 创建新的分析阶段消息容器
+                const analysisMessageObj = {
+                    role: 'assistant',
+                    content: createAnalysisStagesHTML(),
+                    type: 'analysis_stages',
+                    stages: {}
+                };
+                currentUserState.messages.push(analysisMessageObj);
+                analysisMessageIndex = currentUserState.messages.length - 1;
+            }
+
+            // 更新阶段状态：当前阶段完成由下一阶段开始判定，这里仅记录内容
+            const analysisMessage = currentUserState.messages[analysisMessageIndex];
+            analysisMessage.stages[stage] = {
+                content: content,
+                completed: stage === 'completed'
+            };
+
+            // 当一个新阶段开始时，自动把前一个阶段标记为完成
+            const order = ['screenshot', 'ai_analysis', 'image_processing'];
+            const currentIdx = order.indexOf(stage);
+
+            // 特殊处理：当收到 'completed' 阶段时，标记所有阶段为完成
+            if (stage === 'completed') {
+                console.log('[DEBUG] Processing completed stage, marking all stages as completed');
+                // 标记所有阶段为完成
+                order.forEach(stageId => {
+                    if (analysisMessage.stages[stageId]) {
+                        analysisMessage.stages[stageId].completed = true;
+                        console.log(`[DEBUG] Marked ${stageId} as completed`);
+                    }
+                });
+                // 🔧 修复：设置整体完成状态，触发完成视图
+                analysisMessage.stages.completed = true;
+                console.log('[DEBUG] Set overall completion state');
+                console.log('[DEBUG] Final stages state:', analysisMessage.stages);
+            } else if (currentIdx > 0) {
+                // 普通逻辑：新阶段开始时，前一个阶段标记为完成
+                const prevStage = order[currentIdx - 1];
+                if (analysisMessage.stages[prevStage]) {
+                    analysisMessage.stages[prevStage].completed = true;
+                }
+            }
+
+            // 重新生成HTML内容
+            analysisMessage.content = createAnalysisStagesHTML(analysisMessage.stages);
+
+            renderMessages();
+        }
+
+        // 创建分析阶段的HTML
+        function createAnalysisStagesHTML(stages = {}) {
+            const stageOrder = ['screenshot', 'ai_analysis', 'image_processing'];
+            const stageNames = {
+                'screenshot': '截图获取',
+                'ai_analysis': 'AI分析',
+                'image_processing': '图像处理'
+            };
+
+            // 如果分析已完成，显示简洁的完成状态
+            if (stages.completed) {
+                console.log('[DEBUG] Creating completed analysis HTML - stages.completed exists:', stages.completed);
+                return '<div class="analysis-stages-container completed-analysis">' +
+                       '<div class="analysis-completed-message">' +
+                       '✅ <strong>截图分析完成</strong> - 准备执行动作' +
+                       '</div>' +
+                       '</div>';
+            }
+
+            console.log('[DEBUG] Creating progress analysis HTML - stages:', stages);
+
+            let html = '<div class="analysis-stages-container">';
+            html += '<div class="analysis-stages-title">📊 <strong>截图分析进度</strong></div>';
+            html += '<div class="analysis-stages-list">';
+
+            stageOrder.forEach((stageId, index) => {
+                const stage = stages[stageId];
+                const isActive = stage && !stage.completed;
+                const isCompleted = stage && stage.completed;
+
+                let stageClass = 'analysis-stage';
+                let stageIcon = '';
+
+                if (isCompleted) {
+                    stageClass += ' completed';
+                    stageIcon = '✅';
+                } else if (isActive) {
+                    stageClass += ' active';
+                    stageIcon = '🔄';
+                } else {
+                    stageClass += ' waiting';
+                    stageIcon = '⏳';
+                }
+
+                html += `<div class="${stageClass}">`;
+                html += `<span class="stage-icon">${stageIcon}</span>`;
+                html += `<span class="stage-name">${stageNames[stageId]}</span>`;
+                if (stage && stage.content) {
+                    html += `<div class="stage-content">${stage.content}</div>`;
+                }
+                html += '</div>';
+            });
+
+            html += '</div></div>';
+            return html;
+        }
+
+        // 格式化状态消息
+        function formatStatusMessage(statusData) {
+            const status = statusData.status || '';
+            const message = statusData.message || '';
+
+            // 状态图标映射
+            const statusIcons = {
+                'starting': '🔄',
+                'running': '⚡',
+                'completed': '✅',
+                'error': '❌',
+                'stopped': '⏹️',
+                'idle': '⏸️'
+            };
+
+            const icon = statusIcons[status] || '📋';
+            const formattedMessage = `${icon} **${status.toUpperCase()}**: ${message}`;
+
+            addMessage('assistant', formattedMessage, 'status');
+        }
+
+        // 更新或添加步骤消息
+        function updateOrAddStepMessage(content, stepKey) {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            // 查找是否已经存在相同步骤的消息
+            const existingMessageIndex = currentUserState.messages.findIndex(msg =>
+                msg.type === 'status' && msg.stepKey === stepKey
+            );
+
+            const messageObj = {
+                role: 'assistant',
+                content: content,
+                type: 'status',
+                stepKey: stepKey
+            };
+
+            if (existingMessageIndex !== -1) {
+                // 更新现有消息
+                currentUserState.messages[existingMessageIndex] = messageObj;
+            } else {
+                // 添加新消息
+                currentUserState.messages.push(messageObj);
+            }
+
+            renderMessages();
+        }
+
+        // 更新沙盒预览
+        function updateSandboxPreview(data) {
+            const previewContainer = document.getElementById('previewContainer');
+            // 检查元素是否存在
+            if (!previewContainer) {
+                console.error('Preview container not found');
+                return;
+            }
+
+            if (data.sandbox_url) {
+                previewContainer.innerHTML = `
+                    <div class="iframe-container" id="sandboxIframeContainer">
+                        <iframe id="sandboxIframe" src="${data.sandbox_url}" onload="handleIframeLoad(this)" onerror="handleIframeError(this)"></iframe>
+                        <div class="iframe-error-message" style="display: none; padding: 20px; text-align: center; color: #666;">
+                            <p>无法在 iframe 中显示此内容</p>
+                            <button onclick="openInNewTab('${data.sandbox_url}')" class="btn btn-primary">在新标签页中打开</button>
+                        </div>
+                    </div>
+                `;
+            } else if (data.equipment_web_url && data.equipment_web_sdk_info) {
+                // 构造带参数的URL
+                const sdkInfoJson = encodeURIComponent(JSON.stringify(data.equipment_web_sdk_info));
+                const webUrl = `${data.equipment_web_url}?sdk_info=${sdkInfoJson}`;
+
+                previewContainer.innerHTML = `
+                    <div class="iframe-container" id="sandboxIframeContainer">
+                        <iframe id="sandboxIframe" src="${webUrl}" onload="handleIframeLoad(this)" onerror="handleIframeError(this)"></iframe>
+                        <div class="iframe-error-message" style="display: none; padding: 20px; text-align: center; color: #666;">
+                            <p>无法在 iframe 中显示此内容</p>
+                            <button onclick="openInNewTab('${webUrl}')" class="btn btn-primary">在新标签页中打开</button>
+                        </div>
+                    </div>
+                `;
+            } else if (data.equipment_screenshot_url) {
+                previewContainer.innerHTML = `
+                    <div class="screenshot-container">
+                        <img src="${data.equipment_screenshot_url}" alt="设备截图" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"300\" viewBox=\"0 0 400 300\"><rect width=\"400\" height=\"300\" fill=\"%23f8f9fa\"/><text x=\"50%\" y=\"50%\" font-family=\"Arial\" font-size=\"20\" fill=\"%236c757d\" text-anchor=\"middle\" dy=\".3em\">设备截图加载失败</text></svg>';">
+                        <p class="text-muted mt-2">设备截图</p>
+                    </div>
+                `;
+            } else {
+                // 默认显示
+                previewContainer.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-desktop fa-3x mb-3"></i>
+                        <h5>等待Sandbox启动</h5>
+                        <p class="mb-0">请在左侧输入任务以启动Computer Use Agent</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 进入/退出全屏
+        function togglePreviewFullscreen() {
+            const container = document.getElementById('sandboxIframeContainer');
+            if (!container) return;
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) container.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // 绑定全屏按钮与窗口变化
+        window.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('fullscreenToggleBtn');
+            if (btn) btn.addEventListener('click', togglePreviewFullscreen);
+            document.addEventListener('fullscreenchange', () => {
+                const icon = document.querySelector('#fullscreenToggleBtn i');
+                if (icon) {
+                    icon.classList.toggle('fa-compress', !!document.fullscreenElement);
+                    icon.classList.toggle('fa-expand', !document.fullscreenElement);
+                }
+            });
+        });
+
+        // 处理 iframe 加载成功
+        function handleIframeLoad(iframe) {
+            // 隐藏错误消息
+            const errorMessage = iframe.parentNode.querySelector('.iframe-error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
+            iframe.style.display = 'block';
+        }
+
+        // 处理 iframe 加载错误
+        function handleIframeError(iframe) {
+            // 显示错误消息并隐藏 iframe
+            iframe.style.display = 'none';
+            const errorMessage = iframe.parentNode.querySelector('.iframe-error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'block';
+            }
+        }
+
+
+        // 更新截图
+        function updateScreenshot(screenshotUrl) {
+            const previewContainer = document.getElementById('previewContainer');
+            if (previewContainer && screenshotUrl) {
+                previewContainer.innerHTML = `                    <div class="screenshot-container">
+                        <img src="${screenshotUrl}" alt="设备截图" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"300\" viewBox=\"0 0 400 300\"><rect width=\"400\" height=\"300\" fill=\"%23f8f9fa\"/><text x=\"50%\" y=\"50%\" font-family=\"Arial\" font-size=\"20\" fill=\"%236c757d\" text-anchor=\"middle\" dy=\".3em\">设备截图加载失败</text></svg>';">
+                        <p class="text-muted mt-2">设备截图</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 更新队列信息
+        function updateQueueInfo(queueInfo) {
+            const queuePosition = document.getElementById('queuePosition');
+            const totalWaiting = document.getElementById('totalWaiting');
+            const queueInfoContainer = document.getElementById('queueInfoContainer');
+
+            // 检查元素是否存在
+            if (queuePosition && totalWaiting && queueInfoContainer) {
+                queuePosition.textContent = queueInfo.queue_position || 0;
+                totalWaiting.textContent = queueInfo.total_waiting || 0;
+                queueInfoContainer.style.display = 'block';
+            }
+        }
+
+        // 更新切换按钮文本
+        function updateSwitchButton() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            const targetEnvText = document.getElementById('targetEnvText');
+
+            // 检查元素是否存在
+            if (targetEnvText) {
+                if (currentUserState.currentSandboxType === 'pc_wuyin') {
+                    targetEnvText.textContent = '手机';
+                } else {
+                    targetEnvText.textContent = '电脑';
+                }
+            }
+        }
+
+        // 添加消息到聊天界面
+        function addMessage(role, content, type = '') {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            currentUserState.messages.push({
+                role: role,
+                content: content,
+                type: type
+            });
+
+            renderMessages();
+        }
+
+        // 渲染消息
+        function renderMessages() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            const chatContainer = document.getElementById('chatContainer');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+
+            // 检查元素是否存在
+            if (!chatContainer) {
+                console.error('Chat container not found');
+                return;
+            }
+
+            // 如果有消息，隐藏欢迎信息
+            if (welcomeMessage) {
+                if (currentUserState.messages.length > 0) {
+                    welcomeMessage.style.display = 'none';
+                } else {
+                    welcomeMessage.style.display = 'block';
+                }
+            }
+
+            // 清空聊天容器
+            chatContainer.innerHTML = '';
+
+            // 添加所有消息
+            currentUserState.messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.role === 'user' ? 'user-message' : 'assistant-message'} ${msg.type === 'status' ? 'status-message' : ''} ${msg.stepKey ? 'step-message' : ''}`;
+
+                if (msg.role === 'user') {
+                    messageDiv.innerHTML = `
+                        <div><strong>👤 我</strong></div>
+                        <div>${msg.content}</div>
+                    `;
+                } else {
+                    // 处理Markdown格式
+                    const formattedContent = msg.content
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br>');
+
+                    messageDiv.innerHTML = `
+                        <div><strong>🤖 助手</strong></div>
+                        <div>${formattedContent}</div>
+                    `;
+                }
+
+                chatContainer.appendChild(messageDiv);
+            });
+
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 清空聊天
+        function clearChat() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            currentUserState.messages = [];
+            renderMessages();
+        }
+
+        // 重置任务状态 - 适配新的流式接口
+        function resetTaskState() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            updateCurrentUserState({
+                isTaskRunning: false,
+                isQueued: false,
+                processedMessages: new Set()
+            });
+
+            // 停止排队监控
+            stopQueueMonitoring();
+
+            // 停止等待倒计时
+            stopWaitingCountdown(currentUserState);
+
+            const taskInput = document.getElementById('taskInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const stopTaskBtn = document.getElementById('stopTaskBtn');
+            const queueInfoContainer = document.getElementById('queueInfoContainer');
+            const switchEnvironmentBtn = document.getElementById('switchEnvironmentBtn');
+
+            // 直接解锁输入和发送按钮
+            if (taskInput) taskInput.disabled = false;
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+            }
+            if (stopTaskBtn) {
+                stopTaskBtn.style.display = 'none';
+                stopTaskBtn.disabled = false;
+                stopTaskBtn.innerHTML = '<i class="fas fa-stop"></i> 停止任务';
+            }
+
+            // 任务结束后重新启用环境切换按钮
+            if (switchEnvironmentBtn && currentUserState.isActivated) {
+                switchEnvironmentBtn.disabled = false;
+                switchEnvironmentBtn.classList.remove('btn-disabled');
+            }
+
+            if (queueInfoContainer) {
+                queueInfoContainer.style.display = 'none';
+            }
+
+            console.log('任务状态已重置 (流式接口版本)');
+        }
+
+        // 启动心跳
+        function startHeartbeat() {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+            }
+
+            heartbeatInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${getBackendUrl()}/cua/heartbeat?user_id=${userId}&chat_id=${chatId}`, {
+                        method: 'GET'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+
+                        // 🔧 新增：检查会话失效状态
+                        if (result.status === 'chat_inactive' || result.error_code === 'CHAT_INACTIVE') {
+                            console.warn('⚠️ 当前会话已失效:', result.message);
+
+                            // 停止心跳
+                            stopHeartbeat();
+
+                            // 关闭右侧画面（设备预览）
+                            const previewContainer = document.getElementById('previewContainer');
+                            if (previewContainer) {
+                                // 重置为初始状态
+                                previewContainer.innerHTML = `
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-desktop fa-3x mb-3"></i>
+                                        <h5>等待Sandbox启动</h5>
+                                        <p class="mb-0">请在左侧输入任务以启动Computer Use Agent</p>
+                                    </div>
+                                `;
+                            }
+
+                            // 🔧 新增：重置左侧聊天界面
+                            const chatContainer = document.getElementById('chatContainer');
+                            if (chatContainer) {
+                                // 重置为初始欢迎消息
+                                chatContainer.innerHTML = `
+                                    <div class="text-center text-muted py-5" id="welcomeMessage">
+                                        <i class="fas fa-hand-wave fa-2x mb-3"></i>
+                                        <h5>欢迎使用Computer Use Agent！</h5>
+                                        <p class="mb-0">请在下方输入您想要执行的任务。</p>
+                                        <p class="mb-0">示例任务：use the web browser to get the current weather in Hangzhou via Bing Search</p>
+                                    </div>
+                                `;
+                            }
+
+                            // 🔧 新增：重置输入框和按钮状态
+                            const taskInput = document.getElementById('taskInput');
+                            const sendBtn = document.getElementById('sendBtn');
+                            if (taskInput) {
+                                taskInput.value = '';
+                                taskInput.disabled = true;
+                                taskInput.placeholder = '请先激活环境后再输入任务...';
+                            }
+                            if (sendBtn) {
+                                sendBtn.disabled = true;
+                                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+                            }
+
+                            // 重置激活按钮状态
+                            const activateBtn = document.getElementById('activateBtn');
+                            if (activateBtn) {
+                                activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+                                activateBtn.disabled = false;
+                                activateBtn.classList.remove('btn-disabled');
+                            }
+
+                            // 重置用户状态
+                            updateCurrentUserState({
+                                isActivated: false,
+                                isActivating: false,
+                                isTaskRunning: false,
+                                currentSandboxType: null,
+                                taskId: null
+                            });
+
+                            // 启用设备选择
+                            const deviceSelect = document.getElementById('deviceSelect');
+                            if (deviceSelect) {
+                                deviceSelect.classList.remove('device-select-disabled');
+                                deviceSelect.disabled = false;
+                            }
+
+                            // 停止倒计时
+                            stopCountdown();
+
+                            // 显示会话失效提示
+                            addMessage('assistant', `⚠️ 会话已失效: ${result.message}`, 'status');
+                            if (result.active_chat_id) {
+                                addMessage('assistant', `🔄 当前活跃会话: ${result.active_chat_id}`, 'status');
+                            }
+
+                            return; // 停止继续处理心跳
+                        }
+
+                        // 🔧 正常心跳响应处理
+                        if (result.success && result.is_active_chat) {
+                            // 会话正常，静默处理
+                            console.log('💓 心跳正常');
+                        } else {
+                            console.warn('⚠️ 心跳异常:', result);
+                        }
+                    } else {
+                        console.error('❌ 心跳请求失败:', response.status, response.statusText);
+                    }
+                } catch (error) {
+                    console.error('❌ 心跳发送失败:', error);
+                }
+            }, 5000); // 每5秒发送一次心跳
+        }
+
+        // 停止心跳
+        function stopHeartbeat() {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+        }
+
+        // 🔧 新增：停止倒计时
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            // 隐藏倒计时容器
+            const countdownContainer = document.getElementById('countdownContainer');
+            if (countdownContainer) {
+                countdownContainer.style.display = 'none';
+            }
+        }
+
+        // 启动倒计时
+        function startCountdown() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            updateCurrentUserState({ countdownStartTime: Date.now() });
+            const countdownContainer = document.getElementById('countdownContainer');
+
+            if (countdownContainer) {
+                countdownContainer.style.display = 'block';
+            }
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            countdownInterval = setInterval(() => {
+                const currentUserState = getCurrentUserState();
+                if (!currentUserState || !currentUserState.countdownStartTime) {
+                    clearInterval(countdownInterval);
+                    return;
+                }
+
+                const elapsed = (Date.now() - currentUserState.countdownStartTime) / 1000;
+                const remaining = Math.max(0, 60 * 60 - elapsed);
+
+                const minutes = Math.floor(remaining / 60);
+                const seconds = Math.floor(remaining % 60);
+
+                const countdownText = document.getElementById('countdownText');
+                if (countdownText) {
+                    countdownText.textContent =
+                        remaining <= 0 ? '⏳ 时间已到!' : `⏳ 剩余时间: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                // 根据剩余时间改变背景色
+                if (countdownContainer) {
+                    if (remaining <= 0) {
+                        countdownContainer.style.backgroundColor = '#dc3545'; // 红色
+                    } else if (remaining < 5 * 60) {
+                        countdownContainer.style.backgroundColor = '#fd7e14'; // 橙色
+                    } else {
+                        countdownContainer.style.backgroundColor = '#dc3545'; // 红色
+                    }
+                }
+
+                // 倒计时结束时自动停止任务
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    handleCountdownEnd();
+                }
+            }, 1000);
+        }
+
+        // 添加文字-cjj
+        const phonePresets = ['帮我在携程搜一下今天济南喜来登酒店的价格',
+            '帮我在大众点评搜一下趵突泉附近的美食，并按照距离排序',
+            '帮我在小红书搜一下济南旅游攻略，按照收藏数排序，并收藏第一篇笔记',
+            '帮我在抖音搜一下济南游玩攻略相关的视频，并播放收藏',
+            '帮我在通义APP中询问济南的两天旅游攻略'];
+        const pcPresets    = ['在edge浏览器中搜索阿里巴巴的股价，然后在WPS中新建一个表格，在第一列填入公司名，在第二列填入股价',
+            '新建一个空白PPT，然后在第一张幻灯片中插入一段艺术字形式的文本，内容为阿里巴巴',
+            '进入bilibili，查看雷军的视频，然后点赞第一个视频',
+            "帮我在 WPS Office 文档中写一段阿里巴巴的简介，并把字体颜色改为蓝色",
+            "将系统颜色设置为浅色模式"];
+
+        /* 2. 渲染按钮 */
+        function renderQuickCommands () {
+            const container = document.getElementById('quickCmdContainer');
+            if (!container) return;
+
+            // 根据当前设备选择切换模板
+            const device = document.getElementById('deviceSelect').value;
+            const presets = device.includes('phone') ? phonePresets : pcPresets;
+
+            // 清空旧按钮
+            container.innerHTML = '';
+
+            // 逐个创建
+            presets.forEach(txt => {
+                const span = document.createElement('span');
+                span.className = 'quick-cmd-btn';
+                span.textContent = txt;
+
+                // 点击后把文本写入输入框（可选择 append 或覆盖）
+                span.onclick = () => {
+                    const input = document.getElementById('taskInput');
+                    input.value = txt;      // 如果想在末尾追加可改成：input.value += txt;
+                    input.focus();
+                };
+
+                container.appendChild(span);
+            });
+        }
+
+        /* 3. 初始化时与设备切换时都调用一次 */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuickCommands();          // 首次渲染
+        });
+        // 添加文字结束-cjj
+
+
+
+        // 处理倒计时结束
+        async function handleCountdownEnd() {
+            const currentUserState = getCurrentUserState();
+            if (!currentUserState) return;
+
+            // 如果任务仍在运行，先停止任务
+            if (currentUserState.isTaskRunning) {
+                try {
+                    await fetch(`${getBackendUrl()}/cua/stop?user_id=${userId}&chat_id=${chatId}`, {
+                        method: 'GET'
+                    });
+                } catch (error) {
+                    console.error('停止任务失败:', error);
+                }
+            }
+
+            // 调用后端释放资源接口
+            try {
+                await fetch(`${getBackendUrl()}/cua/release`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        chat_id: chatId
+                    })
+                });
+            } catch (error) {
+                console.error('释放资源失败:', error);
+            }
+
+            // 重置状态
+            const countdownContainer = document.getElementById('countdownContainer');
+            if (countdownContainer) {
+                countdownContainer.style.display = 'none';
+            }
+
+            stopHeartbeat();
+            stopSSEMonitoring();
+            resetTaskState();
+            updateCurrentUserState({ isActivated: false });
+
+            const switchEnvironmentContainer = document.getElementById('switchEnvironmentContainer');
+            if (switchEnvironmentContainer) {
+                switchEnvironmentContainer.style.display = 'none';
+            }
+
+            const taskInput = document.getElementById('taskInput');
+            const sendBtn = document.getElementById('sendBtn');
+            if (taskInput) {
+                taskInput.disabled = true;
+            }
+            if (sendBtn) {
+                sendBtn.disabled = true;
+            }
+
+            // 重新启用设备选择
+            const deviceSelect = document.getElementById('deviceSelect');
+            if (deviceSelect) {
+                deviceSelect.classList.remove('device-select-disabled');
+                deviceSelect.disabled = false;
+            }
+
+            // 重置预览区域
+            const previewContainer = document.getElementById('previewContainer');
+            if (previewContainer) {
+                previewContainer.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-desktop fa-3x mb-3"></i>
+                        <h5>等待Sandbox启动</h5>
+                        <p class="mb-0">请在左侧输入任务以启动Computer Use Agent</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 获取后端URL
+        function getBackendUrl() {
+            // 检查是否在 ModelScope 环境中
+            const currentOrigin = window.location.origin;
+            console.log("Current origin:", currentOrigin); // 调试信息
+
+            // 在 ModelScope 上，所有请求都通过 7860 端口，后端请求通过 /backend/ 路径
+            if (currentOrigin.includes('pai-eas.aliyuncs.com') ||
+                currentOrigin.includes('modelscope') ||
+                currentOrigin.includes(':7860') ||
+                // 为魔搭部署环境添加判断
+                (!currentOrigin.includes('localhost') && !currentOrigin.includes('127.0.0.1'))) {
+                return currentOrigin + '/backend';
+            }
+
+            // 本地开发环境
+            return currentOrigin.replace(':8001', ':8002');
+<!--            return "https://mcp-commtnysdmv-xcdaadoqnh.cn-hangzhou.fcapp.run"-->
+        }
+
+        // 获取基础URL（静态资源URL）
+        function getBaseUrl() {
+            return window.location.origin + '/';
+        }
+
+        // 显示人类干预模态框
+        function showHumanInterventionNotice(stepData) {
+            // 在聊天框下方显示提醒消息
+            const noticeHtml = `                <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert" id="humanInterventionNotice">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <i class="fas fa-exclamation-triangle fa-lg"></i>
+                                <strong class="ms-2">需要人工干预</strong>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div class="mt-3">
+                            <p class="mb-2">请完成以下操作:</p>
+                            <p class="mb-3 bg-light p-2 rounded">${stepData.action_executed || '请完成相关操作'}</p>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-primary" id="humanInterventionContinueBtn">
+                                    <i class="fas fa-play"></i> 继续任务
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 移除已存在的提醒
+            const existingNotice = document.getElementById('humanInterventionNotice');
+            if (existingNotice) {
+                existingNotice.remove();
+            }
+
+            // 插入到聊天框下方
+            const chatContainer = document.getElementById('chatContainer');
+            const inputGroup = chatContainer.nextElementSibling;
+            if (inputGroup && inputGroup.classList.contains('input-group')) {
+                inputGroup.insertAdjacentHTML('afterend', noticeHtml);
+
+                // 绑定继续按钮事件
+                document.getElementById('humanInterventionContinueBtn').onclick = function() {
+                    continueTask();
+                    // 移除提醒
+                    const notice = document.getElementById('humanInterventionNotice');
+                    if (notice) {
+                        notice.remove();
+                    }
+                };
+            }
+        }
+
+        // 继续任务
+        async function continueTask() {
+            try {
+                const response = await fetch(`${getBackendUrl()}/cua/interrupt_wait?user_id=${userId}&chat_id=${chatId}`, {
+                    method: 'GET'
+                });
+
+                if (response.status === 200) {
+                    addMessage('assistant', '✅ 已通知系统继续执行任务', 'status');
+                } else if (response.status === 401 || response.status === 403) {
+                    const errorData = await response.json();
+                    showErrorMessage(`权限错误: ${errorData.detail || '登录已过期，请重新登录'}`);
+                    addMessage('assistant', `❌ 权限错误: ${errorData.detail || '登录已过期，请重新登录'}`, 'status');
+                } else {
+                    const errorText = await response.text();
+                    showErrorMessage(`继续任务失败: HTTP ${response.status}`);
+                    addMessage('assistant', `❌ 继续任务失败: HTTP ${response.status}\n${errorText}`, 'status');
+                }
+            } catch (error) {
+                showErrorMessage(`继续任务错误: ${error.message}`);
+                addMessage('assistant', `❌ 继续任务错误: ${error.message}`, 'status');
+            }
+        }
+    </script>
+</body>
+</html>

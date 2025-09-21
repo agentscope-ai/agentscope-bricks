@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Wuying Web SDK Demo</title>
+<script defer="defer" id="wuying-sdk-script"></script>
+</head>
+<style type="text/css">
+
+  html, body {
+     margin: 0;
+     padding: 0;
+     height: 100%;
+  }
+
+  #loginParams, #logout {
+     margin: 0;
+     padding: 0;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  #loginOperaDiv {
+    display: none;
+  }
+
+  #loginParams {
+    display: none;
+  }
+
+<!--  #fieldset {-->
+<!--    border-width: 1px;-->
+<!--  }-->
+
+  #sessionParams {
+    display: none;
+  }
+
+  #manualParameter {
+    display: none;
+  }
+
+  #manualParameter_ {
+    display: none;
+  }
+
+
+  #desktop-container {
+  width: auto;
+  max-width: none;
+  aspect-ratio: 9 / 16;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  position: absolute;
+  z-index: 9;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+  #sessionIframe {
+      height: 100%;
+      width: 100%;
+      overflow-y: auto;
+      box-sizing: border-box;
+  }
+
+  #login-button {
+    cursor: pointer;
+  }
+
+  #logout {
+    display: none;
+  }
+
+  #appsInfos {
+    display: none;
+  }
+
+  #desktopInfo {
+    display: none;
+  }
+
+  #guestMsg {
+    display: none;
+  }
+
+  .password-mask {
+    -webkit-text-security: disc;
+    -moz-webkit-text-security: disc;
+    -moz-text-security: disc;
+  }
+</style>
+
+<script src="https://g.alicdn.com/code/lib/axios/1.7.7/axios.min.js"></script>
+
+<script type="text/javascript">
+  window.addEventListener('DOMContentLoaded', function () {
+      initializeSDKDependentFeatures();
+    });
+
+    // 将依赖 SDK 的初始化代码移到这个函数中
+    function initializeSDKDependentFeatures() {
+        // 获取 URL 查询参数中的 sdk_info
+        function getURLParameter(name) {
+            return decodeURIComponent((new RegExp('[?|&]' + name + '=([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20')) || null;
+        }
+
+        const sdkInfoJson = getURLParameter('sdk_info');
+        if (sdkInfoJson) {
+            try {
+                const equipmentWebSDKInfo = JSON.parse(sdkInfoJson);
+                console.log("Received SDK Info:", equipmentWebSDKInfo);
+
+                // 示例操作
+                enableManualParameter()
+                document.getElementById('ticket').value = equipmentWebSDKInfo.ticket;
+                document.getElementById('appId_manual').value = equipmentWebSDKInfo.person_app_id || '';
+                document.getElementById('appInstanceId_manual').value = equipmentWebSDKInfo.app_instance_id || '';
+
+                document.getElementById('sessionId').value = '123456'
+                var sessionId = document.getElementById('sessionId').value;
+
+                var script = document.getElementById('wuying-sdk-script');
+                static_url = equipmentWebSDKInfo.static_url || '';
+                script.src = static_url + '/WuyingWebSDK.js';
+                console.log('Loading SDK from:', script.src);
+
+                // 监听脚本加载完成事件
+                script.onload = function() {
+                    console.log('Wuying SDK 加载完成');
+                    if (typeof Wuying !== 'undefined' && typeof Wuying.WebSDK !== 'undefined') {
+                        console.log('Wuying SDK 已就绪:', Wuying);
+                        // 在这里可以初始化需要使用 SDK 的功能
+
+                        // 触发连接
+                        onConnect('manual');
+                    } else {
+                        console.error('Wuying SDK 加载完成但对象未定义');
+                    }
+                };
+
+                script.onerror = function() {
+                    console.error('Wuying SDK 加载失败');
+                };
+
+
+            } catch (e) {
+                console.error("解析 sdk_info 失败", e);
+            }
+        } else {
+            console.warn("未找到注入的 SDK 数据");
+        }
+    }
+    // 获取 URL 查询参数中的 sdk_info
+  function getURLParameter(name) {
+      return decodeURIComponent((new RegExp('[?|&]' + name + '=([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20')) || null;
+  }
+
+  var session = '123456788';
+  // demo里用组织id登陆，regionId先写死上海
+  var regionId = 'cn-shanghai';
+
+  function paramStringify(obj) {
+  return Object.keys(obj)
+    .filter((k) => obj[k] || +obj[k] === 0)
+    .map((k) => {
+      let value = obj[k];
+      typeof value === "object"
+        ? (value = encodeURIComponent(JSON.stringify(value)))
+        : (value = encodeURIComponent(value));
+      return `${encodeURIComponent(k)}=${value}`;
+    })
+    .join("&");
+}
+
+  function getFileUploadConfig () {
+    var type = 'PDS'
+    var driveId = document.getElementById('driveId').value;
+    var uploadPath = document.getElementById('uploadPath').value;
+
+    var options = document.querySelector('#uploadType').options;
+
+    var uploadType = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        uploadType.push(options[i].value)
+      }
+    }
+    console.log(uploadType, 'uploadType')
+    return {
+      type: "PDS",
+      driveId: driveId,
+      uploadPath: uploadPath,
+      uploadType: uploadType,
+      onTransferCallback: (type, data) => {
+        console.log(type, data);
+        // if (progress >= 80) {
+        //   cancelFn();
+        // }
+      }
+
+    }
+  }
+  function onConnect(name, isHorizontal = false) {
+    console.log('onConnect', name);
+
+    var loginToken = document.getElementById('loginToken').value;
+    var sessionId = document.getElementById('sessionId').value;
+    var authCode = document.getElementById('authCode').value;
+    var appName = 'Title';
+    if (document.getElementById('appName_' + name) && document.getElementById('appName_' + name).innerText) {
+      appName = document.getElementById('appName_' + name).innerText.split('|')[0];
+    }
+    var ticket = document.getElementById('ticket').value;
+    var appId = document.getElementById('appId_' + name).value;
+    var appInstanceId = document.getElementById('appInstanceId_' + name).value;
+    var appVersion = '2020-10-02';
+    var productType = 'ecd';
+    var resourceId = '';
+    var connectionProperties = '';
+    var openType = document.querySelector('input[name="openType"]:checked').value;
+    var resourceType = document.querySelector('input[name="resourceType"]:checked').value;
+    var isOverseas = document.getElementById('overseas').checked;
+    var graphicConfigFluent = document.getElementById('graphicConfigFluent').checked;
+    var connConfig = document.getElementById('connConfig').value;
+    var hideProgressDialog = document.getElementById('hideProgressDialog').checked;
+    var setCloudPhoneLoading = document.getElementById('setCloudPhoneLoading').checked;
+
+    console.log(loginToken, sessionId, openType, resourceType, appName);
+
+    var iframeId = 'sessionIframe';
+    var desktopContainer = document.getElementById('desktop-container');
+    var originIframeDom = document.getElementById('sessionIframe');
+    if (openType === 'inline-multi') {
+      openType = 'inline';
+      iframeId = iframeId + name + 'app';
+      if(originIframeDom) {
+        desktopContainer.removeChild(originIframeDom);
+      }
+      var singleIframeDom = document.getElementById(iframeId);
+      if (!singleIframeDom) {
+        var iframeDom = document.createElement('iframe');
+        iframeDom.id = iframeId;
+        desktopContainer.appendChild(iframeDom);
+      }
+    }  else if (!originIframeDom) {
+      desktopContainer.innerHTML = ''
+      var iframeDom = document.createElement('iframe');
+      iframeDom.id = iframeId;
+      desktopContainer.appendChild(iframeDom);
+    }
+
+
+    var userInfo = {
+      loginToken: loginToken,
+      sessionId: sessionId,
+      authCode: authCode,
+      ticket:ticket,
+    };
+
+    var appInfo = {
+      appId: appId,
+      appVersion: appVersion,
+      appInstanceId: appInstanceId,
+      loginRegionId: regionId,
+      appName: appName,
+      productType: productType,
+      resourceId: resourceId,
+      connectionProperties: connectionProperties,
+      connConfig: JSON.parse(connConfig || '{}'),
+      osType: setCloudPhoneLoading ? 'Android' : undefined
+    };
+    var fileTransferConfig
+    var sessionParam = {
+      openType: openType,
+      iframeId: iframeId,
+      resourceType: resourceType,
+      connectType: 'app',
+      userInfo: userInfo,
+      appInfo: appInfo,
+      regionId,
+      isOverseas,
+      uiConfig: {
+        toolbar: {
+          visible: false,
+          // // 管理菜单
+          // adminMenu: true,
+          // // 偏好设置菜单
+          // perferenceSettingTab: true,
+          // // 显示菜单
+          // displayTab: true,
+          // // 画面菜单
+          // graphicTab: true,
+          // // 鼠标操控菜单
+          // mouseControlTab: true,
+          // // 上传菜单
+          // uploadMenu: true,
+          // // 下载菜单
+          // downloadMenu: true,
+          // statefulInspectionMenu: false
+        },
+        rotateDegree: isHorizontal ? 90 : 0,
+        hideProgressDialog,
+        vconsoleVisible: true,
+      },
+      dataChannelConfig: [{
+        dataChannelName: 'wy_vdagent_default_dc',
+      }]
+    };
+
+    if (graphicConfigFluent) {
+      sessionParam.uiConfig.graphicConfig = 'fluent';
+    }
+
+
+    var wuyingSdk = Wuying.WebSDK;
+    session = wuyingSdk.createSession('appstream', sessionParam);
+    console.log(session);
+
+
+
+    session.addHandle('getConnectionTicketInfo', (data) => {
+      console.log(data);
+    });
+
+    session.addHandle('onConnected', (data) => {
+      console.log('connected', data);
+
+          // 监听数据通道消息
+      session.addDataChannelListener('wy_vdagent_default_dc', 'data', data => console.log('data from wy_vdagent_default_dc', data));
+
+      // 发送数据通道消息消息
+      // 入参： 通道名称  消息内容
+      setTimeout(() => {
+        session.sendDataChannelMessage('wy_vdagent_default_dc', new Uint8Array([1, 2, 3, 4]));
+      }, 5000)
+    });
+
+    session.addHandle('onDisConnected', (data) => {
+      console.log('disconnect', data);
+    });
+
+    session.addHandle('onRuntimeMsg', (data) => {
+      document.getElementById('GuestMsgContext').value = JSON.stringify(data);
+    });
+
+
+    session.start();
+  }
+
+  function startPingDiagnosis(name) {
+
+
+    var loginToken = document.getElementById('loginToken').value;
+    var sessionId = document.getElementById('sessionId').value;
+
+    var appId = document.getElementById('appId_' + name).value;
+    var appVersion = document.getElementById('appVersion_' + name).value;
+    var openType = document.querySelector('input[name="openType"]:checked').value;
+    var resourceType = document.querySelector('input[name="resourceType"]:checked').value;
+    var productType = document.getElementById('productType_'+ name).value;
+    var resourceId = document.getElementById('resourceId_' + name).value;
+    var connectionProperties = document.getElementById('connectionProperties_' + name).value;
+
+    var iframeId = 'sessionIframe';
+
+
+    var userInfo = {
+      loginToken: loginToken,
+      sessionId: sessionId,
+    };
+
+    var appInfo = {
+      appId: appId,
+      appVersion: appVersion,
+      loginRegionId: regionId,
+      productType: productType,
+      resourceId: resourceId,
+      connectionProperties: connectionProperties,
+    };
+    var sessionParam = {
+      openType: openType,
+      iframeId: iframeId,
+      resourceType: resourceType,
+      connectType: 'app',
+      userInfo: userInfo,
+      appInfo: appInfo,
+      regionId,
+    };
+
+
+    var wuyingSdk = Wuying.WebSDK;
+    session = wuyingSdk.createSession('appstream', sessionParam);
+    console.log(session);
+
+    session.startPingDiagnosis({callback: console.log})
+  }
+
+  function onDesktopConnect(item, regionId, idx) {
+    // 获取打开设置
+    var loginToken = document.getElementById('loginToken').value;
+    var sessionId = document.getElementById('sessionId').value;
+    var authCode = document.getElementById('authCode').value;
+    var ticket = document.getElementById('ticket').value;
+    var openType = document.querySelector('input[name="openType"]:checked').value;
+    var resourceType = document.querySelector('input[name="resourceType"]:checked').value;
+    var isOverseas = document.getElementById('overseas').checked;
+    var graphicConfigFluent = document.getElementById('graphicConfigFluent').checked;
+    var connConfig = document.getElementById('connConfig').value;
+    var hideProgressDialog = document.getElementById('hideProgressDialog').checked;
+    var iframeId = 'sessionIframe';
+    var desktopContainer = document.getElementById('desktop-container');
+    var originIframeDom = document.getElementById('sessionIframe');
+    if (openType === 'inline-multi') {
+      openType = 'inline';
+      iframeId = iframeId + idx + 'desktop';
+      if(originIframeDom) {
+        desktopContainer.removeChild(originIframeDom);
+      }
+      var singleIframeDom = document.getElementById(iframeId);
+      if (!singleIframeDom) {
+        var iframeDom = document.createElement('iframe');
+        iframeDom.id = iframeId;
+        desktopContainer.appendChild(iframeDom);
+      }
+    }  else if (!originIframeDom) {
+      desktopContainer.innerHTML = ''
+      var iframeDom = document.createElement('iframe');
+      iframeDom.id = iframeId;
+      desktopContainer.appendChild(iframeDom);
+    }
+
+    var userInfo = {
+      loginToken: loginToken,
+      sessionId: sessionId,
+    };
+    var desktopInfo = {
+      desktopId: item.desktopId,
+      realDesktopId: item.realDesktopId,
+      desktopName: item.desktopName,
+      loginRegionId: regionId,
+      chargeType: item.ChargeType,
+      creationTime: item.CreationTime,
+      expiredTime: item.ExpiredTime,
+      osType: item.osType,
+      connConfig: JSON.parse(connConfig || '{}'),
+    };
+
+    var sessionParam = {
+      openType: openType,
+      iframeId: iframeId,
+      resourceType: resourceType,
+      connectType: 'desktop',
+      userInfo: userInfo,
+      desktopInfo: desktopInfo,
+      regionId,
+      // logDisabled: true,
+      isOverseas,
+      uiConfig: {
+        hideProgressDialog,
+        vconsoleVisible: true,
+        toolbar: {
+          // visible: false,
+          // 管理菜单
+          adminMenu: false,
+          // 偏好设置菜单
+          perferenceSettingTab: true,
+          // 显示菜单
+          displayTab: true,
+          // 画面菜单
+          graphicTab: true,
+          // 鼠标操控菜单
+          mouseControlTab: true,
+          // 上传菜单
+          uploadMenu: true,
+          // 下载菜单
+          downloadMenu: true,
+          statefulInspectionMenu: true,
+          shareSynergyMenu: false,
+          synergyMenu: false,
+          adminSynergyMenu: false,
+          isShowDisconnect: false,
+          winTaskManagerMenu: false
+        }
+      },
+      // uiConfig: {
+      //   toolbar: {
+      //     visible: false,
+      //     // // 管理菜单
+      //     // adminMenu: true,
+      //     // // 偏好设置菜单
+      //     // perferenceSettingTab: true,
+      //     // // 显示菜单
+      //     // displayTab: true,
+      //     // // 画面菜单
+      //     // graphicTab: true,
+      //     // // 鼠标操控菜单
+      //     // mouseControlTab: true,
+      //     // // 上传菜单
+      //     // uploadMenu: true,
+      //     // // 下载菜单
+      //     // downloadMenu: true,
+      //     // statefulInspectionMenu: false
+      //   },
+    };
+
+    if (graphicConfigFluent) {
+      sessionParam.uiConfig.graphicConfig = 'fluent';
+    }
+
+    var wuyingSdk = Wuying.WebSDK;
+    session = wuyingSdk.createSession('desktop', sessionParam);
+    console.log(session);
+
+    session.addHandle('onErrorTranslations', (data) => {
+      console.log(data);
+    });
+    session.addHandle('getConnectionTicketInfo', (data) => {
+      console.log(data);
+    });
+
+    session.addHandle('progressEvent', (data) => {
+      console.log('progressEvent', data);
+    });
+
+    session.addHandle('onConnected', (data) => {
+      console.log('connected', data);
+    });
+
+    session.addHandle('onDisConnected', (data) => {
+      console.log('disconnect', data);
+    });
+
+    session.addHandle('onRuntimeMsg', (data) => {
+      document.getElementById('GuestMsgContext').value = JSON.stringify(data);
+    });
+
+    session.start();
+  }
+
+  function onLogin(e) {
+    var loginId = document.getElementById('loginId').value;
+    var username = document.getElementById('username').value;
+    var password = document.getElementById('password').value;
+    var endpoint = 'https://appstream-center.cn-shanghai.aliyuncs.com/';
+    var data = {
+      Format: 'JSON',
+      product: 'appstream-login',
+      Version: '2021-02-20',
+      Action: 'GetLoginToken',
+      // RegionId:regionId,
+      ClientId: '3713a1f1-1272-48be-bb72-6eab72f3bc72',
+      Uuid: '3713a1f1-1272-48be-bb72-6eab72f3bc72',
+      LoginIdentifier: loginId,
+      EndUserId: username,
+      Timestamp: new Date().toISOString(),
+      CurrentStage: 'ADPassword',
+      Password: password
+    }
+
+
+    axios.post(endpoint, paramStringify(data)).then(
+      ({data}) => {
+        console.log('success', data);
+        const {LoginToken, SessionId} = data;
+        document.getElementById('loginParams').style.display = 'none';
+        document.getElementById('logout').style.display = 'block';
+        document.getElementById('appsInfos').style.display = 'block';
+        document.getElementById('desktopInfo').style.display = 'block';
+        document.getElementById('login-user').innerHTML = '账号: ' + username + ' 已登录  ';
+        document.getElementById('login-session-info').style.display = 'none';
+        document.getElementById('manualParameter').checked = false;
+
+        document.getElementById('loginToken').value = LoginToken;
+        document.getElementById('sessionId').value = SessionId;
+      }
+    ).catch(e => {
+      console.log('error', e);
+    })
+  }
+
+  function onLogout(e) {
+    document.getElementById('loginParams').style.display = 'block';
+    document.getElementById('logout').style.display = 'none';
+    document.getElementById('appsInfos').style.display = 'none';
+    document.getElementById('desktopInfo').style.display = 'none';
+    onClearAppList();
+    onClearDesktopList();
+  }
+
+  function onClear(e) {
+    document.getElementById('loginToken').value = '';
+    document.getElementById('sessionId').value = '';
+    document.getElementById('authCode').value = '';
+    document.getElementById('ticket').value = '';
+  }
+
+  function onGetAppList(e) {
+    var loginToken = document.getElementById('loginToken').value;
+    var sessionId = document.getElementById('sessionId').value;
+    var data = {
+      Format: "JSON",
+      product: 'ecd',
+      Version: '2020-10-02',
+      Action: 'DescribeUserResources',
+      ClientId: '3713a1f1-1272-48be-bb72-6eab72f3bc72',
+      Timestamp: new Date().toISOString(),
+      LoginToken: loginToken,
+      SessionId: sessionId,
+      ["ResourceTypes.1"]: "App",
+      ProductType: 'ecd',
+    }
+
+    axios.post("https://ecd.cn-shanghai.aliyuncs.com/DescribeUserResources", paramStringify(data)).then(
+      ({data}) => {
+        console.log('success', data);
+        onClearAppList();
+        data.Resources.forEach((v, idx) => {
+          console.log(v);
+          var appLists = v;
+          var appId = appLists.ResourceId;
+          var appVersion = appLists.Version;
+          var appInstanceId = appLists.ResourceId;
+          var appName = appLists.ResourceName;
+          var productType = appLists.ProductType;
+          var resourceId = appLists.ResourceId;
+          var connectionProperties = appLists.ConnectionProperties;
+          var insertDomString = '<p id="appName_' + idx + '">' + appName + ' \n' +
+            '<label for="appId_' + idx + '">| appId:</label>\n' +
+            '<input id="appId_' + idx + '" name="appId" value="' + appId + '"/>\n' +
+            '<label for="appVersion_' + idx + '">appVersion:</label>\n' +
+            '<label for="appInstanceId_' + idx + '">appInstanceId:</label>\n' +
+            '<input id="appVersion_' + idx + '" name="appVersion" value="' + appVersion + '"/>\n' +
+                  '<label for="productType_' + idx + '">productType:</label>\n' +
+                  '<input id="productType_' + idx + '" name="productType" value="' + productType + '"/>\n' +
+                  '<label for="resourceId_' + idx + '">resourceId:</label>\n' +
+                  '<input id="resourceId_' + idx + '" name="resourceId" value="' + resourceId + '"/>\n' +
+                  '<label for="connectionProperties_' + idx + '">connectionProperties:</label>\n' +
+                  '<input id="connectionProperties_' + idx + '" name="connectionProperties" value="' + connectionProperties + '"/>\n' +
+            '<input type="submit" name="connect-button" value="连接" onclick="onConnect(' + idx + ')" />' +
+            '<input type="submit" name="connect-button" value="横屏连接" onclick="onConnect(' + idx + ', '+ true +')" />' +
+            '<input type="submit" name="connect-button" value="检测网络状况" onclick="startPingDiagnosis(' + idx + ')" />' +
+            '</p>';
+
+          var tempDiv = document.createElement('div');
+          tempDiv.innerHTML = insertDomString;
+          var insertDom = tempDiv.firstChild;
+
+          document.querySelector('#applist').append(insertDom);
+        });
+      }
+    ).catch(e => {
+      console.log('error', e);
+    })
+  }
+  function onGetDesktopList(e) {
+    // var workspace = document.getElementById('workspace').value;
+    // var regionId = workspace.substr(0, workspace.indexOf('+'));
+    var loginToken = document.getElementById('loginToken').value;
+    var sessionId = document.getElementById('sessionId').value;
+    var data = {
+      Format: "JSON",
+      product: 'ecd',
+      Version: '2020-10-02',
+      Action: 'DescribeUserResources',
+      ClientId: '3713a1f1-1272-48be-bb72-6eab72f3bc72',
+      Timestamp: new Date().toISOString(),
+      LoginToken: loginToken,
+      SessionId: sessionId,
+      ["ResourceTypes.1"]: "Desktop",
+      ProductType: 'ecd',
+    }
+
+    axios.post("https://ecd.cn-shanghai.aliyuncs.com/DescribeUserResources", paramStringify(data)).then(
+      ({data}) => {
+        onClearDesktopList();
+        console.log('success', data)
+        data.Resources.forEach((v, idx) => {
+          var desktopItem = v;
+          var desktopId = desktopItem.ResourceId;
+          var desktopName = desktopItem.ResourceName;
+          var realDesktopId = desktopItem.RealDesktopId;
+          var desktopRegionId = desktopItem.RegionId;
+          var protocolType = desktopItem.ProtocolType;
+
+          var insertDomString = '<p id="desktopName_' + idx + '">' + desktopName + ' \n' +
+            '<label for="desktopId_' + idx + '">| desktopId:</label>\n' +
+            '<label id="desktopId_' + idx + '" name="desktopId">' + desktopId + '</label>\n' +
+            '</p>';
+
+          var tempDiv = document.createElement('div');
+          tempDiv.innerHTML = insertDomString;
+          var insertDom = tempDiv.firstChild;
+
+          var submit = document.createElement('button');
+          submit.innerHTML = '连接';
+          // 需要登陆的regionId
+          submit.onclick = (function () { onDesktopConnect({
+            desktopId,
+            realDesktopId,
+            desktopName,
+            protocolType,
+            ChargeType: desktopItem.ChargeType,
+            CreationTime: desktopItem.CreationTime,
+            ExpiredTime: desktopItem.ExpiredTime,
+            osType: desktopItem.OsType
+          }, desktopRegionId, idx) });
+
+          insertDom.append(submit);
+          var desktopListDom = document.querySelector('#desktoplist');
+          desktopListDom.append(insertDom);
+        });
+      }
+    ).catch(e => {
+      console.log('error', e);
+    })
+  }
+
+  function onClearAppList(e) {
+    document.querySelector('#applist').innerHTML = '';
+  }
+
+  function onClearDesktopList(e) {
+    document.querySelector('#desktoplist').innerHTML = '';
+  }
+
+  function onSendMsg() {
+    var msg = document.getElementById('sendMsgTypeData').value;
+    var appId = document.getElementById('sendMsgAppId').value;
+
+    if (session) {
+      console.log('send msg', msg, appId);
+      session.sendRuntimeMsg(msg, appId);
+    }
+
+  }
+
+  function onEnableMsgChannel() {
+    var enableMsgChannel = document.getElementById('msgChannel').checked;
+    var display = enableMsgChannel ? 'block' : 'none';
+    document.querySelector('#guestMsg').style.display = display;
+  }
+
+  function enableManualParameter () {
+    var enableMsgChannel = document.getElementById('manualParameter').checked;
+    var display = enableMsgChannel ? 'block' : 'none';
+    document.querySelector('#login-session-info').style.display = display;
+  }
+  function enableManualParameter_ () {
+    var enableMsgChannel = document.getElementById('manualParameter_').checked;
+    var display = enableMsgChannel ? 'block' : 'none';
+    document.querySelector('#sessionParams').style.display = display;
+  }
+  var reset = false;
+  function onTest() {
+    var uiConfig = {
+      rotateDegree: reset ? 90 : 0,
+      vconsoleVisible: true,
+      debugPanelVisiable: true,
+    };
+    reset = !reset;
+    session.setUiParams(uiConfig);
+  }
+  var resetVisible = false
+  function onHideBall() {
+    var uiConfig = {
+      toolbar: {
+        visible: !resetVisible,
+      }
+    };
+    resetVisible = !resetVisible;
+    session.setUiParams(uiConfig);
+  }
+
+
+  function init() {
+    var x = document.getElementById('password');
+    var style = window.getComputedStyle(x);
+    if (style.webkitTextSecurity) {
+    } else {
+      x.setAttribute("type", "password");
+    }
+  }
+
+  function handleDownloadFile() {
+    if (session) {
+      session.downloadFile();
+    }
+  }
+
+  function handleDownloadFileAction() {
+    if (session) {
+      session.downloadFileAction(true);
+    }
+
+  }
+
+  function handleUploadFile() {
+    if (session) {
+      var file = new File(["foo"], "foo.txt");
+      session.uploadFile(file, true);
+    }
+  }
+
+  function handleUploadFileAction(e) {
+    const files = Array.from(e.target.files);
+    console.log('选中上传的文件： ', files);
+    if (session) {
+      session.uploadFileAction(files, true);
+    }
+  }
+
+  function getFileTransformInfo() {
+    if(session){
+      // 监听文件列表传输进度等信息
+      session.getFileTransformInfo((eventName, data) => {
+        console.log('获取到文件传输信息： ', eventName, data);
+      });
+    }
+  }
+
+  function handleSetResolution() {
+    if (session) {
+      session.setResolution(200, 200, 90);
+    }
+  }
+  function handleNetworkData() {
+    if (session) {
+      session.addHandle('networkData', (data) => {
+        console.log('networkData', data);
+      });
+    }
+  }
+  function handleGetScreenshot() {
+    if (session) {
+      session.getScreenshot(console.log);
+    }
+  }
+  function handleGetDesktopIdleTime() {
+    if (session) {
+      session.getDesktopIdleTime(console.log);
+    }
+  }
+  function handleDisconnected() {
+    if (session) {
+      session.stopConnection();
+    }
+  }
+
+  function handleMouseModeClient() {
+    if (session) {
+      session.setMouseMode('Client');
+    }
+  }
+
+  function handleMouseModeServer() {
+    if (session) {
+      session.setMouseMode('Server');
+    }
+  }
+
+  function handleMonitorsConfig() {
+    if (session) {
+      session.setMonitorsConfig(200);
+    }
+  }
+  function handleGraphicConfig(mode) {
+    if (session) {
+      session.setGraphicConfig(mode);
+    }
+  }
+  function handleOpenSoftKeyboard(open) {
+    if (session) {
+      session.openSoftKeyboard(open);
+    }
+  }
+  function handleSetTouchEnabled(enable, delay) {
+    if (session) {
+      session.setLocalConfig('setTouchEnabled', enable, delay);
+    }
+  }
+
+
+  window.onload = function () {
+    init();
+    // 阻止双击放大
+    var lastTouchEnd = 0;
+    document.addEventListener('touchstart', function (event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    });
+    document.addEventListener('touchend', function (event) {
+      var now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+
+    // 阻止双指放大
+    document.addEventListener('gesturestart', function (event) {
+      event.preventDefault();
+    });
+  }
+</script>
+
+<body>
+  <div id="loginOperaDiv">
+    <fieldset>
+<!--      <legend>便携账号</legend>-->
+      <div id="loginParams">
+        <p>
+          <label for="loginId">组织ID:</label>
+          <input type="text" id="loginId" name="loginId" value="">
+        </p>
+        <p>
+          <label for="username">用户名:</label>
+          <input type="text" id="username" name="username" value="">
+        </p>
+        <p>
+          <label for="password">密码:</label>
+          <input type="text" id="password" name="password" value="" class="password-mask" autocomplete="current-password">
+        </p>
+        <input type="submit" id="login-button" name="login-button" value="登录" onclick="onLogin()">
+      </div>
+      <div id="logout">
+        <p id="login-user"></p>
+        <input type="submit" id="logout-button" name="login-button" value="退出登录" onclick="onLogout()">
+      </div>
+    </fieldset>
+    <fieldset>
+<!--      <legend>除了上面便携账号登录连接实例，如果您想直接通过loginToken、authCode或Ticket连接实例，请勾选下面手动输入</legend>-->
+      <p>
+        <input id="manualParameter" type="checkbox" name="enableManualParameter" onclick="enableManualParameter()">
+        <input id="manualParameter_" type="checkbox" name="enableManualParameter_" onclick="enableManualParameter_()">
+      </p>
+      <div id="login-session-info" style="display: block">
+        <p>
+          <label for="sessionId">sessionId:</label>
+          <input id="sessionId" name="sessionId" style="width: 100%; max-width: 600px;" placeholder="必填，创建者自定义的会话唯一标识">
+        </p>
+        <p>
+          <label for="loginToken">loginToken:</label>
+          <input id="loginToken" name="loginToken" style="width: 100%; max-width: 600px;" placeholder="通过便携账号登录得到的loginToken或通过authCode请求的stsToken">
+        </p>
+        <p>
+          <label for="authCode">authCode:</label>
+          <input id="authCode" name="authCode" style="width: 100%; max-width: 600px;" placeholder="请输入免授权登录下的authCode，连接使用即失效，再次连接，需重新获得新的authCode">
+        </p>
+        <p>
+          <label for="ticket">Ticket:</label>
+          <input id="ticket" name="Ticket" style="width: 100%; max-width: 600px;" placeholder="请输入ticket">
+        </p>
+        <input type="submit" id="clear-button" name="clear-button" value="清空" onclick="onClear()">
+        <div id="app-manual">
+          <p>
+            <label for="appId_manual">appId:</label>
+            <input id="appId_manual" name="appId" style="width: 100%; max-width: 600px;" placeholder="必填，实例持久会话ID，值是以p-开头,如：p-xxxxxxxxxxxxxxxxx">
+          </p>
+          <p>
+            <label for="appInstanceId_manual">appInstanceId:</label>
+            <input id="appInstanceId_manual" name="appInstanceId" style="width: 100%; max-width: 600px;" placeholder="必填，实例id，值是以ai-开头,如：ai-xxxxxxxxxxxxxxxxx">
+          </p>
+          <p>
+            <label for="appVersion_manual">appVersion:</label>
+            <input id="appVersion_manual" name="appVersion" style="width: 100%; max-width: 600px;" placeholder="选填，实例版本信息">
+          </p>
+          <p>
+            <input type="submit" name="connect-button" value="连接" onclick="onConnect('manual')">
+          </p>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="sessionParams" style="display: none">
+    <fieldset>
+      <legend>启动参数 手动输入</legend>
+      <p>
+        <input id="inline" type="radio" name="openType" value="inline" checked="checked">内嵌
+        <input id="inline-multi" type="radio" name="openType" value="inline-multi">内嵌-多屏
+        <input id="newtab" type="radio" name="openType" value="newTab">新页面
+        <input id="urlScheme" type="radio" name="openType" value="urlScheme">客户端打开
+      </p>
+      <p>
+        <input id="local" type="radio" name="resourceType" value="local" checked="checked">本地资源页面
+      </p>
+      <p>
+        <input id="overseas" type="checkbox" name="isOverseas">海外访问
+
+        <input id="msgChannel" type="checkbox" name="enableMsgChannel" onclick="onEnableMsgChannel()">消息通道
+
+        <input id="graphicConfigFluent" type="checkbox" name="graphicConfigFluent">默认画质流畅优先
+        <input id="hideProgressDialog" type="checkbox" name="hideProgressDialog">隐藏上传下载进度
+        <input id="setCloudPhoneLoading" type="checkbox" name="setCloudPhoneLoading">设置云手机加载动画
+      </p>
+      <p>
+        <label>connConfig</label>
+        <textarea id="connConfig" name="connConfig" placeholder="请输入JSON格式"></textarea>
+      </p>
+      <p>
+        <input type="submit" name="test-button" value="横竖屏切换 + 调试面板展示" onclick="onTest()">
+        <input type="submit" name="test-button" value="隐藏悬浮球" onclick="onHideBall()">
+      </p>
+      <p>
+        <input type="submit" name="test-button" value="下载文件" onclick="handleDownloadFile()">
+        <input type="submit" name="test-button" value="上传文件" onclick="handleUploadFile()">
+        <input type="submit" name="test-button" value="获取性能参数" onclick="handleNetworkData()">
+        <input type="submit" name="test-button" value="修改分辨率" onclick="handleSetResolution()">
+        <input type="submit" name="test-button" value="获取截图" onclick="handleGetScreenshot()">
+        <input type="submit" name="test-button" value="获取桌面空闲时间" onclick="handleGetDesktopIdleTime()">
+        <input type="submit" name="test-button" value="断开连接" onclick="handleDisconnected()">
+        <input type="submit" name="test-button" value="新版下载文件" onclick="handleDownloadFileAction()">
+        <input type="file" multiple="multiple" onchange="handleUploadFileAction(event)">
+        <input type="submit" name="test-button" value="文件传输信息" onclick="getFileTransformInfo()">
+      </p>
+      <p>
+        <input type="submit" name="test-button" value="绝对鼠标" onclick="handleMouseModeClient()">
+        <input type="submit" name="test-button" value="相对鼠标" onclick="handleMouseModeServer()">
+        <input type="submit" name="test-button" value="设置分辨率" onclick="handleMonitorsConfig()">
+        <input type="submit" name="test-button" value="设置画质流畅" onclick="handleGraphicConfig('fluent')">
+        <input type="submit" name="test-button" value="开启软键盘" onclick="handleOpenSoftKeyboard(true)">
+        <input type="submit" name="test-button" value="关闭touch输入" onclick="handleSetTouchEnabled(false, 50)">
+      </p>
+    </fieldset>
+  </div>
+  <br>
+  <div id="appsInfos">
+    <fieldset>
+      <legend>云手机/云应用列表</legend>
+      <div id="applist">
+      </div>
+
+    </fieldset>
+    <input type="submit" id="get-app-list" name="get-app-list" value="获取云手机/应用列表" onclick="onGetAppList()">
+    <input type="submit" id="clear-app-list" name="clear-app-list" value="清空云手机/应用列表" onclick="onClearAppList()">
+  </div>
+
+  <div id="desktopInfo">
+    <fieldset>
+      <legend>桌面列表</legend>
+      <div id="desktoplist">
+      </div>
+
+    </fieldset>
+    <input type="submit" id="get-desktop-list" name="get-desktop-list" value="获取桌面列表" onclick="onGetDesktopList()">
+    <input type="submit" id="clear-desktop-list" name="clear-desktop-list" value="清空桌面列表" onclick="onClearDesktopList()">
+  </div>
+
+  <div id="guestMsg">
+    <fieldset>
+      <legend>Guest消息</legend>
+      <div>
+        <p>从Guest接收的消息</p>
+        <label for="GuestMsgContext">内容:</label>
+        <input id="GuestMsgContext" name="GuestMsgContext" style="width: 60%;">
+        <p>向Guest发送消息</p>
+        <label for="sendMsgTypeData">data:</label>
+        <input id="sendMsgTypeData" name="sendMsgTypeData">
+        <label for="sendMsgAppId">guestAppId:</label>
+        <input id="sendMsgAppId" name="sendMsgAppId">
+        <input type="submit" name="sendMsg-button" value="发送" onclick="onSendMsg()">
+      </div>
+    </fieldset>
+  </div>
+  <div id="desktop-container">
+    <iframe id="sessionIframe"></iframe>
+  </div>
+</body>
+
+</html>

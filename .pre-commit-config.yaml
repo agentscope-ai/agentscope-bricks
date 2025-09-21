@@ -1,0 +1,75 @@
+repos:
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [ '--baseline', '.secrets.baseline' ]
+
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks.git
+    rev: v5.0.0
+    hooks:
+      - id: check-ast
+      - id: sort-simple-yaml
+      - id: check-yaml
+        exclude: |
+          (?x)^(
+              meta.yaml |
+              demo/
+          )$
+      - id: check-xml
+        exclude: demo/
+      - id: check-toml
+        exclude: demo/
+      - id: check-json
+        exclude: demo/
+      - id: fix-encoding-pragma
+        exclude: demo/
+      - id: detect-private-key
+        exclude: demo/
+      - id: trailing-whitespace
+        exclude: demo/
+  - repo: https://github.com/asottile/add-trailing-comma
+    rev: v3.1.0
+    hooks:
+      - id: add-trailing-comma
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        exclude:
+            (?x)(
+                pb2\.py$
+                | grpc\.py$
+                | ^docs
+                | \.html$
+                | ^demos
+                | ^tests
+            )
+        args: [ --disallow-untyped-defs,
+                --disallow-incomplete-defs,
+                --ignore-missing-imports,
+                --disable-error-code=var-annotated,
+                --disable-error-code=union-attr,
+                --disable-error-code=assignment,
+                --disable-error-code=attr-defined,
+                --disable-error-code=import-untyped,
+                --disable-error-code=no-redef,
+                --disable-error-code=truthy-function,
+                --follow-imports=skip,
+                --explicit-package-bases,
+                ]
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+    - id: black
+      args: [--line-length=79]
+  - repo: https://github.com/pycqa/flake8.git
+    rev: 7.2.0
+    hooks:
+      - id: flake8
+        args: [ "--extend-ignore=E203" ]
+        exclude: |
+            (?x)^(
+                demo/
+            )$

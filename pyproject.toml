@@ -1,0 +1,74 @@
+
+[project]
+name = "agentscope-bricks"
+dynamic = ["version"]
+description = "AgentScope-Bricks provides unified API interface for agent development"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Modelstudio Team", email = "zhangzhicheng.zzc@alibaba-inc.com"}
+]
+license = "Apache-2.0"
+keywords = ["python", "Agent", "AIGC", "LLM", "Components"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "agentscope-runtime",
+    "aiohttp",
+    "anyio",
+    "dashscope>=1.24.4",
+    "dotenv>=0.9.9",
+    "mcp>=1.14",
+    "pillow",
+    "pydantic>=2.10.6",
+    "typing_extensions",
+]
+
+[project.urls]
+Homepage = "https://github.com/agentscope-ai/agentscope-bricks"
+Repository = "https://github.com/agentscope-ai/agentscope-bricks"
+
+
+[tool.setuptools]
+packages = {find = {where = ["src"]}}
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "agentscope_bricks.version.__version__"}
+
+[tool.black]
+line-length = 79
+target-version = ['py310']
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+    "pytest-asyncio",
+    "black",
+    "pre-commit",
+]
+
+agentscope = [
+    "agentscope>=1.0.0",
+]
+
+langgraph = [
+    "langgraph>=0.4.0",
+]
+
+autogen = [
+    "autogen-agentchat>=0.7.0",
+]

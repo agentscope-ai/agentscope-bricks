@@ -1,0 +1,50 @@
+{
+    "intent": {
+        "model": "qwen-max"
+    },
+    "script": {
+        "model": "qwen-max",
+        "t2i_model":"wan2.2-t2i-plus",
+        "vl_model": "qvq-max"
+    },
+    "storyboard": {
+        "model": "qwen-max",
+        "max_boards": 2,
+        "max_roles": 2
+    },
+    "role_description": {
+        "model": "qwen-max"
+    },
+    "role_image": {
+        "model": "wan2.2-t2i-plus",
+        "rps": 2
+    },
+    "first_frame_description": {
+        "model": "qwen-max"
+    },
+    "first_frame_image": {
+        "t2i_model": "wan2.2-t2i-plus",
+        "i2i_model": "wanx2.1-imageedit",
+        "rps": 2
+    },
+    "video_description": {
+        "model": "qwen-max"
+    },
+    "video": {
+        "model": "wan2.2-i2v-plus",
+        "rps": 2
+    },
+    "line": {
+        "model": "qwen-max"
+    },
+    "audio": {
+        "model": "qwen-tts"
+    },
+    "film": {
+        "font_size": 60,
+        "font_color": "white",
+        "font_bg_color": null,
+        "fadein_duration": 0.5,
+        "fadeout_duration": 0.0
+    }
+}

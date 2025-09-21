@@ -1,0 +1,7 @@
+agentscope-bricks
+dashscope
+aiohttp
+pydantic
+fastapi
+uvicorn
+agentscope-runtime

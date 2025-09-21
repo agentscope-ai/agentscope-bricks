@@ -1,0 +1,9 @@
+include *.sh
+include *.md
+include computer_use_server/Dockerfile
+include computer_use_server/requirements.txt
+include computer_use_server/nginx.conf
+recursive-include computer_use_server *.sh *.md
+recursive-include computer_use_server/static *.html *.js
+recursive-include computer_use_server/static/sdk *
+recursive-include computer_use_server/static/sdk/ASP *

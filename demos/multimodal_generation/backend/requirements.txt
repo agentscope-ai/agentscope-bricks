@@ -1,0 +1,6 @@
+agentscope-runtime
+moviepy==2.1.1
+aiofiles
+a2a-sdk
+oss2
+instructor==1.7.9
