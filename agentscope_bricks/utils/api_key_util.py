@@ -7,7 +7,7 @@ from typing import Any, Optional
 class ApiNames(Enum):
     """Enumeration of API key names."""
 
-    dashscope_api_key = "DASHSCOPE_API_KEY"
+    dashscope_api_key = "DASHSCOPE_API_KEY"  # pragma: allowlist secret
 
 
 def get_api_key(
