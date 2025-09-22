@@ -18,15 +18,15 @@ from redis_resource_allocator import (
 )
 from cua_utils import init_sandbox
 import os
-from demos.computer_use.sandbox_center.sandboxes.cloud_phone_wy import (
+from sandbox_center.sandboxes.cloud_phone_wy import (
     CloudPhone,
 )
-from demos.computer_use.sandbox_center.sandboxes.cloud_computer_wy import (
+from sandbox_center.sandboxes.cloud_computer_wy import (
     CloudComputer,
 )
 from fastapi import HTTPException
 from agentscope_bricks.utils.logger_util import logger
-from demos.computer_use.sandbox_center.sandboxes.cloud_computer_wy import (
+from sandbox_center.sandboxes.cloud_computer_wy import (
     AppStreamClient,
 )
 

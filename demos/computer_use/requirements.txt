@@ -1,3 +1,6 @@
+agentscope-bricks
+agentscope-runtime
+
 anyio
 asgiref>=3.8.1
 dashscope
@@ -6,7 +9,6 @@ instructor>=1.7.9
 jinja2>=3.1.6
 json5
 jsonref>=1.1.0
-mcp
 nacos-sdk-python==1.0.0
 openai
 opentelemetry-api
@@ -28,12 +30,10 @@ azure-cognitiveservices-speech
 aiohttp
 urllib3 >= 2.1.0
 streamlit
-e2b-desktop
+e2b-desktop>=2.0.0
 alibabacloud_ecd20200930
 alibabacloud_eds_aic20230930
 alibabacloud_appstream_center20210218
 oss2
-agentscope-runtime
-mcp==1.8.0
 dotenv
 redis

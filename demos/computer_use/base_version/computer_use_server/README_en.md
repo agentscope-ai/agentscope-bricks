@@ -68,7 +68,7 @@ Note: qwen-max/qwen-vl-max models are called in the link, new users will have fr
 ##### 1.1.3 Environment Variable Configuration Example
 
 ```bash
-# Create api-key on the large model service platform DashScope, and provide the cloud account uid to the mobile agent team for whitelisting
+# Create api-key on the large model service platform DashScope
 DASHSCOPE_API_KEY=
 # E2B API Key
 E2B_API_KEY=
@@ -85,7 +85,7 @@ nano ~/.bash_profile  # If you are using bash
 
 # Add environment variables for example
 # Cloud computer configuration
-export DASHSCOPE_API_KEY=""
+export DASHSCOPE_API_KEY="your_api_key_here"
 export ECD_DESKTOP_ID="your_desktop_id"
 # ... other configurations
 
@@ -104,14 +104,15 @@ cd demos/computer_use
 
 ##### 1.4.2 Install Dependencies
 ```bash
-pip install -r requirements.txt
+# Execute in the root directory of demos/computer_use to install module dependencies
+pip install .
 ```
 
 
 ##### 1.4.3 Script Authorization and Startup
 
 ```bash
-cd demos/computer_use/computer_use_server/base_version
+cd base_version/computer_use_server
 # Grant execution permissions
 chmod +x start_base.sh
 

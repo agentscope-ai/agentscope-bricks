@@ -3,18 +3,16 @@ import asyncio
 import time
 import os
 import json
+import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from dotenv import load_dotenv
-
 from datetime import datetime
 from computer_use_agent_base import ComputerUseAgent
-
 from cua_utils_base import init_output_dir, init_sandbox, cleanup_sandbox
-import uuid
 
 
 load_dotenv()

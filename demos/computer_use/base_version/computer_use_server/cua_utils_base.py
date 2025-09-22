@@ -4,7 +4,7 @@ import io
 import re
 import base64
 import json
-from demos.computer_use.sandbox_center.sandboxes.e2b_sandbox import (
+from sandbox_center.sandboxes.e2b_sandbox import (
     E2bSandBox,
 )
 from openai import OpenAI

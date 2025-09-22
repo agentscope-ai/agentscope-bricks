@@ -6,18 +6,19 @@ import datetime
 import asyncio
 import threading
 import requests
-from demos.computer_use.sandbox_center.gui_tools import (
+from sandbox_center.gui_tools import (
     GUI_TOOLS,
     PCA_GUI_TOOLS,
     set_device,
 )
+
 from agentscope_bricks.utils.grounding_utils import draw_point, encode_image
 from cua_utils_base import logger, Message, parse_json, QwenProvider
-from demos.computer_use.sandbox_center.utils.oss_client import OSSClient
-from demos.computer_use.sandbox_center.sandboxes.e2b_sandbox import (
+from sandbox_center.utils.oss_client import OSSClient
+from sandbox_center.sandboxes.e2b_sandbox import (
     E2bSandBox,
 )
-from demos.computer_use.agents.gui_agent_app_v2 import (
+from agents.gui_agent_app_v2 import (
     GuiAgent,
 )
 

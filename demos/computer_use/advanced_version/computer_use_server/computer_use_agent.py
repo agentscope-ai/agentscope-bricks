@@ -9,13 +9,13 @@ from typing import Optional, Any, AsyncGenerator, Union
 from agentscope_bricks.utils.grounding_utils import draw_point, encode_image
 from pathlib import Path
 import time  # 添加 time 模块导入
-from demos.computer_use.sandbox_center.sandboxes.cloud_computer_wy import (
+from sandbox_center.sandboxes.cloud_computer_wy import (
     CloudComputer,
 )
-from demos.computer_use.sandbox_center.utils.utils import (
+from sandbox_center.utils.utils import (
     get_image_size_from_url,
 )
-from demos.computer_use.sandbox_center.sandboxes.cloud_phone_wy import (
+from sandbox_center.sandboxes.cloud_phone_wy import (
     CloudPhone,
 )
 import asyncio
@@ -28,9 +28,9 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     Content,
     Message,
 )
-from demos.computer_use.agents.agent import DataContent
+from agents.agent import DataContent
 from agentscope_runtime.engine.schemas.context import Context
-from demos.computer_use.agents.gui_agent_app_v2 import GuiAgent
+from agents.gui_agent_app_v2 import GuiAgent
 from agentscope_bricks.utils.logger_util import logger
 
 TYPING_DELAY_MS = 12
@@ -590,6 +590,17 @@ class ComputerUseAgent(Agent):
                                         "stage": "completed",
                                         "type": "text",
                                         "text": "步骤完成!",
+                                    },
+                                )
+                                self._is_cancelled = True
+                            if "Answer" in action_result["result"]:
+                                should_continue = False
+                                yield DataContent(
+                                    data={
+                                        "step": f"{step_count}",
+                                        "stage": "completed",
+                                        "type": "text",
+                                        "text": action_result["result"],
                                     },
                                 )
                                 self._is_cancelled = True
@@ -1737,8 +1748,10 @@ class ComputerUseAgent(Agent):
                     await equipment.back()
                 elif "Home" in operation:
                     await equipment.home()
-                elif "Done" or "Answer" in operation:
+                elif "Done" in operation:
                     return {"result": "stop"}
+                elif "Answer" in operation:
+                    return {"result": operation}
                 elif "Wait" in operation:
                     task = mode_response.get("explanation")
                     return await self._handle_human_intervention(

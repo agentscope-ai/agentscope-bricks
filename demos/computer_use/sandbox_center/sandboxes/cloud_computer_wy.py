@@ -2,10 +2,8 @@
 import os
 import aiohttp
 import time
-import logging
 import asyncio
 import threading
-import uuid
 import base64
 from typing import List, Tuple, Any, Callable, Optional
 from pydantic import BaseModel
@@ -20,8 +18,8 @@ from alibabacloud_appstream_center20210218.client import (
 )
 from alibabacloud_tea_util import models as util_models
 from alibabacloud_tea_util.client import Client as UtilClient
-from demos.computer_use.sandbox_center.utils.oss_client import OSSClient
-from demos.computer_use.sandbox_center.sandboxes.sandbox_base import (
+from sandbox_center.utils.oss_client import OSSClient
+from sandbox_center.sandboxes.sandbox_base import (
     SandboxBase,
     OperationStatus,
 )

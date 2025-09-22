@@ -18,12 +18,16 @@ BLUE=$(printf '\033[0;34m')
 GREEN=$(printf '\033[0;32m')
 NC=$(printf '\033[0m')
 
-export PYTHONPATH="../../../..:../../../../src:$PYTHONPATH"
-echo "🔧 已设置 PYTHONPATH: $PYTHONPATH"
-
+#export PYTHONPATH="../../../..:../../../../src:$PYTHONPATH"
+#echo "🔧 已设置 PYTHONPATH: $PYTHONPATH"
+#
+## 启动后端服务
+#echo "🔧 启动后端服务..."
+#python3 backend.py  &
 # 启动后端服务
-echo "🔧 启动后端服务..."
-python3 backend.py  &
+echo "🔧 启动后端服务 (http://localhost:8002)..."
+export PYTHONPATH=$(pwd):$PYTHONPATH && python backend.py 2>&1 | sed "s/^/${BLUE}[FastAPI]${NC} /" &
+BACKEND_PID=$!
 
 # 等待后端启动
 sleep 3

@@ -66,7 +66,7 @@ Computer Use Agent 是一个基于人工智能的桌面自动化系统，能够�
 ##### 1.1.3环境变量配置示例
 
 ```bash
-# 在大模型服务平台百炼,创建api-key, 并提供该云账号uid找mobile agent团队加白
+# 在大模型服务平台百炼,创建api-key
 DASHSCOPE_API_KEY=
 # E2B API Key
 E2B_API_KEY=
@@ -99,13 +99,14 @@ cd demos/computer_use
 
 ##### 1.4.2 安装依赖
 ```bash
-pip install -r requirements.txt
+# 在 demos/computer_use 根目录下执行 安装模块依赖
+pip install .
 ```
 
 ##### 1.4.3 启动脚本授权和启动
 
 ```bash
-cd demos/computer_use/computer_use_server/base_version
+cd base_version/computer_use_server
 # 赋予执行权限
 chmod +x start_base.sh
 
