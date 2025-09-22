@@ -11,7 +11,6 @@ from agentscope_runtime.engine.services.session_history_service import (
 from agentscope_runtime.engine.services.environment_manager import (
     create_environment_manager,
 )
-from agentscope_runtime.engine.services.sandbox_service import SandboxService
 
 
 USER_ID = "user_1"
@@ -56,9 +55,7 @@ async def create_runner(agent):
 
     context_manager = await prepare_context()
     async with context_manager:
-        async with create_environment_manager(
-            sandbox_service=SandboxService(),
-        ) as env_manager:
+        async with create_environment_manager() as env_manager:
             runner = Runner(
                 agent=agent,
                 context_manager=context_manager,
