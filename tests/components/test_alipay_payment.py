@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pytest
 from datetime import datetime
 
@@ -11,7 +12,7 @@ from agentscope_bricks.components.alipay.payment import (
     WebPageAlipayPayment,
     AlipayPaymentQuery,
     AlipayPaymentRefund,
-    AlipayRefundQuery
+    AlipayRefundQuery,
 )
 
 
@@ -57,11 +58,11 @@ def test_mobile_payment(alipay_mobile_payment):
     payment_input = MobilePaymentInput(
         out_trade_no="mobile_test_123",
         order_title="Mobile Test Order",
-        total_amount=99.99
+        total_amount=99.99,
     )
     resp = alipay_mobile_payment.run(payment_input)
     # 验证返回结果
-    assert hasattr(resp, 'result')
+    assert hasattr(resp, "result")
     # 检查 result 的类型（可以是字符串或 None）
     assert isinstance(resp.result, (str, type(None)))
     # 如果返回了支付链接，检查是否包含链接
@@ -76,11 +77,11 @@ def test_webpage_payment(alipay_webpage_payment):
     payment_input = WebPagePaymentInput(
         out_trade_no="web_test_123",
         order_title="Web Test Order",
-        total_amount=199.99
+        total_amount=199.99,
     )
     resp = alipay_webpage_payment.run(payment_input)
     # 验证返回结果
-    assert hasattr(resp, 'result')
+    assert hasattr(resp, "result")
     # 检查 result 的类型（可以是字符串或 None）
     assert isinstance(resp.result, (str, type(None)))
     # 如果返回了支付链接，检查是否包含链接
@@ -93,11 +94,11 @@ def test_webpage_payment(alipay_webpage_payment):
 def test_payment_query(alipay_payment_query):
     """测试支付宝支付查询功能-不存在的订单号"""
     query_input = PaymentQueryInput(
-        out_trade_no="query_test_123"
+        out_trade_no="query_test_123",
     )
     resp = alipay_payment_query.run(query_input)
     # 验证返回结果
-    assert hasattr(resp, 'result')
+    assert hasattr(resp, "result")
     # 检查 result 的类型（可以是字符串或 None）
     assert isinstance(resp.result, (str, type(None)))
     # 如果返回了查询结果，检查是否包含状态信息
@@ -112,11 +113,11 @@ def test_payment_refund(alipay_payment_refund, test_order_no):
         out_trade_no="refund_test_123",
         refund_amount=50.00,
         refund_reason="Test refund",
-        out_request_no=test_order_no
+        out_request_no=test_order_no,
     )
     resp = alipay_payment_refund.run(refund_input)
     # 验证返回结果
-    assert hasattr(resp, 'result')
+    assert hasattr(resp, "result")
     # 检查 result 的类型（可以是字符串或 None）
     assert isinstance(resp.result, (str, type(None)))
     # 如果返回了退款结果，检查是否包含退款信息
@@ -129,11 +130,11 @@ def test_refund_query(alipay_refund_query):
     """测试支付宝退款查询功能"""
     query_input = RefundQueryInput(
         out_trade_no="refund_query_test_123",
-        out_request_no="refund_req_123"
+        out_request_no="refund_req_123",
     )
     resp = alipay_refund_query.run(query_input)
     # 验证返回结果
-    assert hasattr(resp, 'result')
+    assert hasattr(resp, "result")
     # 检查 result 的类型（可以是字符串或 None）
     assert isinstance(resp.result, (str, type(None)))
     # 如果返回了查询结果，检查是否包含退款状态信息

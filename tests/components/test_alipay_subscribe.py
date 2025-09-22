@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pytest
 from datetime import datetime
 import re
@@ -10,7 +11,7 @@ from agentscope_bricks.components.alipay.subscribe import (
     SubscribeTimesSaveInput,
     AlipaySubscribeTimesSave,
     AlipaySubscribeCheckOrInitialize,
-    SubscribeCheckOrInitializeInput
+    SubscribeCheckOrInitializeInput,
 )
 
 
@@ -50,12 +51,12 @@ def test_subscribe_status_check_byCount(alipay_subscribe_status_check):
     check_input = SubscribeStatusCheckInput(
         uuid="123455",
         plan_id="2509011400000004",
-        channel="百炼"
+        channel="百炼",
     )
     resp = alipay_subscribe_status_check.run(check_input)
     # 验证返回结果
-    assert hasattr(resp, 'subscribe_flag')
-    assert hasattr(resp, 'subscribe_package')
+    assert hasattr(resp, "subscribe_flag")
+    assert hasattr(resp, "subscribe_package")
     # 检查 subscribe_flag 的类型（可以是字符串或 None）
     assert isinstance(resp.subscribe_flag, (bool, type(None)))
     # 如果返回了状态值，检查是否在有效范围内
@@ -71,12 +72,12 @@ def test_subscribe_status_check_byTime(alipay_subscribe_status_check):
     check_input = SubscribeStatusCheckInput(
         uuid="123456",
         plan_id="2509011400000004",
-        channel="百炼"
+        channel="百炼",
     )
     resp = alipay_subscribe_status_check.run(check_input)
     # 验证返回结果
-    assert hasattr(resp, 'subscribe_flag')
-    assert hasattr(resp, 'subscribe_package')
+    assert hasattr(resp, "subscribe_flag")
+    assert hasattr(resp, "subscribe_package")
     # 检查 subscribe_flag 的类型（可以是字符串或 None）
     assert isinstance(resp.subscribe_flag, (bool, type(None)))
     # 如果返回了状态值，检查是否在有效范围内
@@ -93,16 +94,16 @@ def test_subscribe_package_initialize(alipay_subscribe_package_initialize):
         uuid="1234558",
         plan_id="2509011400000004",
         channel="百炼",
-        agent_name="测试agent"
+        agent_name="测试agent",
     )
     resp = alipay_subscribe_package_initialize.run(initialize_input)
     # 验证返回结果
-    assert hasattr(resp, 'subscribe_url')
+    assert hasattr(resp, "subscribe_url")
     # 检查 subscribe_url 的类型（可以是字符串或 None）
     assert isinstance(resp.subscribe_url, (str, type(None)))
     # 如果返回了状态值，检查是否在有效范围内
     if resp.subscribe_url is not None:
-        assert re.search(r'alipays://platformapi/startapp', resp.subscribe_url)
+        assert re.search(r"alipays://platformapi/startapp", resp.subscribe_url)
     # 注意：由于SSL证书问题，实际返回可能是None，这是正常的
 
 
@@ -113,11 +114,11 @@ def test_subscribe_times_save(alipay_subscribe_times_save, test_order_no):
         plan_id="2509011400000004",
         use_times=1,
         channel="百炼",
-        out_request_no=test_order_no
+        out_request_no=test_order_no,
     )
     resp = alipay_subscribe_times_save.run(count_input)
     # 验证返回结果
-    assert hasattr(resp, 'success')
+    assert hasattr(resp, "success")
     # 检查 success 的类型（可以是字符串或 None）
     assert isinstance(resp.success, (bool, type(None)))
     # 如果返回了状态值，检查是否在有效范围内
@@ -129,22 +130,23 @@ def test_subscribe_times_save(alipay_subscribe_times_save, test_order_no):
 
 
 def test_subscribe_check_or_initialize_subscribed(
-        alipay_subscribe_check_or_initialize):
+    alipay_subscribe_check_or_initialize,
+):
     """测试未订阅用户的订阅检查或初始化功能"""
     check_or_initialize_input = SubscribeCheckOrInitializeInput(
         uuid="123",
         plan_id="2509011400000004",
         channel="百炼",
-        agent_name="测试Agent"
+        agent_name="测试Agent",
     )
     resp = alipay_subscribe_check_or_initialize.run(check_or_initialize_input)
     # 验证返回结果（返回订阅状态&订阅链接）
-    assert hasattr(resp, 'subscribe_flag')
-    assert hasattr(resp, 'subscribe_url')
+    assert hasattr(resp, "subscribe_flag")
+    assert hasattr(resp, "subscribe_url")
     assert isinstance(resp.subscribe_url, (str, type(None)))
     assert isinstance(resp.subscribe_flag, (bool, type(None)))
     if resp.subscribe_url is not None:
-        assert re.search(r'alipays://platformapi/startapp', resp.subscribe_url)
+        assert re.search(r"alipays://platformapi/startapp", resp.subscribe_url)
     if resp.subscribe_flag is not None:
         valid_statuses = [True, False]
         assert resp.subscribe_flag in valid_statuses

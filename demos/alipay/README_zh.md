@@ -9,7 +9,7 @@
 1. 配置环境变量：
 ```shell
 export ALIPAY_APP_ID=your_alipay_app_id
-export ALIPAY_PRIVATE_KEY="your_alipay_private_key"
+export ALIPAY_PRIVATE_KEY="your_alipay_private_key"  # pragma: allowlist secret
 export ALIPAY_PUBLIC_KEY="your_alipay_public_key"
 export AP_CURRENT_ENV=sandbox  # 沙箱环境或 production 生产环境
 export DASHSCOPE_API_KEY=your_dashscope_api_key

@@ -28,7 +28,7 @@ class SubscribeStatusCheckInput(BaseModel):
 
     uuid: str = Field(
         ...,
-        description="账户ID"
+        description="账户ID",
     )
 
 
@@ -37,11 +37,11 @@ class SubscribeStatusOutput(BaseModel):
 
     subscribe_flag: bool = Field(
         ...,
-        description="是否订阅,已订阅为true,否则为false"
+        description="是否订阅,已订阅为true,否则为false",
     )
     subscribe_package: Optional[str] = Field(
         None,
-        description="订阅剩余套餐描述"
+        description="订阅剩余套餐描述",
     )
 
 
@@ -50,7 +50,7 @@ class SubscribePackageInitializeInput(BaseModel):
 
     uuid: str = Field(
         ...,
-        description="账户ID"
+        description="账户ID",
     )
 
 
@@ -59,7 +59,7 @@ class SubscribePackageInitializeOutput(BaseModel):
 
     subscribe_url: Optional[str] = Field(
         None,
-        description="订阅链接"
+        description="订阅链接",
     )
 
 
@@ -68,11 +68,11 @@ class SubscribeTimesSaveInput(BaseModel):
 
     uuid: str = Field(
         ...,
-        description="账户ID"
+        description="账户ID",
     )
     out_request_no: str = Field(
         ...,
-        description="外部订单号，用来计次幂等,防止重复扣减订阅次数"
+        description="外部订单号，用来计次幂等,防止重复扣减订阅次数",
     )
 
 
@@ -81,7 +81,7 @@ class SubscribeTimesSaveOutput(BaseModel):
 
     success: bool = Field(
         ...,
-        description="计次服务调用是否成功"
+        description="计次服务调用是否成功",
     )
 
 
@@ -90,7 +90,7 @@ class SubscribeCheckOrInitializeInput(BaseModel):
 
     uuid: str = Field(
         ...,
-        description="账户ID"
+        description="账户ID",
     )
 
 
@@ -99,16 +99,16 @@ class SubscribeCheckOrInitializeOutput(BaseModel):
 
     subscribe_flag: bool = Field(
         ...,
-        description="是否订阅,已订阅为true,否则为false"
+        description="是否订阅,已订阅为true,否则为false",
     )
     subscribe_url: Optional[str] = Field(
         None,
-        description="订阅链接，如果未订阅则返回链接"
+        description="订阅链接，如果未订阅则返回链接",
     )
 
 
 class AlipaySubscribeStatusCheck(
-    Component[SubscribeStatusCheckInput, SubscribeStatusOutput]
+    Component[SubscribeStatusCheckInput, SubscribeStatusOutput],
 ):
     """支付宝订阅状态检查组件
 
@@ -132,7 +132,9 @@ class AlipaySubscribeStatusCheck(
     description: str = "查询用户订阅状态及套餐详情"
 
     async def _arun(
-            self, args: SubscribeStatusCheckInput, **kwargs: Any
+        self,
+        args: SubscribeStatusCheckInput,
+        **kwargs: Any,
     ) -> SubscribeStatusOutput:
         """检查订阅状态"""
         try:
@@ -144,7 +146,7 @@ class AlipaySubscribeStatusCheck(
             biz_content = {
                 "uuid": args.uuid,
                 "plan_id": SUBSCRIBE_PLAN_ID,
-                "channel": X_AGENT_CHANNEL
+                "channel": X_AGENT_CHANNEL,
             }
             request.biz_content = biz_content
             response_content = alipay_client.execute(request)
@@ -154,9 +156,10 @@ class AlipaySubscribeStatusCheck(
                 is_subscribed = response.data.member_status == "VALID"
                 subscribe_package_desc = None
 
-                if (is_subscribed
-                        and hasattr(response.data,
-                                    'subscribe_member_info_d_t_o')):
+                if is_subscribed and hasattr(
+                    response.data,
+                    "subscribe_member_info_d_t_o",
+                ):
                     info = response.data.subscribe_member_info_d_t_o
                     package_type = info.subscribe_package_type
 
@@ -173,7 +176,7 @@ class AlipaySubscribeStatusCheck(
                         subscribe_package_desc = f"{expired_date}后过期"
                 return SubscribeStatusOutput(
                     subscribe_flag=is_subscribed,
-                    subscribe_package=subscribe_package_desc
+                    subscribe_package=subscribe_package_desc,
                 )
             else:
                 error_msg = (
@@ -184,30 +187,30 @@ class AlipaySubscribeStatusCheck(
                 logger.error(error_msg)
                 return SubscribeStatusOutput(
                     subscribe_flag=False,
-                    subscribe_package=None
+                    subscribe_package=None,
                 )
 
         except ImportError:
             logger.error(
-                "请安装官方支付宝SDK: pip install alipay-sdk-python"
+                "请安装官方支付宝SDK: pip install alipay-sdk-python",
             )
             return SubscribeStatusOutput(
                 subscribe_flag=False,
-                subscribe_package=None
+                subscribe_package=None,
             )
         except Exception as e:
             logger.error(f"检查订阅状态失败: {str(e)}")
             return SubscribeStatusOutput(
                 subscribe_flag=False,
-                subscribe_package=None
+                subscribe_package=None,
             )
 
 
 class AlipaySubscribePackageInitialize(
     Component[
         SubscribePackageInitializeInput,
-        SubscribePackageInitializeOutput
-    ]
+        SubscribePackageInitializeOutput,
+    ],
 ):
     """支付宝订阅开通组件
 
@@ -230,7 +233,9 @@ class AlipaySubscribePackageInitialize(
     description: str = "用户发起订阅付费，返回订阅链接"
 
     async def _arun(
-            self, args: SubscribePackageInitializeInput, **kwargs: Any
+        self,
+        args: SubscribePackageInitializeInput,
+        **kwargs: Any,
     ) -> SubscribePackageInitializeOutput:
         """发起订阅服务"""
         try:
@@ -243,7 +248,7 @@ class AlipaySubscribePackageInitialize(
                 "uuid": args.uuid,
                 "plan_id": SUBSCRIBE_PLAN_ID,
                 "channel": X_AGENT_CHANNEL,
-                "agent_name": X_AGENT_NAME
+                "agent_name": X_AGENT_NAME,
             }
             request.biz_content = biz_content
             response_content = alipay_client.execute(request)
@@ -251,7 +256,7 @@ class AlipaySubscribePackageInitialize(
             response.parse_response_content(response_content)
             if response.is_success:
                 return SubscribePackageInitializeOutput(
-                    subscribe_url=response.data.subscribe_url
+                    subscribe_url=response.data.subscribe_url,
                 )
             else:
                 error_msg = (
@@ -264,7 +269,7 @@ class AlipaySubscribePackageInitialize(
 
         except ImportError:
             logger.error(
-                "请安装官方支付宝SDK: pip install alipay-sdk-python"
+                "请安装官方支付宝SDK: pip install alipay-sdk-python",
             )
             return SubscribePackageInitializeOutput(subscribe_url=None)
         except Exception as e:
@@ -275,8 +280,8 @@ class AlipaySubscribePackageInitialize(
 class AlipaySubscribeTimesSave(
     Component[
         SubscribeTimesSaveInput,
-        SubscribeTimesSaveOutput
-    ]
+        SubscribeTimesSaveOutput,
+    ],
 ):
     """支付宝订阅计次组件
 
@@ -298,7 +303,9 @@ class AlipaySubscribeTimesSave(
     description: str = "用户使用服务后，记录用户使用消耗的次数"
 
     async def _arun(
-            self, args: SubscribeTimesSaveInput, **kwargs: Any
+        self,
+        args: SubscribeTimesSaveInput,
+        **kwargs: Any,
     ) -> SubscribeTimesSaveOutput:
         """发起订阅计次服务"""
         try:
@@ -312,7 +319,7 @@ class AlipaySubscribeTimesSave(
                 "plan_id": SUBSCRIBE_PLAN_ID,
                 "use_times": USE_TIMES,
                 "channel": X_AGENT_CHANNEL,
-                "out_request_no": args.out_request_no
+                "out_request_no": args.out_request_no,
             }
             request.biz_content = biz_content
             response_content = alipay_client.execute(request)
@@ -320,7 +327,7 @@ class AlipaySubscribeTimesSave(
             response.parse_response_content(response_content)
             if response.is_success:
                 return SubscribeTimesSaveOutput(
-                    success=response.data.count_success
+                    success=response.data.count_success,
                 )
             else:
                 error_msg = (
@@ -333,7 +340,7 @@ class AlipaySubscribeTimesSave(
 
         except ImportError:
             logger.error(
-                "请安装官方支付宝SDK: pip install alipay-sdk-python"
+                "请安装官方支付宝SDK: pip install alipay-sdk-python",
             )
             return SubscribeTimesSaveOutput(success=False)
         except Exception as e:
@@ -344,8 +351,8 @@ class AlipaySubscribeTimesSave(
 class AlipaySubscribeCheckOrInitialize(
     Component[
         SubscribeCheckOrInitializeInput,
-        SubscribeCheckOrInitializeOutput
-    ]
+        SubscribeCheckOrInitializeOutput,
+    ],
 ):
     """支付宝订阅检查或初始化组件
 
@@ -364,10 +371,14 @@ class AlipaySubscribeCheckOrInitialize(
     """
 
     name: str = "alipay_subscribe_check_or_initialize"
-    description: str = "检查用户订阅状态，如果已订阅则返回状态，如果未订阅则返回订阅链接"
+    description: str = (
+        "检查用户订阅状态，如果已订阅则返回状态，如果未订阅则返回订阅链接"
+    )
 
     async def _arun(
-            self, args: SubscribeCheckOrInitializeInput, **kwargs: Any
+        self,
+        args: SubscribeCheckOrInitializeInput,
+        **kwargs: Any,
     ) -> SubscribeCheckOrInitializeOutput:
         """检查订阅状态或初始化订阅"""
         try:
@@ -376,15 +387,15 @@ class AlipaySubscribeCheckOrInitialize(
             status_input = SubscribeStatusCheckInput(
                 uuid=args.uuid,
                 plan_id=SUBSCRIBE_PLAN_ID,
-                channel=X_AGENT_CHANNEL
+                channel=X_AGENT_CHANNEL,
             )
             status_output = await status_check._arun(status_input)
 
             # 如果检查成功且用户已订阅，直接返回状态
-            if (status_output.subscribe_flag):
+            if status_output.subscribe_flag:
                 return SubscribeCheckOrInitializeOutput(
                     subscribe_flag=True,
-                    subscribe_url=None
+                    subscribe_url=None,
                 )
 
             # 如果未订阅，获取订阅链接
@@ -393,26 +404,26 @@ class AlipaySubscribeCheckOrInitialize(
                 uuid=args.uuid,
                 plan_id=SUBSCRIBE_PLAN_ID,
                 channel=X_AGENT_CHANNEL,
-                agent_name=X_AGENT_NAME
+                agent_name=X_AGENT_NAME,
             )
             init_result = await init_component._arun(init_input)
 
             return SubscribeCheckOrInitializeOutput(
                 subscribe_flag=False,
-                subscribe_url=init_result.subscribe_url
+                subscribe_url=init_result.subscribe_url,
             )
 
         except ImportError:
             logger.error(
-                "请安装官方支付宝SDK: pip install alipay-sdk-python"
+                "请安装官方支付宝SDK: pip install alipay-sdk-python",
             )
             return SubscribeCheckOrInitializeOutput(
                 subscribe_flag=False,
-                subscribe_url=None
+                subscribe_url=None,
             )
         except Exception as e:
             logger.error(f"检查订阅状态或初始化订阅: {str(e)}")
             return SubscribeCheckOrInitializeOutput(
                 subscribe_flag=False,
-                subscribe_url=None
+                subscribe_url=None,
             )

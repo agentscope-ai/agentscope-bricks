@@ -32,16 +32,16 @@ class MobilePaymentInput(BaseModel):
 
     out_trade_no: str = Field(
         ...,
-        description="创建订单参数-商户订单号"
+        description="创建订单参数-商户订单号",
     )
     order_title: str = Field(
         ...,
-        description="该订单的订单标题"
+        description="该订单的订单标题",
     )
     total_amount: float = Field(
         ...,
         gt=0,
-        description="该订单的支付金额，以元为单位"
+        description="该订单的支付金额，以元为单位",
     )
 
 
@@ -50,16 +50,16 @@ class WebPagePaymentInput(BaseModel):
 
     out_trade_no: str = Field(
         ...,
-        description="创建订单参数-商户订单号"
+        description="创建订单参数-商户订单号",
     )
     order_title: str = Field(
         ...,
-        description="该订单的订单标题"
+        description="该订单的订单标题",
     )
     total_amount: float = Field(
         ...,
         gt=0,
-        description="该订单的支付金额，以元为单位"
+        description="该订单的支付金额，以元为单位",
     )
 
 
@@ -68,7 +68,7 @@ class PaymentQueryInput(BaseModel):
 
     out_trade_no: str = Field(
         ...,
-        description="商户订单号"
+        description="商户订单号",
     )
 
 
@@ -77,20 +77,20 @@ class PaymentRefundInput(BaseModel):
 
     out_trade_no: str = Field(
         ...,
-        description="商户订单号"
+        description="商户订单号",
     )
     refund_amount: float = Field(
         ...,
         gt=0,
-        description="退款金额"
+        description="退款金额",
     )
     refund_reason: Optional[str] = Field(
         default=None,
-        description="退款原因"
+        description="退款原因",
     )
     out_request_no: Optional[str] = Field(
         default=None,
-        description="退款请求号"
+        description="退款请求号",
     )
 
 
@@ -99,11 +99,11 @@ class RefundQueryInput(BaseModel):
 
     out_trade_no: str = Field(
         ...,
-        description="商户订单号"
+        description="商户订单号",
     )
     out_request_no: str = Field(
         ...,
-        description="退款请求号"
+        description="退款请求号",
     )
 
 
@@ -112,8 +112,7 @@ class PaymentOutput(BaseModel):
 
     result: str = Field(
         ...,
-        description="包含链接的 markdown 文本，"
-                    "你要将文本插入对话内容中。"
+        description="包含链接的 markdown 文本，" "你要将文本插入对话内容中。",
     )
 
 
@@ -146,7 +145,9 @@ class MobileAlipayPayment(Component[MobilePaymentInput, PaymentOutput]):
     )
 
     async def _arun(
-            self, args: MobilePaymentInput, **kwargs: Any
+        self,
+        args: MobilePaymentInput,
+        **kwargs: Any,
     ) -> PaymentOutput:
         """
         创建手机支付宝支付订单
@@ -176,7 +177,9 @@ class MobileAlipayPayment(Component[MobilePaymentInput, PaymentOutput]):
             # 创建手机网站支付模型并设置参数
             model = AlipayTradeWapPayModel()
             model.out_trade_no = args.out_trade_no  # 商户订单号
-            model.total_amount = str(args.total_amount)  # 支付金额（转换为字符串）
+            model.total_amount = str(
+                args.total_amount,
+            )  # 支付金额（转换为字符串）
             model.subject = args.order_title  # 订单标题
             model.product_code = "QUICK_WAP_WAY"  # 产品码，固定值
 
@@ -197,7 +200,7 @@ class MobileAlipayPayment(Component[MobilePaymentInput, PaymentOutput]):
             # 执行请求获取支付链接
             response = alipay_client.page_execute(request, http_method="GET")
             return PaymentOutput(
-                result=f"支付链接: [点击完成支付]({response})"
+                result=f"支付链接: [点击完成支付]({response})",
             )
 
         except (ValueError, ImportError) as e:
@@ -241,7 +244,9 @@ class WebPageAlipayPayment(Component[WebPagePaymentInput, PaymentOutput]):
     )
 
     async def _arun(
-            self, args: WebPagePaymentInput, **kwargs: Any
+        self,
+        args: WebPagePaymentInput,
+        **kwargs: Any,
     ) -> PaymentOutput:
         """
         创建网页版支付宝支付订单
@@ -271,7 +276,9 @@ class WebPageAlipayPayment(Component[WebPagePaymentInput, PaymentOutput]):
             # 创建电脑网站支付模型并设置参数
             model = AlipayTradePagePayModel()
             model.out_trade_no = args.out_trade_no  # 商户订单号
-            model.total_amount = str(args.total_amount)  # 支付金额（转换为字符串）
+            model.total_amount = str(
+                args.total_amount,
+            )  # 支付金额（转换为字符串）
             model.subject = args.order_title  # 订单标题
             model.product_code = "FAST_INSTANT_TRADE_PAY"  # 产品码，固定值
 
@@ -292,7 +299,7 @@ class WebPageAlipayPayment(Component[WebPagePaymentInput, PaymentOutput]):
             # 执行请求获取支付链接
             response = alipay_client.page_execute(request, http_method="GET")
             return PaymentOutput(
-                result=f"网页支付链接: [点击完成支付]({response})"
+                result=f"网页支付链接: [点击完成支付]({response})",
             )
 
         except (ValueError, ImportError) as e:
@@ -330,12 +337,12 @@ class AlipayPaymentQuery(Component[PaymentQueryInput, PaymentOutput]):
     """
 
     name: str = "alipay_query_payment"
-    description: str = (
-        "查询一笔支付宝订单，并返回带有订单信息的文本。"
-    )
+    description: str = "查询一笔支付宝订单，并返回带有订单信息的文本。"
 
     async def _arun(
-            self, args: PaymentQueryInput, **kwargs: Any
+        self,
+        args: PaymentQueryInput,
+        **kwargs: Any,
     ) -> PaymentOutput:
         """
         查询支付宝交易订单状态
@@ -387,7 +394,7 @@ class AlipayPaymentQuery(Component[PaymentQueryInput, PaymentOutput]):
                 return PaymentOutput(result=result)
             else:  # 查询失败
                 return PaymentOutput(
-                    result=f"交易查询失败. 错误信息: {response.msg}"
+                    result=f"交易查询失败. 错误信息: {response.msg}",
                 )
 
         except (ValueError, ImportError) as e:
@@ -423,12 +430,12 @@ class AlipayPaymentRefund(Component[PaymentRefundInput, PaymentOutput]):
     """
 
     name: str = "alipay_refund_payment"
-    description: str = (
-        "对交易发起退款，并返回退款状态和退款金额"
-    )
+    description: str = "对交易发起退款，并返回退款状态和退款金额"
 
     async def _arun(
-            self, args: PaymentRefundInput, **kwargs: Any
+        self,
+        args: PaymentRefundInput,
+        **kwargs: Any,
     ) -> PaymentOutput:
         """
         对支付宝交易订单发起退款
@@ -483,7 +490,9 @@ class AlipayPaymentRefund(Component[PaymentRefundInput, PaymentOutput]):
 
             if response.is_success():
                 if response.fund_change == "Y":
-                    result = f"退款结果: 退款成功, 退款交易: {response.trade_no}"
+                    result = (
+                        f"退款结果: 退款成功, 退款交易: {response.trade_no}"
+                    )
                 else:
                     result = (
                         f"退款结果: 重复请求退款幂等成功, "
@@ -492,7 +501,7 @@ class AlipayPaymentRefund(Component[PaymentRefundInput, PaymentOutput]):
                 return PaymentOutput(result=result)
             else:
                 return PaymentOutput(
-                    result=f"退款执行失败. 错误信息: {response.msg}"
+                    result=f"退款执行失败. 错误信息: {response.msg}",
                 )
 
         except (ValueError, ImportError) as e:
@@ -525,12 +534,12 @@ class AlipayRefundQuery(Component[RefundQueryInput, PaymentOutput]):
     """
 
     name: str = "alipay_query_refund"
-    description: str = (
-        "查询一笔支付宝退款，并返回退款状态和退款金额"
-    )
+    description: str = "查询一笔支付宝退款，并返回退款状态和退款金额"
 
     async def _arun(
-            self, args: RefundQueryInput, **kwargs: Any
+        self,
+        args: RefundQueryInput,
+        **kwargs: Any,
     ) -> PaymentOutput:
         """
         查询支付宝退款状态
@@ -588,11 +597,11 @@ class AlipayRefundQuery(Component[RefundQueryInput, PaymentOutput]):
                         result=(
                             f"未查询到退款成功. "
                             f"退款状态: {response.refund_status}"
-                        )
+                        ),
                     )
             else:  # 查询失败
                 return PaymentOutput(
-                    result=f"退款查询失败. 错误信息: {response.msg}"
+                    result=f"退款查询失败. 错误信息: {response.msg}",
                 )
 
         except (ValueError, ImportError) as e:

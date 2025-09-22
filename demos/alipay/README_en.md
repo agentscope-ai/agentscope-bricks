@@ -9,7 +9,7 @@ This demo showcases the integration of agentbricks with Alipay payment and subsc
 1. Configure environment variables:
 ```shell
 export ALIPAY_APP_ID=your_alipay_app_id
-export ALIPAY_PRIVATE_KEY="your_alipay_private_key"
+export ALIPAY_PRIVATE_KEY="your_alipay_private_key"  # pragma: allowlist secret
 export ALIPAY_PUBLIC_KEY="your_alipay_public_key"
 export AP_CURRENT_ENV=sandbox  # sandbox or production environment
 export DASHSCOPE_API_KEY=your_dashscope_api_key

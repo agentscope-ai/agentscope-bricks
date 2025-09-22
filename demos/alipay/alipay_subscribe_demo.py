@@ -18,8 +18,14 @@ import os
 import sys
 
 # 添加项目根目录到 Python 路径
-sys.path.insert(0, os.path.dirname(os.path.dirname(  # noqa: E402
-    os.path.dirname(__file__))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(  # noqa: E402
+            os.path.dirname(__file__),
+        ),
+    ),
+)
 
 from agentscope_bricks.components.alipay.subscribe import (  # noqa: E402
     AlipaySubscribeStatusCheck,
@@ -103,7 +109,7 @@ async def demo_simple_scenarios(user_uuid: str):
         times_input = SubscribeTimesSaveInput(
             uuid=user_uuid,
             out_request_no=f"poem_{user_uuid}_"
-                           f"{int(asyncio.get_event_loop().time())}",
+            f"{int(asyncio.get_event_loop().time())}",
         )
 
         times_result = await times_save._arun(times_input)
@@ -145,8 +151,8 @@ async def demo_simple_scenarios(user_uuid: str):
             "subscribe_url": None,
             "message": f"服务异常: {str(e)}",
         }
-    
-    
+
+
 async def main():
     """主函数：运行所有演示"""
     print("🚀 支付宝订阅组件演示开始")

@@ -7,7 +7,7 @@
 """
 
 import os
-from typing import Optional, Any, Type
+from typing import Optional, Any, Type, Dict
 
 from dotenv import load_dotenv
 from agentscope_bricks.utils.crypto_utils import ensure_pkcs1_format
@@ -37,70 +37,74 @@ X_AGENT_CHANNEL = "bailian_adk_1.0.0"
 try:
 
     from alipay.aop.api.DefaultAlipayClient import (
-        DefaultAlipayClient
+        DefaultAlipayClient,
     )
     from alipay.aop.api.AlipayClientConfig import (
-        AlipayClientConfig
+        AlipayClientConfig,
     )
     from alipay.aop.api.request.AlipayTradeWapPayRequest import (
-        AlipayTradeWapPayRequest
+        AlipayTradeWapPayRequest,
     )
     from alipay.aop.api.request.AlipayTradePagePayRequest import (
-        AlipayTradePagePayRequest
+        AlipayTradePagePayRequest,
     )
     from alipay.aop.api.request.AlipayTradeQueryRequest import (
-        AlipayTradeQueryRequest
+        AlipayTradeQueryRequest,
     )
     from alipay.aop.api.request.AlipayTradeRefundRequest import (
-        AlipayTradeRefundRequest
+        AlipayTradeRefundRequest,
     )
     from alipay.aop.api.request.AlipayTradeFastpayRefundQueryRequest import (
-        AlipayTradeFastpayRefundQueryRequest
+        AlipayTradeFastpayRefundQueryRequest,
     )
     from alipay.aop.api.domain.AlipayTradePagePayModel import (
-        AlipayTradePagePayModel
+        AlipayTradePagePayModel,
     )
     from alipay.aop.api.domain.AlipayTradeWapPayModel import (
-        AlipayTradeWapPayModel
+        AlipayTradeWapPayModel,
     )
     from alipay.aop.api.domain.AlipayTradeQueryModel import (
-        AlipayTradeQueryModel
+        AlipayTradeQueryModel,
     )
     from alipay.aop.api.domain.AlipayTradeRefundModel import (
-        AlipayTradeRefundModel
+        AlipayTradeRefundModel,
     )
     from alipay.aop.api.domain.AlipayTradeFastpayRefundQueryModel import (
-        AlipayTradeFastpayRefundQueryModel
+        AlipayTradeFastpayRefundQueryModel,
     )
     from alipay.aop.api.domain.ExtendParams import (
-        ExtendParams
+        ExtendParams,
     )
     from alipay.aop.api.response.AlipayTradeQueryResponse import (
-        AlipayTradeQueryResponse
+        AlipayTradeQueryResponse,
     )
     from alipay.aop.api.response.AlipayTradeRefundResponse import (
-        AlipayTradeRefundResponse
+        AlipayTradeRefundResponse,
     )
     from alipay.aop.api.response.AlipayTradeFastpayRefundQueryResponse import (
-        AlipayTradeFastpayRefundQueryResponse
+        AlipayTradeFastpayRefundQueryResponse,
     )
+
     # 智能体订阅相关请求和返回
     from alipay.aop.api.request.AlipayAipaySubscribeStatusCheckRequest import (
-        AlipayAipaySubscribeStatusCheckRequest
+        AlipayAipaySubscribeStatusCheckRequest,
     )
-    from alipay.aop.api.request.AlipayAipaySubscribePackageInitializeRequest \
-        import AlipayAipaySubscribePackageInitializeRequest
+    from alipay.aop.api.request.AlipayAipaySubscribePackageInitializeRequest import (  # noqa: E501
+        AlipayAipaySubscribePackageInitializeRequest,
+    )
     from alipay.aop.api.request.AlipayAipaySubscribeTimesSaveRequest import (
-        AlipayAipaySubscribeTimesSaveRequest
+        AlipayAipaySubscribeTimesSaveRequest,
     )
-    from alipay.aop.api.response.AlipayAipaySubscribeStatusCheckResponse \
-        import AlipayAipaySubscribeStatusCheckResponse
-    from alipay.aop.api.response.\
-        AlipayAipaySubscribePackageInitializeResponse \
-        import AlipayAipaySubscribePackageInitializeResponse
+    from alipay.aop.api.response.AlipayAipaySubscribeStatusCheckResponse import (  # noqa: E501
+        AlipayAipaySubscribeStatusCheckResponse,
+    )
+    from alipay.aop.api.response.AlipayAipaySubscribePackageInitializeResponse import (  # noqa: E501
+        AlipayAipaySubscribePackageInitializeResponse,
+    )
     from alipay.aop.api.response.AlipayAipaySubscribeTimesSaveResponse import (
-        AlipayAipaySubscribeTimesSaveResponse
+        AlipayAipaySubscribeTimesSaveResponse,
     )
+
     ALIPAY_SDK_AVAILABLE = True
 except ImportError:
     ALIPAY_SDK_AVAILABLE = False
@@ -130,26 +134,28 @@ except ImportError:
     AlipayAipaySubscribeTimesSaveResponse: Optional[Type[Any]] = None
 
 
-class AgentExtendParams(ExtendParams if ALIPAY_SDK_AVAILABLE else object):
+class AgentExtendParams(
+    ExtendParams if ALIPAY_SDK_AVAILABLE else object,  # type: ignore[misc]
+):
     """
     智能体扩展参数类，继承支付宝SDK的ExtendParams
     添加request_channel_source参数支持，用于标识AI智能体来源
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         if ALIPAY_SDK_AVAILABLE:
             super().__init__()
         self._request_channel_source = None
 
     @property
-    def request_channel_source(self):
+    def request_channel_source(self) -> Optional[str]:
         return self._request_channel_source
 
     @request_channel_source.setter
-    def request_channel_source(self, value):
+    def request_channel_source(self, value: Optional[str]) -> None:
         self._request_channel_source = value
 
-    def to_alipay_dict(self):
+    def to_alipay_dict(self) -> Dict[str, Any]:
         """
         重写父类方法，添加request_channel_source到序列化结果中
         """
@@ -159,11 +165,13 @@ class AgentExtendParams(ExtendParams if ALIPAY_SDK_AVAILABLE else object):
             params = dict()
 
         if self.request_channel_source:
-            params['request_channel_source'] = self.request_channel_source
+            params["request_channel_source"] = self.request_channel_source
         return params
 
     @staticmethod
-    def from_alipay_dict(d):
+    def from_alipay_dict(
+        d: Optional[Dict[str, Any]],
+    ) -> Optional["AgentExtendParams"]:
         """
         重写父类静态方法，支持request_channel_source的反序列化
         """
@@ -181,8 +189,8 @@ class AgentExtendParams(ExtendParams if ALIPAY_SDK_AVAILABLE else object):
                 agent_params.__dict__.update(parent_obj.__dict__)
 
         # 处理我们的自定义属性
-        if 'request_channel_source' in d:
-            agent_params.request_channel_source = d['request_channel_source']
+        if "request_channel_source" in d:
+            agent_params.request_channel_source = d["request_channel_source"]
 
         return agent_params
 
@@ -197,9 +205,9 @@ def get_alipay_gateway_url() -> str:
             - 生产环境: https://openapi.alipay.com/gateway.do
     """
     return (
-        'https://openapi-sandbox.dl.alipaydev.com/gateway.do'
-        if AP_CURRENT_ENV == 'sandbox'
-        else 'https://openapipre.alipay.com/gateway.do'
+        "https://openapi-sandbox.dl.alipaydev.com/gateway.do"
+        if AP_CURRENT_ENV == "sandbox"
+        else "https://openapi.alipay.com/gateway.do"
     )
 
 
@@ -218,7 +226,7 @@ def _check_config_and_sdk() -> None:
     # 检查必需的环境变量配置
     if not ALIPAY_APP_ID or not ALIPAY_PRIVATE_KEY or not ALIPAY_PUBLIC_KEY:
         raise ValueError(
-            "支付配置错误：请设置ALIPAY_APP_ID、ALIPAY_PRIVATE_KEY和ALIPAY_PUBLIC_KEY环境变量"
+            "支付配置错误：请设置ALIPAY_APP_ID、ALIPAY_PRIVATE_KEY和ALIPAY_PUBLIC_KEY环境变量",
         )
 
     # 检查支付宝官方SDK是否可用
@@ -231,10 +239,17 @@ class AgentAlipayClient(DefaultAlipayClient):
     智能体支付宝客户端，继承DefaultAlipayClient并重写相关方法
     """
 
-    def __init__(self, alipay_client_config, logger=None):
+    def __init__(
+        self,
+        alipay_client_config: Any,
+        logger: Optional[Any] = None,
+    ) -> None:
         super().__init__(alipay_client_config, logger)
 
-    def _DefaultAlipayClient__get_common_params(self, params):
+    def _DefaultAlipayClient__get_common_params(
+        self,
+        params: Dict[str, Any],
+    ) -> Dict[str, Any]:
         """
         重写父类的私有方法，在common_params中添加AI智能体标识参数
 
@@ -246,10 +261,13 @@ class AgentAlipayClient(DefaultAlipayClient):
         """
         # 调用父类的私有方法
         common_params = super()._DefaultAlipayClient__get_common_params(params)
-        common_params['x_agent_source'] = X_AGENT_CHANNEL
+        common_params["x_agent_source"] = X_AGENT_CHANNEL
         return common_params
 
-    def _DefaultAlipayClient__remove_common_params(self, params):
+    def _DefaultAlipayClient__remove_common_params(
+        self,
+        params: Dict[str, Any],
+    ) -> Dict[str, Any]:
         """
         重写父类的私有方法，保留我们的自定义参数
 
@@ -257,18 +275,20 @@ class AgentAlipayClient(DefaultAlipayClient):
             params: 请求参数字典
         """
         if not params:
-            return
+            return params
 
         # 导入父类的COMMON_PARAM_KEYS常量
         from alipay.aop.api.constant.ParamConstants import COMMON_PARAM_KEYS
 
         # 创建一个新的常量集合，排除我们的自定义参数
         keys_to_remove = COMMON_PARAM_KEYS.copy()
-        keys_to_remove.discard('x_agent_source')
+        keys_to_remove.discard("x_agent_source")
 
         for k in keys_to_remove:
             if k in params:
                 params.pop(k)
+
+        return params
 
 
 def _create_alipay_client() -> Any:
@@ -304,7 +324,7 @@ def _create_alipay_client() -> Any:
     alipay_client_config.app_id = ALIPAY_APP_ID  # 应用ID
     alipay_client_config.app_private_key = private_key  # 应用私钥
     alipay_client_config.alipay_public_key = public_key  # 支付宝公钥
-    alipay_client_config.sign_type = 'RSA2'  # 签名算法类型
+    alipay_client_config.sign_type = "RSA2"  # 签名算法类型
 
     # 创建并返回支付宝客户端实例
     return AgentAlipayClient(alipay_client_config=alipay_client_config)

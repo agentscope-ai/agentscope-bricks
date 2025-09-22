@@ -25,7 +25,7 @@ from agentscope_bricks.components.alipay.payment import (
     MobileAlipayPayment,
     WebPageAlipayPayment,
     MobilePaymentInput,
-    WebPagePaymentInput
+    WebPagePaymentInput,
 )
 
 
@@ -37,18 +37,22 @@ order_storage = {}
 
 class OrderGeneratorInput(BaseModel):
     """订单生成输入"""
+
     product_name: str = Field(..., description="商品名称")
     amount: float = Field(..., description="商品金额")
     product_type: str = Field(
-        "course", description="商品类型：course, vip, service"
+        "course",
+        description="商品类型：course, vip, service",
     )
     platform: str = Field(
-        "mobile", description="支付平台：mobile 或 webpage"
+        "mobile",
+        description="支付平台：mobile 或 webpage",
     )
 
 
 class OrderGeneratorOutput(BaseModel):
     """订单生成输出"""
+
     order_no: str = Field(..., description="生成的订单号")
     order_info: str = Field(..., description="订单信息")
 
@@ -64,7 +68,9 @@ class OrderGenerator(Component[OrderGeneratorInput, OrderGeneratorOutput]):
     )
 
     async def _arun(
-        self, args: OrderGeneratorInput, **kwargs: Any
+        self,
+        args: OrderGeneratorInput,
+        **kwargs: Any,
     ) -> OrderGeneratorOutput:
         """生成订单号并存储订单信息"""
         _ = kwargs  # 忽略未使用的参数
@@ -72,17 +78,15 @@ class OrderGenerator(Component[OrderGeneratorInput, OrderGeneratorOutput]):
         type_prefix = {
             "course": "COURSE",
             "vip": "VIP",
-            "service": "SERVICE"
+            "service": "SERVICE",
         }.get(args.product_type, "ORDER")
 
         # 生成订单号
-        timestamp = datetime.now().strftime('%Y%m%d')
-        order_count = len([
-            k for k in order_storage.keys() if k.startswith(type_prefix)
-        ])
-        order_no = (
-            f"{type_prefix}_{timestamp}_{order_count + 1:03d}"
+        timestamp = datetime.now().strftime("%Y%m%d")
+        order_count = len(
+            [k for k in order_storage.keys() if k.startswith(type_prefix)],
         )
+        order_no = f"{type_prefix}_{timestamp}_{order_count + 1:03d}"
 
         # 存储订单信息
         order_info = {
@@ -92,7 +96,7 @@ class OrderGenerator(Component[OrderGeneratorInput, OrderGeneratorOutput]):
             "product_type": args.product_type,
             "platform": args.platform,
             "status": "created",
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
         }
         order_storage[order_no] = order_info
 
@@ -103,7 +107,7 @@ class OrderGenerator(Component[OrderGeneratorInput, OrderGeneratorOutput]):
 
         return OrderGeneratorOutput(
             order_no=order_no,
-            order_info=result_info
+            order_info=result_info,
         )
 
 
@@ -120,11 +124,12 @@ def find_order_by_product(product_keywords: str) -> str:
 
 # ===================== 快速创建支付链接工具 =====================
 
+
 async def create_quick_payment(
     amount: float,
     title: str = "商品购买",
     platform: str = "mobile",
-    order_no: str = None
+    order_no: str = None,
 ):
     """
     快速创建支付链接的工具函数
@@ -142,14 +147,14 @@ async def create_quick_payment(
             input_data = MobilePaymentInput(
                 out_trade_no=order_no,
                 order_title=title,
-                total_amount=amount
+                total_amount=amount,
             )
         else:
             payment = WebPageAlipayPayment()
             input_data = WebPagePaymentInput(
                 out_trade_no=order_no,
                 order_title=title,
-                total_amount=amount
+                total_amount=amount,
             )
 
         result = await payment._arun(input_data)
@@ -166,6 +171,7 @@ async def create_quick_payment(
 
 # ===================== AI智能体场景演示 =====================
 
+
 async def demo_simple_scenarios():
     """简单场景演示 - 展示完整的业务流程"""
     print("=" * 50)
@@ -177,33 +183,43 @@ async def demo_simple_scenarios():
     print("\n📱 场景1: Python课程手机支付完整流程")
     print("  步骤1: 生成订单号")
     order_gen = OrderGenerator()
-    order_result = await order_gen._arun(OrderGeneratorInput(
-        product_name="Python入门课程",
-        amount=20.0,
-        product_type="course",
-        platform="mobile"
-    ))
+    order_result = await order_gen._arun(
+        OrderGeneratorInput(
+            product_name="Python入门课程",
+            amount=20.0,
+            product_type="course",
+            platform="mobile",
+        ),
+    )
     print(f"  ✅ {order_result.order_info}")
 
     print("  步骤2: 创建支付链接")
     await create_quick_payment(
-        20.0, "Python入门课程", "mobile", order_result.order_no
+        20.0,
+        "Python入门课程",
+        "mobile",
+        order_result.order_no,
     )
 
     # 场景2: 完整流程 - 生成订单 + 创建网页支付
     print("\n💻 场景2: VIP会员网页支付完整流程")
     print("  步骤1: 生成订单号")
-    order_result2 = await order_gen._arun(OrderGeneratorInput(
-        product_name="VIP年度会员",
-        amount=99.0,
-        product_type="vip",
-        platform="webpage"
-    ))
+    order_result2 = await order_gen._arun(
+        OrderGeneratorInput(
+            product_name="VIP年度会员",
+            amount=99.0,
+            product_type="vip",
+            platform="webpage",
+        ),
+    )
     print(f"  ✅ {order_result2.order_info}")
 
     print("  步骤2: 创建支付链接")
     await create_quick_payment(
-        99.0, "VIP年度会员", "webpage", order_result2.order_no
+        99.0,
+        "VIP年度会员",
+        "webpage",
+        order_result2.order_no,
     )
 
     print("\n🎯 简单场景演示完成 - 展示了标准的业务流程")
@@ -211,11 +227,12 @@ async def demo_simple_scenarios():
 
 # ===================== 主函数 =====================
 
+
 async def main():
     """主演示函数"""
     print("🎯 支付宝支付组件AI智能体演示")
     print(
-        "🔄 业务流程: 订单生成 → 支付创建 → 状态查询"
+        "🔄 业务流程: 订单生成 → 支付创建 → 状态查询",
     )
 
     # 工作流方式（建议使用）
@@ -227,7 +244,8 @@ async def main():
 
 
 if __name__ == "__main__":
-    print("""
+    print(
+        """
 🚀 使用说明:
 
 1. 环境配置:
@@ -242,6 +260,7 @@ if __name__ == "__main__":
    - 🤖 AI智能体多步骤工作流(系统提示词约束)
    - 🗣️ 自然语言支付请求处理
    - 🔄 业务流程: 订单生成 → 支付创建 → 状态查询
-    """)
+    """,
+    )
 
     asyncio.run(main())
