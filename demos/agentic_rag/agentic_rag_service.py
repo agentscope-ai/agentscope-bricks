@@ -292,8 +292,7 @@ async def generate_task_list(query: str) -> TaskListModule:
         )
 
     print(
-        f"【任务列表模块】"
-        f"任务列表生成完成: {[task.description for task in task_items]}",
+        f"【任务列表模块】任务列表生成完成: {[task.description for task in task_items]}",  # noqa E501
     )
 
     # Initially, no task is in progress
@@ -576,9 +575,9 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
     for converted_response in response_converter.convert_intermediate_response(
         internal_response_dict,
     ):
-        yield f"data: {
-            json.dumps(converted_response, default=str, ensure_ascii=False)
-        }\n\n"
+        yield (
+            f"data: {json.dumps(converted_response, default=str, ensure_ascii=False)}\n\n"  # noqa E501
+        )
 
     # Get user query
     user_query = request.messages[-1].get_text_content()
@@ -596,12 +595,7 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
     for converted_response in response_converter.convert_intermediate_response(
         internal_response_dict,
     ):
-        yield f"data: {
-            json.dumps(
-                converted_response,
-                default=str, ensure_ascii=False
-            )
-        }\n\n"
+        yield f"data: {json.dumps(converted_response, default=str, ensure_ascii=False)}\n\n"  # noqa E501
 
     # Generate thinking process using dynamic task system
     print("【主服务】生成思考过程")
@@ -635,12 +629,7 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
     for converted_response in response_converter.convert_intermediate_response(
         internal_response_dict,
     ):
-        yield f"data: {
-            json.dumps(
-                converted_response,
-                default=str, ensure_ascii=False
-            )
-        }\n\n"
+        yield f"data: {json.dumps(converted_response,default=str, ensure_ascii=False)}\n\n"  # noqa E501
 
     # Generate initial dynamic task plan
     print("【主服务】生成初始动态任务计划")
@@ -723,12 +712,7 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
         ) in response_converter.convert_intermediate_response(
             internal_response_dict,
         ):
-            yield f"data: {
-                json.dumps(
-                    converted_response,
-                    default=str, ensure_ascii=False
-                )
-            }\n\n"
+            yield f"data: {json.dumps(converted_response,default=str, ensure_ascii=False)}\n\n"  # noqa E501
 
         # Execute task based on type
         if updated_task.task_type == "RAG" and request.rag_options:
@@ -829,12 +813,7 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
         ) in response_converter.convert_intermediate_response(
             internal_response_dict,
         ):
-            yield f"data: {
-                json.dumps(
-                    converted_response,
-                    default=str, ensure_ascii=False
-                )
-            }\n\n"
+            yield f"data: {json.dumps(converted_response,default=str, ensure_ascii=False)}\n\n"  # noqa E501
 
         # Dynamic task adjustment
         print("【主服务】动态任务调整")
@@ -877,12 +856,7 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
     )
 
     print(
-        f"【主服务】最终结果输出: {
-            json.dumps(
-                final_response.model_dump(),
-                ensure_ascii=False
-            )
-        }",
+        f"【主服务】最终结果输出: {json.dumps(final_response.model_dump(), ensure_ascii=False)}",  # noqa E501
     )
     print("【主服务】请求处理完成")
 
@@ -891,12 +865,7 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
     for converted_response in response_converter.convert_final_response(
         final_response_dict,
     ):
-        yield f"data: {
-            json.dumps(
-                converted_response, default=str,
-                ensure_ascii=False
-            )
-        }\n\n"
+        yield f"data: {json.dumps(converted_response, default=str, ensure_ascii=False)}\n\n"  # noqa E501
 
     # 注意：convert_final_response已经发送了最终的completed状态，所以不需要再发送[DONE]
     # yield "data: [DONE]\n\n"

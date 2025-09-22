@@ -130,7 +130,8 @@ async def get_llm_response(
     user_query: str,
 ) -> None:
     """Get LLM response based on retrieved memories."""
-    system_prompt = f"""You are an experienced Assistant. Please answer the question based on the retrieved memories.
+    system_prompt = f"""You are an experienced Assistant. Please answer the
+    question based on the retrieved memories.
 
 Retrieved memories:
 {chr(10).join([f"- {node.content}" for node in search_result.memory_nodes])}
