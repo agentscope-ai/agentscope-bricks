@@ -38,6 +38,8 @@ dependencies = [
     "opentelemetry-sdk",
     "jinja2>=3.1.6",
     "instructor==1.7.9",
+    "alipay-sdk-python",
+    "cryptography"
 ]
 
 [project.urls]
