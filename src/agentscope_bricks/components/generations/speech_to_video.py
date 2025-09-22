@@ -184,7 +184,7 @@ class SpeechToVideo(Component[SpeechToVideoInput, SpeechToVideoOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("MODEL_NAME", "wan2.2-s2v"),
+            os.getenv("SPEECH_TO_VIDEO_MODEL_NAME", "wan2.2-s2v"),
         )
 
         parameters = {}

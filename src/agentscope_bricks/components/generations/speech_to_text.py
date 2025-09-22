@@ -107,7 +107,7 @@ class SpeechToText(Component[SpeechToTextInput, SpeechToTextOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("ASR_MODEL_NAME", "paraformer-v2"),
+            os.getenv("SPEECH_TO_TEXT_MODEL_NAME", "paraformer-v2"),
         )
 
         # Prepare parameters

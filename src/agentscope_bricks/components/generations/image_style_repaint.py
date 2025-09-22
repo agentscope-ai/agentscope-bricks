@@ -120,7 +120,10 @@ class ImageStyleRepaint(
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("MODEL_NAME", "wanx-style-repaint-v1"),
+            os.getenv(
+                "IMAGE_STYLE_REPAINT_MODEL_NAME",
+                "wanx-style-repaint-v1",
+            ),
         )
 
         has_uploaded = False

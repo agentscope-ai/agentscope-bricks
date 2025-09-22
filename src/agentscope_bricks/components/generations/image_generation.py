@@ -3,6 +3,7 @@ import asyncio
 import os
 import time
 import uuid
+from distutils.util import strtobool
 from http import HTTPStatus
 from typing import Any, Optional
 
@@ -99,10 +100,7 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
 
         trace_event = kwargs.pop("trace_event", None)
         request_id = MCPUtil._get_mcp_dash_request_id(args.ctx)
-        watermark = os.getenv(
-            "ENABLE_WATERMARK",
-            kwargs.pop("watermark", True),
-        )
+
         try:
             api_key = get_api_key(ApiNames.dashscope_api_key, **kwargs)
         except AssertionError:
@@ -110,8 +108,13 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("MODEL_NAME", "wanx2.1-t2i-turbo"),
+            os.getenv("IMAGE_GENERATION_MODEL_NAME", "wanx2.1-t2i-turbo"),
         )
+        watermark_env = os.getenv("IMAGE_GENERATION_ENABLE_WATERMARK")
+        if watermark_env is not None:
+            watermark = strtobool(watermark_env)
+        else:
+            watermark = kwargs.pop("watermark", True)
         # 🔄 使用DashScope的异步任务API实现真正的并发
         # 1. 提交异步任务
 
