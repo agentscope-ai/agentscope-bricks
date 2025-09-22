@@ -53,7 +53,7 @@ def llm_func(**kwargs):
 ## 信息上报
 1. 配置环境变量（默认关闭）
 ```shell
-exoort TRACE_ENABLE_LOG=false
+export TRACE_ENABLE_LOG=false
 export TRACE_ENABLE_REPORT=true
 export TRACE_AUTHENTICATION={YOUR_AUTHENTICATION}
 export TRACE_ENDPOINT={YOUR_ENDPOINT}
