@@ -774,7 +774,7 @@ def _validate_trace_options(
 
     if out_is_root_span:
         out_trace_type = TraceType.CHAIN
-        out_trace_name = "AgentDevApp"
+        out_trace_name = "FullCodeApp"
     else:
         if trace_type:
             if isinstance(trace_type, str):
