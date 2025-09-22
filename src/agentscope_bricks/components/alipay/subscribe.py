@@ -138,6 +138,10 @@ class AlipaySubscribeStatusCheck(
     ) -> SubscribeStatusOutput:
         """检查订阅状态"""
         try:
+            if not SUBSCRIBE_PLAN_ID:
+                raise ValueError(
+                    "订阅配置错误：请设置SUBSCRIBE_PLAN_ID环境变量",
+                )
             # 创建支付宝客户端实例
             alipay_client = _create_alipay_client()
 
@@ -239,6 +243,10 @@ class AlipaySubscribePackageInitialize(
     ) -> SubscribePackageInitializeOutput:
         """发起订阅服务"""
         try:
+            if not SUBSCRIBE_PLAN_ID or not X_AGENT_NAME:
+                raise ValueError(
+                    "订阅配置错误：请设置SUBSCRIBE_PLAN_ID,X_AGENT_NAME环境变量",
+                )
             # 创建支付宝客户端实例
             alipay_client = _create_alipay_client()
 
@@ -309,6 +317,10 @@ class AlipaySubscribeTimesSave(
     ) -> SubscribeTimesSaveOutput:
         """发起订阅计次服务"""
         try:
+            if not SUBSCRIBE_PLAN_ID:
+                raise ValueError(
+                    "订阅配置错误：请设置SUBSCRIBE_PLAN_ID环境变量",
+                )
             # 创建支付宝客户端实例
             alipay_client = _create_alipay_client()
 
@@ -382,6 +394,10 @@ class AlipaySubscribeCheckOrInitialize(
     ) -> SubscribeCheckOrInitializeOutput:
         """检查订阅状态或初始化订阅"""
         try:
+            if not SUBSCRIBE_PLAN_ID or not X_AGENT_NAME:
+                raise ValueError(
+                    "订阅配置错误：请设置SUBSCRIBE_PLAN_ID,X_AGENT_NAME环境变量",
+                )
             # 先检查订阅状态
             status_check = AlipaySubscribeStatusCheck()
             status_input = SubscribeStatusCheckInput(
