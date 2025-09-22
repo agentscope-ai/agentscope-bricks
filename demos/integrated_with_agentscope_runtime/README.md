@@ -30,7 +30,7 @@ export DASHSCOPE_API_KEY=""
 Run the development debugging script to test Agent functionality:
 
 ```bash
-python agent_developement.py
+python agent_development.py
 ```
 
 Choose the Agent type to test:
