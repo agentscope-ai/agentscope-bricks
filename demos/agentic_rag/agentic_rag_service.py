@@ -292,8 +292,7 @@ async def generate_task_list(query: str) -> TaskListModule:
         )
 
     print(
-        f"【任务列表模块】"
-        f"任务列表生成完成: {[task.description for task in task_items]}",
+        f"【任务列表模块】任务列表生成完成: {[task.description for task in task_items]}",  # noqa E501
     )
 
     # Initially, no task is in progress
@@ -857,12 +856,7 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
     )
 
     print(
-        f"【主服务】最终结果输出: {
-            json.dumps(
-                final_response.model_dump(),
-                ensure_ascii=False
-            )
-        }",
+        f"【主服务】最终结果输出: {json.dumps(final_response.model_dump(), ensure_ascii=False)}",  # noqa E501
     )
     print("【主服务】请求处理完成")
 
