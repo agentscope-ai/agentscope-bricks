@@ -676,7 +676,7 @@ class ComputerUseAgent(Agent):
                     yield DataContent(
                         data={
                             "step": "",
-                            "stage": "completed",
+                            "stage": "limit_completed",
                             "type": "text",
                             "text": f"⚠️ 达到最大步数限制 ({self.max_steps})，任务停止",
                         },

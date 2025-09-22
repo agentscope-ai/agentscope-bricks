@@ -60,9 +60,15 @@ def register_tools(equipment: E2bSandBox, tool_functions: dict):
         },
     }
     for name, tool in tool_functions.items():
+        # 安全获取 params，如果 model_dump() 返回 None 则使用空字典
+        params = (
+            tool.function_schema.parameters.model_dump()
+            if tool.function_schema.parameters
+            else {}
+        )
         tools[name] = {
             "description": tool.function_schema.description,
-            "params": tool.function_schema.parameters.model_dump(),
+            "params": params or {},
         }
     return tools
 
@@ -118,9 +124,12 @@ class ComputerUseAgent:
 
         log_str = "The agent will use the following actions:\n"
         for action, details in self.tools.items():
-            param_str = ", ".join(
-                details.get("params").get("properties", {}).keys(),
-            )
+            params = details.get("params", {})
+            if params and isinstance(params, dict):
+                properties = params.get("properties", {})
+                param_str = ", ".join(properties.keys())
+            else:
+                param_str = ""
             log_str += f"- {action}({param_str})\n"
         logger.log(log_str.rstrip(), "gray")
         self.emit_status("TASK", {"message": log_str.rstrip()})
