@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for AgentScope Runtime
+about: Suggest an idea for AgentScope Bricks
 title: '[Feature] Brief description'
 labels: 'enhancement'
 assignees: ''

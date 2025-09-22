@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Create a report to help us improve AgentScope Runtime
+about: Create a report to help us improve AgentScope Bricks
 title: '[Bug] Brief description'
 labels: 'bug'
 assignees: ''
@@ -30,7 +30,7 @@ assignees: ''
 [Paste full error messages/stack traces]
 
 ## Environment
-- **AgentScope Runtime Version:** [e.g. v0.1.0]
+- **AgentScope Bricks Version:** [e.g. v0.1.0]
 - **Python Version:** [e.g. 3.10]
 - **OS:** [e.g. Ubuntu 20.04]
 - **Installation:** [pip/source]

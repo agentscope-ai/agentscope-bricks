@@ -24,7 +24,7 @@ assignees: ''
 - [ ] Not sure
 
 ## Environment (if relevant)
-- **AgentScope Runtime Version:** [e.g. v0.1.0]
+- **AgentScope Bricks Version:** [e.g. v0.1.0]
 - **Python Version:** [e.g. 3.10]
 - **OS:** [e.g. Ubuntu 20.04]
 
