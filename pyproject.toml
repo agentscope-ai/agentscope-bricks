@@ -31,6 +31,8 @@ dependencies = [
     "pillow",
     "pydantic>=2.10.6",
     "typing_extensions",
+    "alipay-sdk-python",
+    "cryptography"
 ]
 
 [project.urls]
