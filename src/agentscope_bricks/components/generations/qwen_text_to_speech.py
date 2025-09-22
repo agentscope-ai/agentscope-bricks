@@ -96,7 +96,7 @@ class QwenTextToSpeech(
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("MODEL_NAME", "qwen-tts"),
+            os.getenv("QWEN_TEXT_TO_SPEECH_MODEL_NAME", "qwen-tts"),
         )
 
         try:

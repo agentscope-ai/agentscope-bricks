@@ -2,6 +2,7 @@
 import asyncio
 import os
 import uuid
+from distutils.util import strtobool
 from typing import Any, Optional
 
 from dashscope import AioMultiModalConversation
@@ -102,12 +103,14 @@ class QwenImageEdit(Component[QwenImageEditInput, QwenImageEditOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("MODEL_NAME", "qwen-image-edit"),
+            os.getenv("QWEN_IMAGE_EDIT_MODEL_NAME", "qwen-image-edit"),
         )
-        watermark = os.getenv(
-            "ENABLE_WATERMARK",
-            kwargs.pop("watermark", True),
-        )
+        watermark_env = os.getenv("QWEN_IMAGE_EDIT_ENABLE_WATERMARK")
+        if watermark_env is not None:
+            watermark = strtobool(watermark_env)
+        else:
+            watermark = kwargs.pop("watermark", True)
+
         # Prepare messages in the format expected by MultiModalConversation
         messages = [
             {

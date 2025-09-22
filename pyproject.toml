@@ -31,6 +31,12 @@ dependencies = [
     "pillow",
     "pydantic>=2.10.6",
     "typing_extensions",
+    "jsonref",
+    "asgiref",
+    "opentelemetry-api",
+    "opentelemetry-exporter-otlp",
+    "opentelemetry-sdk",
+    "jinja2>=3.1.6",
 ]
 
 [project.urls]

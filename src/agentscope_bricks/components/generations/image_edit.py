@@ -3,6 +3,7 @@ import asyncio
 import os
 import time
 import uuid
+from distutils.util import strtobool
 from http import HTTPStatus
 from typing import Any, Optional
 
@@ -115,13 +116,14 @@ class ImageEdit(Component[ImageGenInput, ImageGenOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("MODEL_NAME", "wanx2.1-imageedit"),
+            os.getenv("IMAGE_EDIT_MODEL_NAME", "wanx2.1-imageedit"),
         )
 
-        watermark = os.getenv(
-            "ENABLE_WATERMARK",
-            kwargs.pop("watermark", True),
-        )
+        watermark_env = os.getenv("IMAGE_EDIT_ENABLE_WATERMARK")
+        if watermark_env is not None:
+            watermark = strtobool(watermark_env)
+        else:
+            watermark = kwargs.pop("watermark", True)
 
         parameters = {}
         if args.n is not None:
