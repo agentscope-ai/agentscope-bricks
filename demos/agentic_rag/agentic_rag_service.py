@@ -576,9 +576,9 @@ async def agentic_rag_arun(request: ModelstudioChatRequest):
     for converted_response in response_converter.convert_intermediate_response(
         internal_response_dict,
     ):
-        yield f"data: {
-            json.dumps(converted_response, default=str, ensure_ascii=False)
-        }\n\n"
+        yield (
+            f"data: {json.dumps(converted_response, default=str, ensure_ascii=False)}\n\n"  # noqa E501
+        )
 
     # Get user query
     user_query = request.messages[-1].get_text_content()
