@@ -31,7 +31,6 @@ gui_agent = GuiAgent()
 
 
 def register_tools(equipment: E2bSandBox, tool_functions: dict):
-    """安全的工具注册函数，处理空值情况"""
     set_device(equipment)
     tools = {
         "stop": {
@@ -60,45 +59,17 @@ def register_tools(equipment: E2bSandBox, tool_functions: dict):
             },
         },
     }
-
-    # 安全处理工具函数
-    if tool_functions:
-        for name, tool in tool_functions.items():
-            try:
-                # 安全获取 params
-                if hasattr(tool, "function_schema") and tool.function_schema:
-                    if (
-                        hasattr(tool.function_schema, "parameters")
-                        and tool.function_schema.parameters
-                    ):
-                        params = tool.function_schema.parameters.model_dump()
-                    else:
-                        params = {}
-
-                    # 安全获取 description
-                    if (
-                        hasattr(tool.function_schema, "description")
-                        and tool.function_schema.description
-                    ):
-                        description = tool.function_schema.description
-                    else:
-                        description = f"Function {name}"
-                else:
-                    params = {}
-                    description = f"Function {name}"
-
-                tools[name] = {
-                    "description": description,
-                    "params": params or {},
-                }
-            except Exception as e:
-                logger.log(f"Error registering tool {name}: {e}", "red")
-                # 提供一个默认的工具配置
-                tools[name] = {
-                    "description": f"Function {name}",
-                    "params": {},
-                }
-
+    for name, tool in tool_functions.items():
+        # 安全获取 params，如果 model_dump() 返回 None 则使用空字典
+        params = (
+            tool.function_schema.parameters.model_dump()
+            if tool.function_schema.parameters
+            else {}
+        )
+        tools[name] = {
+            "description": tool.function_schema.description,
+            "params": params or {},
+        }
     return tools
 
 
@@ -132,116 +103,38 @@ class ComputerUseAgent:
             # 如果equipment本身就是设备对象，则直接使用
             self.sandbox = equipment
 
-        # 初始化工具
-        self.tools = {}
-        try:
-            if mode == "qwen_vl":
-                self.tool_functions = GUI_TOOLS
+        if mode == "qwen_vl":
+            self.tool_functions = GUI_TOOLS
+            self.tools = register_tools(equipment, self.tool_functions)
+        elif mode == "pc_use":
+            self.session_id = ""
+            self.add_info = pc_use_add_info
+            if self.sandbox_type == "e2b-desktop":
+                self.tool_functions = PCA_GUI_TOOLS
                 self.tools = register_tools(equipment, self.tool_functions)
-            elif mode == "pc_use":
-                self.session_id = ""
-                self.add_info = pc_use_add_info
-                if self.sandbox_type == "e2b-desktop":
-                    self.tool_functions = PCA_GUI_TOOLS
-                    self.tools = register_tools(equipment, self.tool_functions)
-            else:
-                raise ValueError(
-                    f"Invalid mode: {mode}, must be one "
-                    f"of: [qwen_vl, pc_use, wy_pc_use]",
-                )
-        except Exception as e:
-            logger.log(f"Error initializing tools: {e}", "red")
-            # 提供默认工具
-            self.tools = {
-                "stop": {
-                    "description": "Indicate that the task has been completed.",
-                    "params": {},
-                },
-                HUMAN_HELP_ACTION: {
-                    "description": "Wait for the given amount of time for human to do the task.",
-                    "params": {
-                        "time": {
-                            "type": "integer",
-                            "description": "Time in seconds",
-                        },
-                        "task": {
-                            "type": "string",
-                            "description": "Task description",
-                        },
-                    },
-                },
-            }
+        else:
+            raise ValueError(
+                f"Invalid mode: {mode}, must be one "
+                f"of: [qwen_vl, pc_use, wy_pc_use]",
+            )
 
         # Set the log file location
         if save_logs:
             logger.log_file = f"{output_dir}/log.html"
 
-        # 安全生成工具列表日志
-        log_str = self._generate_tools_log()
-
-        try:
-            logger.log(
-                (
-                    log_str.rstrip()
-                    if log_str
-                    else "The agent will use default tools"
-                ),
-                "gray",
-            )
-            self.emit_status(
-                "TASK",
-                {
-                    "message": (
-                        log_str.rstrip()
-                        if log_str
-                        else "The agent will use default tools"
-                    )
-                },
-            )
-        except Exception as e:
-            logger.log(f"Error logging tools info: {e}", "red")
-
+        log_str = "The agent will use the following actions:\n"
+        for action, details in self.tools.items():
+            params = details.get("params", {})
+            if params and isinstance(params, dict):
+                properties = params.get("properties", {})
+                param_str = ", ".join(properties.keys())
+            else:
+                param_str = ""
+            log_str += f"- {action}({param_str})\n"
+        logger.log(log_str.rstrip(), "gray")
+        self.emit_status("TASK", {"message": log_str.rstrip()})
         self._is_cancelled = False
         self._interrupted = False
-
-    def _generate_tools_log(self):
-        """安全生成工具列表日志"""
-        try:
-            if not self.tools:
-                return "The agent will use the following actions:\n- stop()\n"
-
-            log_str = "The agent will use the following actions:\n"
-            for action, details in self.tools.items():
-                try:
-                    if not details or not isinstance(details, dict):
-                        param_str = ""
-                    else:
-                        params = details.get("params", {})
-                        if params and isinstance(params, dict):
-                            properties = params.get("properties", {})
-                            if properties and isinstance(properties, dict):
-                                param_str = ", ".join(
-                                    str(key) for key in properties.keys()
-                                )
-                            else:
-                                param_str = ""
-                        else:
-                            param_str = ""
-
-                    log_str += f"- {action}({param_str})\n"
-                except Exception as e:
-                    logger.log(f"Error processing tool {action}: {e}", "red")
-                    log_str += f"- {action}()\n"
-
-            return (
-                log_str
-                if log_str
-                else "The agent will use the following actions:\n"
-            )
-
-        except Exception as e:
-            logger.log(f"Error generating tools log: {e}", "red")
-            return "The agent will use the following actions:\n- stop()\n"
 
     def stop(self):
         self._is_cancelled = True
@@ -278,33 +171,23 @@ class ComputerUseAgent:
         """
 
         print("Agent wait close equipment by user request.")
-        try:
-            status, res = self.equipment.agent_bay_instance.close_session(
-                session_id=session_id,
-            )
-            # 发送状态更新到前端
-            if status == "success":
-                self.emit_status(
-                    "SYSTEM",
-                    {
-                        "message": "Close equipment success",
-                        "status": "running",
-                    },
-                )
-            else:
-                self.emit_status(
-                    "SYSTEM",
-                    {
-                        "message": "Close equipment failed",
-                        "status": "running",
-                    },
-                )
-        except Exception as e:
-            logger.log(f"Error closing equipment: {e}", "red")
+        status, res = self.equipment.agent_bay_instance.close_session(
+            session_id=session_id,
+        )
+        # 发送状态更新到前端
+        if status == "success":
             self.emit_status(
                 "SYSTEM",
                 {
-                    "message": f"Close equipment error: {e}",
+                    "message": "Close equipment success",
+                    "status": "running",
+                },
+            )
+        else:
+            self.emit_status(
+                "SYSTEM",
+                {
+                    "message": "Close equipment failed",
                     "status": "running",
                 },
             )
@@ -370,9 +253,7 @@ class ComputerUseAgent:
     def call_function(self, name, arguments):
         func_impl = (
             self.tool_functions.get(name.lower())
-            if hasattr(self, "tool_functions")
-            and self.tool_functions
-            and name.lower() in self.tools
+            if name.lower() in self.tools
             else None
         )
         if func_impl:
