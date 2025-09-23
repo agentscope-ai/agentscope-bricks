@@ -6,7 +6,6 @@
 
 ### 设置环境变量
 ```shell
-
 # 百炼平台API-Key
 DASHSCOPE_API_KEY={your_api_key}
 
@@ -16,25 +15,17 @@ OSS_ACCESS_KEY_SECRET={your_sk}
 OSS_ENDPOINT={your_endpoint}
 OSS_BUCKET={your_bucket}
 OSS_DIRECTORY={your_directory}
-
-# 可观测相关配置
-TRACE_ENABLE_LOG=1
-TRACE_ENABLE_REPORT=0
-TRACE_ENABLE_DEBUG=0
 ```
 
+进入项目根目录
 
-### 启动服务端
+### 安装依赖
+
 ```shell
-export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/multimodal_generation/backend/app.py
+pip install -r demos/multimodal_generation/backend/requirements.txt
 ```
 
-### 启动客户端
+### 运行程序
 ```shell
-export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/multimodal_generation/backend/test/agent_api_client.py
+export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/multimodal_generation/backend/test/utils.py
 ```
-
-
-
-
-
