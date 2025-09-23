@@ -1491,7 +1491,12 @@ class ComputerUseAgent(Agent):
                     ),
                 }
                 # 如果action包含括号，需要拆分
-                if action and isinstance(action, str) and "(" in action and ")" in action:
+                if (
+                    action
+                    and isinstance(action, str)
+                    and "(" in action
+                    and ")" in action
+                ):
                     # 提取括号前的部分作为action
                     action_part = action.split("(", 1)[0].strip()
                     # 提取括号及内部内容作为action_params

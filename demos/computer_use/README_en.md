@@ -7,7 +7,7 @@ Computer Use Agent is an AI-based desktop automation system that can control the
 ##  Chapter 2：agentdev install
 
 ```bash
-# The phrase describes the location of the agentdev/ 
+# The phrase describes the location of the agentdev/
 pip install .
 ```
 

@@ -284,7 +284,7 @@ def safe_strip(value):
     if not isinstance(value, str):
         try:
             return str(value).strip() if str(value) else ""
-        except:
+        except Exception:
             return ""
     return value.strip()
 
@@ -327,7 +327,7 @@ def format_status_message(status_data: Dict[str, Any]) -> str:
                 if not isinstance(value, str):
                     try:
                         return str(value).strip() if str(value) else ""
-                    except:
+                    except Exception:
                         return ""
                 return value.strip()
 
@@ -340,7 +340,11 @@ def format_status_message(status_data: Dict[str, Any]) -> str:
                 "action_parsed": safe_strip_local(action_parsed),
                 "action_executed": safe_strip_local(action_executed),
                 "request_id": safe_get(auxiliary_info, "request_id", ""),
-                "annotated_img_path": safe_get(auxiliary_info, "annotated_img_path", ""),
+                "annotated_img_path": safe_get(
+                    auxiliary_info,
+                    "annotated_img_path",
+                    "",
+                ),
             }
 
             screenshot_url = step_data.get("screenshot_url", "")
@@ -442,7 +446,10 @@ def update_or_add_step_message(status_message, msg_id):
             # 查找是否已经存在相同步骤的消息
             message_index = None
             for i, msg in enumerate(st.session_state.messages):
-                if msg.get("type") == "status" and msg.get("step_key") == step_key:
+                if (
+                    msg.get("type") == "status"
+                    and msg.get("step_key") == step_key
+                ):
                     message_index = i
                     break
 
@@ -504,7 +511,11 @@ def update_or_add_step_message(status_message, msg_id):
                 st.session_state.messages.append(
                     {
                         "role": "assistant",
-                        "content": str(status_message) if status_message is not None else "Unknown message",
+                        "content": (
+                            str(status_message)
+                            if status_message is not None
+                            else "Unknown message"
+                        ),
                         "type": "status",
                         "msg_id": msg_id,
                     },
@@ -605,7 +616,8 @@ if st.session_state.sse_running:
                             # 特殊处理：如果收到IDLE状态且消息是"Ready to start"，说明任务已完成
                             if (
                                 status == "idle"
-                                and "ready to start" in str(message_content).lower()
+                                and "ready to start"
+                                in str(message_content).lower()
                             ):
                                 print(
                                     "[SSE] Task completed, "

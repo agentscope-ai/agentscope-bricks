@@ -75,14 +75,20 @@ def register_tools(equipment: E2bSandBox, tool_functions: dict):
         for name, tool in tool_functions.items():
             try:
                 # 安全获取 params
-                if hasattr(tool, 'function_schema') and tool.function_schema:
-                    if hasattr(tool.function_schema, 'parameters') and tool.function_schema.parameters:
+                if hasattr(tool, "function_schema") and tool.function_schema:
+                    if (
+                        hasattr(tool.function_schema, "parameters")
+                        and tool.function_schema.parameters
+                    ):
                         params = tool.function_schema.parameters.model_dump()
                     else:
                         params = {}
 
                     # 安全获取 description
-                    if hasattr(tool.function_schema, 'description') and tool.function_schema.description:
+                    if (
+                        hasattr(tool.function_schema, "description")
+                        and tool.function_schema.description
+                    ):
                         description = tool.function_schema.description
                     else:
                         description = f"Function {name}"
@@ -158,14 +164,22 @@ class ComputerUseAgent:
             # 提供默认工具
             self.tools = {
                 "stop": {
-                    "description": "Indicate that the task has been completed.",
+                    "description": "Indicate that the task "
+                    "has been completed.",
                     "params": {},
                 },
                 HUMAN_HELP_ACTION: {
-                    "description": "Wait for the given amount of time for human to do the task.",
+                    "description": "Wait for the given amount "
+                    "of time for human to do the task.",
                     "params": {
-                        "time": {"type": "integer", "description": "Time in seconds"},
-                        "task": {"type": "string", "description": "Task description"},
+                        "time": {
+                            "type": "integer",
+                            "description": "Time in seconds",
+                        },
+                        "task": {
+                            "type": "string",
+                            "description": "Task description",
+                        },
                     },
                 },
             }
@@ -178,7 +192,11 @@ class ComputerUseAgent:
         log_str = self._generate_tools_log()
 
         try:
-            safe_log_str = safe_strip(log_str) if log_str else "The agent will use default tools"
+            safe_log_str = (
+                safe_strip(log_str)
+                if log_str
+                else "The agent will use default tools"
+            )
             logger.log(safe_log_str, "gray")
             self.emit_status("TASK", {"message": safe_log_str})
         except Exception as e:
@@ -203,7 +221,9 @@ class ComputerUseAgent:
                         if params and isinstance(params, dict):
                             properties = params.get("properties", {})
                             if properties and isinstance(properties, dict):
-                                param_str = ", ".join(str(key) for key in properties.keys())
+                                param_str = ", ".join(
+                                    str(key) for key in properties.keys()
+                                )
                             else:
                                 param_str = ""
                         else:
@@ -214,7 +234,11 @@ class ComputerUseAgent:
                     logger.log(f"Error processing tool {action}: {e}", "red")
                     log_str += f"- {action}()\n"
 
-            return log_str if log_str else "The agent will use the following actions:\n"
+            return (
+                log_str
+                if log_str
+                else "The agent will use the following actions:\n"
+            )
 
         except Exception as e:
             logger.log(f"Error generating tools log: {e}", "red")
@@ -347,7 +371,9 @@ class ComputerUseAgent:
     def call_function(self, name, arguments):
         func_impl = (
             self.tool_functions.get(name.lower())
-            if hasattr(self, 'tool_functions') and self.tool_functions and name.lower() in self.tools
+            if hasattr(self, "tool_functions")
+            and self.tool_functions
+            and name.lower() in self.tools
             else None
         )
         if func_impl:
@@ -485,7 +511,8 @@ class ComputerUseAgent:
                 "exact format below. Only use visual "
                 "evidence — do not assume "
                 "hidden or off-screen information.\n\n"
-                f"### Objective:\n{getattr(self, 'user_instruction', 'Unknown')}\n\n"
+                f"### Objective"
+                f":\n{getattr(self, 'user_instruction', 'Unknown')}\n\n"
                 "### Response Format:\n```\n"
                 "Screen analysis: [Describe relevant "
                 "visible elements such as "
@@ -564,7 +591,13 @@ class ComputerUseAgent:
 
             try:
                 vision_result = vision_model.call(vl_messages)
-                result = "THOUGHT: " + str(vision_result if vision_result else "No response from vision model")
+                result = "THOUGHT: " + str(
+                    (
+                        vision_result
+                        if vision_result
+                        else "No response from vision model"
+                    ),
+                )
             except Exception as e:
                 logger.log(f"Error calling vision model: {e}", "red")
                 result = "THOUGHT: Error analyzing screenshot"
@@ -581,7 +614,13 @@ class ComputerUseAgent:
                                 "data": {
                                     "messages": [
                                         {"image": screenshot_oss_url},
-                                        {"instruction": getattr(self, 'user_instruction', 'Unknown task')},
+                                        {
+                                            "instruction": getattr(
+                                                self,
+                                                "user_instruction",
+                                                "Unknown task",
+                                            ),
+                                        },
                                         {"session_id": self.session_id},
                                         {
                                             "device_type": "pc",
@@ -619,9 +658,21 @@ class ComputerUseAgent:
 
                 mode_response = asyncio.run(gui_agent.arun(messages, "pc_use"))
 
-                action = mode_response.action if hasattr(mode_response, 'action') else "unknown"
-                action_params = mode_response.action_params if hasattr(mode_response, 'action_params') else {}
-                thought = mode_response.thought if hasattr(mode_response, 'thought') else "No thought available"
+                action = (
+                    mode_response.action
+                    if hasattr(mode_response, "action")
+                    else "unknown"
+                )
+                action_params = (
+                    mode_response.action_params
+                    if hasattr(mode_response, "action_params")
+                    else {}
+                )
+                thought = (
+                    mode_response.thought
+                    if hasattr(mode_response, "thought")
+                    else "No thought available"
+                )
 
                 result = (
                     "Thought: "
@@ -632,15 +683,18 @@ class ComputerUseAgent:
                     + str(action_params)
                 )
 
-                if hasattr(mode_response, 'session_id'):
+                if hasattr(mode_response, "session_id"):
                     self.session_id = mode_response.session_id
-                if hasattr(mode_response, 'request_id'):
+                if hasattr(mode_response, "request_id"):
                     auxiliary_info["request_id"] = mode_response.request_id
 
                 # 为click类型的动作生成标注图片
                 if action in ["click", "right click"]:
                     try:
-                        if isinstance(action_params, dict) and "position" in action_params:
+                        if (
+                            isinstance(action_params, dict)
+                            and "position" in action_params
+                        ):
                             point_x = action_params["position"][0]
                             point_y = action_params["position"][1]
                             _, img_path = self.annotate_image(
@@ -799,9 +853,15 @@ class ComputerUseAgent:
                             f.write("=" * 50 + "\n\n")
 
                     if content:
-                        content_safe = str(content) if content is not None else "No content"
+                        content_safe = (
+                            str(content)
+                            if content is not None
+                            else "No content"
+                        )
                         self.messages.append(
-                            Message(logger.log(f"THOUGHT: {content_safe}", "blue")),
+                            Message(
+                                logger.log(f"THOUGHT: {content_safe}", "blue"),
+                            ),
                         )
 
                     should_continue = False
@@ -840,8 +900,14 @@ class ComputerUseAgent:
                         if name == HUMAN_HELP_ACTION:
                             import time
 
-                            time_to_sleep = int(os.getenv("HUMAN_WAIT_TIME", 15))
-                            task = parameters.get("task", "") if parameters else ""
+                            time_to_sleep = int(
+                                os.getenv("HUMAN_WAIT_TIME", 15),
+                            )
+                            task = (
+                                parameters.get("task", "")
+                                if parameters
+                                else ""
+                            )
                             logger.log(
                                 "HUMAN_HELP: The system will waited "
                                 f"for {time_to_sleep} "
@@ -903,14 +969,21 @@ class ComputerUseAgent:
                             continue
 
                         # 发射动作执行完成状态
-                        step_info["action_executed"] = str(result) if result is not None else "No result"
+                        step_info["action_executed"] = (
+                            str(result) if result is not None else "No result"
+                        )
 
                         self.emit_status("STEP", step_info)
 
-                        result_safe = str(result) if result is not None else "No result"
+                        result_safe = (
+                            str(result) if result is not None else "No result"
+                        )
                         self.messages.append(
                             Message(
-                                logger.log(f"OBSERVATION: {result_safe}", "yellow"),
+                                logger.log(
+                                    f"OBSERVATION: {result_safe}",
+                                    "yellow",
+                                ),
                             ),
                         )
                 if self._is_cancelled:
