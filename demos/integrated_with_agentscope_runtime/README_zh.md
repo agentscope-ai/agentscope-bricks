@@ -1,52 +1,52 @@
-# AgentScope Runtime Integration Examples
+# AgentScope Runtime 集成示例
 
-This example demonstrates how to use **agentscope-bricks** to assist in Agent development and leverage **agentscope-runtime** for debugging and deployment.
+本示例演示了如何使用 **agentscope-bricks** 来辅助 Agent 开发，并利用 **agentscope-runtime** 进行调试和部署。
 
-## 🎯 Project Overview
+## 🎯 项目概述
 
-This project demonstrates three different types of Agent implementations:
-1. **AgentScope Agent** - ReAct Agent based on AgentScope framework
-2. **LangGraph Agent** - Workflow Agent based on LangGraph
-3. **Custom Agent** - Simple Agent based on agentscope-bricks
+本项目演示了三种不同类型的 Agent 实现：
+1. **AgentScope Agent** - 基于 AgentScope 框架的 ReAct Agent
+2. **LangGraph Agent** - 基于 LangGraph 的工作流 Agent
+3. **Custom Agent** - 基于 agentscope-bricks 的简单 Agent
 
-All Agents integrate search components provided by agentscope-bricks and can be uniformly debugged and deployed through agentscope-runtime.
+所有 Agent 都集成了 agentscope-bricks 提供的搜索组件，并可以通过 agentscope-runtime 进行统一的调试和部署。
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### Environment Setup
+### 环境设置
 
-1. **Install Dependencies**
+1. **安装依赖**
 ```bash
 pip install agentscope-bricks agentscope-runtime
 ```
 
-2. **Configure API Key**
+2. **配置 API Key**
 ```bash
 export DASHSCOPE_API_KEY=""
 ```
 
-### Development and Debugging
+### 开发和调试
 
-Run the development debugging script to test Agent functionality:
+运行开发调试脚本来测试 Agent 功能：
 
 ```bash
 python agent_development.py
 ```
 
-Choose the Agent type to test:
+选择要测试的 Agent 类型：
 - `1` - AgentScope Agent
 - `2` - LangGraph Agent
 - `3` - Custom Agent
 
-### Service Deployment
+### 服务部署
 
-Run the deployment script to deploy Agent as an HTTP service:
+运行部署脚本将 Agent 部署为 HTTP 服务：
 
 ```bash
 python agent_deployment.py
 ```
 
-After the service starts, you can call it as follows:
+服务启动后，可以按如下方式调用：
 
 ```bash
 curl http://localhost:8090/process \
@@ -59,7 +59,7 @@ curl http://localhost:8090/process \
             "content": [
                 {
                     "type": "text",
-                    "text": "Where is Hangzhou?"
+                    "text": "杭州在哪里？"
                 }
             ]
         }
@@ -67,47 +67,47 @@ curl http://localhost:8090/process \
 }'
 ```
 
-## 🛠️ AgentScope-Bricks Component Usage
+## 🛠️ AgentScope-Bricks 组件使用
 
-### Search Component
+### 搜索组件
 
-All Agents integrate the `ModelstudioSearchLite` search component:
+所有 Agent 都集成了 `ModelstudioSearchLite` 搜索组件：
 
 ```python
 from agentscope_bricks.components.searches.modelstudio_search_lite import ModelstudioSearchLite
 
-# Create search tool
+# 创建搜索工具
 search_tool = ModelstudioSearchLite()
 ```
 
-### Adapters
+### 适配器
 
-Different frameworks require corresponding adapters:
+不同框架需要相应的适配器：
 
 ```python
-# AgentScope Runtime Adapter
+# AgentScope Runtime 适配器
 from agentscope_bricks.adapters.agentscope_runtime.tool import AgentScopeRuntimeToolAdapter
 tool = AgentScopeRuntimeToolAdapter(search_tool)
 
-# LangGraph Adapter
+# LangGraph 适配器
 from agentscope_bricks.adapters.langgraph.tool import LanggraphNodeAdapter
 tool_node = LanggraphNodeAdapter([search_tool])
 ```
 
 ### Agent API
 
-The demos are inherit from AgentScope-Runtime basic Agent class, which receive an fine-designed agent request,
-and thus return a correspond response, so that when user deploy the service, it will return a reasonable result.
-This fine designed  request-response protocol are so-called **Agent API**
+这些演示继承自 AgentScope-Runtime 基础 Agent 类，接收精心设计的 agent 请求，
+并返回相应的响应，以便用户部署服务时能返回合理的结果。
+这种精心设计的请求-响应协议被称为 **Agent API**
 
-The detail information of the Agent API could refer the [customize_agent](react_agent_with_customize_agent.py)
+Agent API 的详细信息可以参考 [customize_agent](react_agent_with_customize_agent.py)
 
 
-## 🔍 AgentScope-Runtime Features
+## 🔍 AgentScope-Runtime 功能
 
-### Development and Debugging
+### 开发和调试
 
-`agent_developement.py` provides a simple debugging interface:
+`agent_developement.py` 提供了简单的调试接口：
 
 ```python
 async def simple_call_agent_direct(agent, query):
@@ -117,14 +117,14 @@ async def simple_call_agent_direct(agent, query):
     return result
 ```
 
-### Service Deployment
+### 服务部署
 
-`agent_deployment.py` provides complete deployment functionality:
+`agent_deployment.py` 提供了完整的部署功能：
 
 ```python
-# Create runner
+# 创建运行器
 async with create_runner(agent) as runner:
-    # Deploy as HTTP service
+    # 部署为 HTTP 服务
     deploy_manager = LocalDeployManager(host="localhost", port=8090)
     deploy_result = await runner.deploy(
         deploy_manager=deploy_manager,
@@ -132,7 +132,7 @@ async with create_runner(agent) as runner:
         stream=True,
     )
 ```
-then user could query the agent with a simplified agent api by :
+然后用户可以通过简化的 agent api 查询 agent：
 
 ```shell
 curl http://localhost:8090/process \
@@ -145,7 +145,7 @@ curl http://localhost:8090/process \
             "content": [
                 {
                     "type": "text",
-                    "text": "Where is Hangzhou?"
+                    "text": "杭州在哪里？"
                 }
             ]
         }
@@ -153,15 +153,15 @@ curl http://localhost:8090/process \
 }'
 ```
 
-### Advanced Deployment
+### 高级部署
 
-add response api interface
+添加响应 API 接口
 
 ```python
 from agentscope_runtime.engine.deployers.adapter.responses.response_api_protocol_adapter import ResponseAPIDefaultAdapter   # noqa E501
 
 async with create_runner(agent) as runner:
-    # Deploy as HTTP service
+    # 部署为 HTTP 服务
     deploy_manager = LocalDeployManager(host="localhost", port=8090)
     deploy_result = await runner.deploy(
         deploy_manager=deploy_manager,
@@ -170,7 +170,7 @@ async with create_runner(agent) as runner:
         protocol_adapters=[ResponseAPIDefaultAdapter()],
     )
 ```
-after add the response api protocol adapters, user could query the agent by response api.
+添加响应 API 协议适配器后，用户可以通过响应 API 查询 agent。
 
 ```python
 from openai import OpenAI, AsyncOpenAI
@@ -189,7 +189,7 @@ response = openai_client.responses.create(
     model='gpt-4',
     input=[{
         'role': 'user',
-        'content': 'Tell me a short story about a robot learning to dance.',
+        'content': '给我讲一个关于机器人学跳舞的短故事。',
     }],
     stream=True,
 )
@@ -218,17 +218,17 @@ for event in response:
 print(f'   SUCCESS streaming response, total:  {event_count} events')
 ```
 
-### Core Features
+### 核心功能
 
-- **Session Management**: Supports multi-user multi-session
-- **Streaming Response**: Supports real-time streaming output
-- **Tool Calling**: Unified tool calling interface
-- **Environment Management**: Sandbox environment support
-- **Health Check**: Built-in health check endpoint
+- **会话管理**：支持多用户多会话
+- **流式响应**：支持实时流式输出
+- **工具调用**：统一的工具调用接口
+- **环境管理**：沙盒环境支持
+- **健康检查**：内置健康检查端点
 
-## 📝 Use Cases
+## 📝 使用场景
 
-1. **Rapid Prototyping**: Use agentscope-bricks to quickly build Agent prototypes
-2. **Multi-Framework Integration**: Support multiple frameworks like AgentScope, LangGraph, etc.
-3. **Production Deployment**: Deploy as production services through agentscope-runtime
-4. **Debugging and Testing**: Provide complete debugging and testing tools
+1. **快速原型开发**：使用 agentscope-bricks 快速构建 Agent 原型
+2. **多框架集成**：支持 AgentScope、LangGraph 等多种框架
+3. **生产部署**：通过 agentscope-runtime 部署为生产服务
+4. **调试和测试**：提供完整的调试和测试工具

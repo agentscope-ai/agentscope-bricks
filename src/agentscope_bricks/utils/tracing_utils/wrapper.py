@@ -109,6 +109,7 @@ def trace(
             Any: The wrapped function with appropriate tracing_utils logic.
         """
 
+        @wraps(func)
         async def async_exec(*args: Any, **kwargs: Any) -> Any:
             """Execute async function with tracing_utils.
 
@@ -208,6 +209,7 @@ def trace(
                         if not trace_context:
                             _parent_span_context.set(parent_ctx)
 
+        @wraps(func)
         def sync_exec(*args: Any, **kwargs: Any) -> Any:
             """Execute sync function with tracing_utils.
 
@@ -555,14 +557,23 @@ def trace(
                         if not trace_context:
                             _parent_span_context.set(parent_ctx)
 
+        # Choose the appropriate wrapper based on function type
         if inspect.isasyncgenfunction(func):
-            return async_iter_task
+            wrapper_func = async_iter_task
         elif inspect.isgeneratorfunction(func):
-            return iter_task
+            wrapper_func = iter_task
         elif inspect.iscoroutinefunction(func):
-            return async_exec
+            wrapper_func = async_exec
         else:
-            return sync_exec
+            wrapper_func = sync_exec
+
+        # Preserve the original function's signature
+        try:
+            wrapper_func.__signature__ = inspect.signature(func)
+        except (ValueError, TypeError):
+            pass
+
+        return wrapper_func
 
     return wrapper
 

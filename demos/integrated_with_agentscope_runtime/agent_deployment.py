@@ -11,7 +11,11 @@ from agentscope_runtime.engine.services.session_history_service import (
 from agentscope_runtime.engine.services.environment_manager import (
     create_environment_manager,
 )
+from agentscope_runtime.engine.deployers.adapter.responses.response_api_protocol_adapter import (  # noqa E501
+    ResponseAPIDefaultAdapter,
+)
 
+responses_adapter = ResponseAPIDefaultAdapter()
 
 USER_ID = "user_1"
 SESSION_ID = "session_001"  # Using a fixed ID for simplicity
@@ -76,6 +80,7 @@ async def deploy_agent(runner):
         deploy_manager=deploy_manager,
         endpoint_path="/process",
         stream=True,  # Enable streaming responses
+        protocol_adapters=[responses_adapter],
     )
     print(f"🚀Agent deploy to: {deploy_result}")
     print(f"🌐url: {deploy_manager.service_url}")
