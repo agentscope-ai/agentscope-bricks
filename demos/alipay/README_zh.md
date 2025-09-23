@@ -17,7 +17,7 @@ export DASHSCOPE_API_KEY=your_dashscope_api_key
 
 2. 安装必需的依赖：
 ```shell
-pip install alipay-sdk-python cryptography
+pip install "agentscope-bricks[alipay]"
 ```
 
 3. 运行支付演示：
