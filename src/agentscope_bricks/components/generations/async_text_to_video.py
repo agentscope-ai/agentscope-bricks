@@ -31,7 +31,7 @@ class TextToVideoSubmitInput(BaseModel):
     )
     size: Optional[str] = Field(
         default=None,
-        description="用于指定视频分辨率，格式为宽*高，例如 1280*720",
+        description="视频分辨率，默认不设置",
     )
     duration: Optional[int] = Field(
         default=None,
@@ -325,7 +325,6 @@ if __name__ == "__main__":
             TextToVideoSubmitInput(
                 prompt="A cute panda playing in a bamboo forest, "
                 "peaceful nature scene",
-                size="1920*1080",
                 negative_prompt="dark, scary, violent",
                 prompt_extend=True,
             ),

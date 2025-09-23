@@ -87,7 +87,7 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
             **kwargs: Additional keyword arguments including:
                 - request_id: Optional request ID for tracking
                 - trace_event: Optional trace event for logging
-                - model_name: Model name to use (defaults to wanx2.1-t2i-turbo)
+                - model_name: Model name to use (defaults to wan2.2-t2i-flash)
                 - api_key: DashScope API key for authentication
 
         Returns:
@@ -108,7 +108,7 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("IMAGE_GENERATION_MODEL_NAME", "wanx2.1-t2i-turbo"),
+            os.getenv("IMAGE_GENERATION_MODEL_NAME", "wan2.2-t2i-flash"),
         )
         watermark_env = os.getenv("IMAGE_GENERATION_ENABLE_WATERMARK")
         if watermark_env is not None:

@@ -41,7 +41,7 @@ class ImageToVideoInput(BaseModel):
     )
     resolution: Optional[str] = Field(
         default=None,
-        description="视频分辨率，格式为宽*高，例如1280*720、1920*1080等",
+        description="视频分辨率，默认不设置",
     )
     duration: Optional[int] = Field(
         default=None,
@@ -104,7 +104,7 @@ class ImageToVideo(Component[ImageToVideoInput, ImageToVideoOutput]):
                   parameters
             **kwargs: Additional keyword arguments including:
                 - request_id: Optional request ID for tracking
-                - model_name: Model name to use (defaults to wan2.2-i2v-plus)
+                - model_name: Model name to use (defaults to wan2.2-i2v-flash)
                 - api_key: DashScope API key for authentication
 
         Returns:
@@ -126,7 +126,7 @@ class ImageToVideo(Component[ImageToVideoInput, ImageToVideoOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("IMAGE_TO_VIDEO_MODEL_NAME", "wan2.2-i2v-plus"),
+            os.getenv("IMAGE_TO_VIDEO_MODEL_NAME", "wan2.2-i2v-flash"),
         )
         watermark_env = os.getenv("IMAGE_TO_VIDEO_ENABLE_WATERMARK")
         if watermark_env is not None:
@@ -257,8 +257,7 @@ if __name__ == "__main__":
         try:
             # Execute concurrent calls using asyncio.gather
             tasks = [
-                image_to_video.arun(test_input, model_name="wan2.2-i2v-plus")
-                for test_input in test_inputs
+                image_to_video.arun(test_input) for test_input in test_inputs
             ]
 
             results = await asyncio.gather(*tasks, return_exceptions=True)
