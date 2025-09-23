@@ -34,6 +34,19 @@ from agentscope_bricks.components.generations.speech_to_text import (
     SpeechToText,
 )
 
+from agentscope_bricks.components.generations.async_text_to_video import (
+    TextToVideoSubmit,
+    TextToVideoFetch,
+)
+from agentscope_bricks.components.generations.async_image_to_video import (
+    ImageToVideoSubmit,
+    ImageToVideoFetch,
+)
+from agentscope_bricks.components.generations.async_speech_to_video import (
+    SpeechToVideoSubmit,
+    SpeechToVideoFetch,
+)
+
 
 class McpServerMeta(BaseModel):
     instructions: str = Field(
@@ -53,7 +66,14 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
     ),
     "modelstudio_wan_video": McpServerMeta(
         instructions="基于通义万相大模型提供AI视频生成服务，支持文本到视频、图像到视频和语音到视频的多模态生成功能",
-        components=[TextToVideo, ImageToVideo, SpeechToVideo],
+        components=[
+            TextToVideoSubmit,
+            TextToVideoFetch,
+            ImageToVideoSubmit,
+            ImageToVideoFetch,
+            SpeechToVideoSubmit,
+            SpeechToVideoFetch,
+        ],
     ),
     "modelstudio_qwen_image": McpServerMeta(
         instructions="基于通义千问大模型的智能图像生成服务，提供高质量的图像处理和编辑功能",
