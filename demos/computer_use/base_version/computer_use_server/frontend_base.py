@@ -277,187 +277,195 @@ def listen_sse(url: str):
                     continue
 
 
+def safe_strip(value):
+    """安全的字符串strip方法，处理None和非字符串类型"""
+    if value is None:
+        return ""
+    if not isinstance(value, str):
+        try:
+            return str(value).strip() if str(value) else ""
+        except:
+            return ""
+    return value.strip()
+
+
+def safe_get(data, key, default=""):
+    """安全获取字典值并转换为字符串"""
+    if not isinstance(data, dict):
+        return default
+    value = data.get(key, default)
+    return str(value) if value is not None else default
+
+
 def format_status_message(status_data: Dict[str, Any]) -> str:
     """格式化状态消息，支持多种消息类型"""
-    # 处理心跳消息
-    _type = status_data.get("type", "")
-    _status = status_data.get("status", "")
-    if _type == "heartbeat" or _status == "idle":
-        return None  # 不显示心跳消息和IDLE消息
+    try:
+        # 处理心跳消息
+        _type = status_data.get("type", "")
+        _status = status_data.get("status", "")
+        if _type == "heartbeat" or _status == "idle":
+            return None  # 不显示心跳消息和IDLE消息
 
-    # 处理步骤类型消息
-    if _type == "STEP":
-        timestamp = status_data.get("timestamp", "")
-        step_data = status_data.get("data", {})
-        step_num = step_data.get("step", "?")
-        observation = step_data.get("observation", "")
-        action_parsed = step_data.get("action_parsed", "")
-        action_executed = step_data.get("action_executed", "")
-        auxiliary_info = step_data.get("auxiliary_info", {})
+        # 处理步骤类型消息
+        if _type == "STEP":
+            timestamp = status_data.get("timestamp", "")
+            step_data = status_data.get("data", {})
+            step_num = step_data.get("step", "?")
+            observation = step_data.get("observation", "")
+            action_parsed = step_data.get("action_parsed", "")
+            action_executed = step_data.get("action_executed", "")
+            auxiliary_info = step_data.get("auxiliary_info", {})
 
-        # 生成步骤的唯一标识符，包含任务ID以避免冲突
-        task_id = status_data.get("task_id", "unknown")
-        step_key = f"task_{task_id}_step_{step_num}"
+            # 生成步骤的唯一标识符，包含任务ID以避免冲突
+            task_id = status_data.get("task_id", "unknown")
+            step_key = f"task_{task_id}_step_{step_num}"
 
-        # 获取之前的步骤状态
-        previous_state = st.session_state.step_states.get(step_key, {})
+            # 安全的字符串处理函数
+            def safe_strip_local(value):
+                if value is None:
+                    return ""
+                if not isinstance(value, str):
+                    try:
+                        return str(value).strip() if str(value) else ""
+                    except:
+                        return ""
+                return value.strip()
 
-        # 检查当前消息是否有新内容
-        current_state = {
-            "observation": observation.strip() if observation else "",
-            "action_parsed": action_parsed.strip() if action_parsed else "",
-            "action_executed": (
-                action_executed.strip() if action_executed else ""
-            ),
-            "request_id": (
-                auxiliary_info.get("request_id", "") if auxiliary_info else ""
-            ),
-            "annotated_img_path": (
-                auxiliary_info.get("annotated_img_path", "")
-                if auxiliary_info
-                else ""
-            ),
-        }
+            # 获取之前的步骤状态
+            previous_state = st.session_state.step_states.get(step_key, {})
 
-        screenshot_url = step_data.get("screenshot_url", "")
-        if screenshot_url:
-            current_state["screenshot_url"] = screenshot_url
+            # 检查当前消息是否有新内容 - 使用安全的字符串处理
+            current_state = {
+                "observation": safe_strip_local(observation),
+                "action_parsed": safe_strip_local(action_parsed),
+                "action_executed": safe_strip_local(action_executed),
+                "request_id": safe_get(auxiliary_info, "request_id", ""),
+                "annotated_img_path": safe_get(auxiliary_info, "annotated_img_path", ""),
+            }
 
-        # 如果状态没有变化，返回None（不渲染）
-        if previous_state == current_state:
-            return None
+            screenshot_url = step_data.get("screenshot_url", "")
+            if screenshot_url:
+                current_state["screenshot_url"] = str(screenshot_url)
 
-        # 更新步骤状态
-        st.session_state.step_states[step_key] = current_state
+            # 如果状态没有变化，返回None（不渲染）
+            if previous_state == current_state:
+                return None
 
-        # 构建完整的步骤消息
-        message_parts = [f"🔍 **Step {step_num}** - {timestamp}"]
+            # 更新步骤状态
+            st.session_state.step_states[step_key] = current_state
 
-        if current_state["request_id"]:
-            message_parts.append(
-                f"\n📝 **请求ID**\n\n {current_state['request_id']}",
-            )
+            # 构建完整的步骤消息
+            message_parts = [f"🔍 **Step {step_num}** - {timestamp}"]
 
-        if current_state["observation"]:
-            message_parts.append(
-                f"\n🔍 **推理**\n\n {current_state['observation']}",
-            )
+            if current_state["request_id"]:
+                message_parts.append(
+                    f"\n📝 **请求ID**\n\n {current_state['request_id']}",
+                )
 
-        if current_state["action_parsed"]:
-            message_parts.append(
-                f"\n⚡ **动作**\n\n {current_state['action_parsed']}",
-            )
+            if current_state["observation"]:
+                message_parts.append(
+                    f"\n🔍 **推理**\n\n {current_state['observation']}",
+                )
 
-        if current_state["action_executed"]:
-            message_parts.append(
-                f"\n✅ **执行**\n\n {current_state['action_executed']}",
-            )
+            if current_state["action_parsed"]:
+                message_parts.append(
+                    f"\n⚡ **动作**\n\n {current_state['action_parsed']}",
+                )
 
-        # 检查是否有标注图片路径
-        result_message = "\n".join(message_parts)
+            if current_state["action_executed"]:
+                message_parts.append(
+                    f"\n✅ **执行**\n\n {current_state['action_executed']}",
+                )
 
-        # 如果有标注图片路径，添加到消息中
-        if current_state["annotated_img_path"]:
-            # 将图片路径信息返回，供上层处理
+            # 检查是否有标注图片路径
+            result_message = "\n".join(message_parts)
+
+            # 如果有标注图片路径，添加到消息中
+            if current_state["annotated_img_path"]:
+                # 将图片路径信息返回，供上层处理
+                return {
+                    "content": result_message,
+                    "image_path": current_state["annotated_img_path"],
+                    "step_key": step_key,  # 添加步骤标识符用于消息替换
+                }
+
+            # 如果有截图 URL，返回供上层处理
+            if screenshot_url:
+                return {
+                    "content": result_message,
+                    "screenshot_url": screenshot_url,
+                    "step_key": step_key,
+                }
+
             return {
                 "content": result_message,
-                "image_path": current_state["annotated_img_path"],
                 "step_key": step_key,  # 添加步骤标识符用于消息替换
             }
 
-        # 如果有截图 URL，返回供上层处理
-        if screenshot_url:
-            return {
-                "content": result_message,
-                "screenshot_url": screenshot_url,
-                "step_key": step_key,
+        # 处理任务类型消息
+        elif _type == "TASK":
+            message = safe_get(status_data.get("data", {}), "message", "")
+            return f"🎯 **TASK**: {message}"
+
+        # 处理标准状态消息
+        else:
+            message = status_data.get("message", "")
+
+            # 状态图标映射
+            status_icons = {
+                "starting": "🔄",
+                "running": "⚡",
+                "completed": "✅",
+                "error": "❌",
+                "stopped": "⏹️",
+                "idle": "⏸️",
             }
 
-        return {
-            "content": result_message,
-            "step_key": step_key,  # 添加步骤标识符用于消息替换
-        }
+            icon = status_icons.get(_status, "📋")
+            formatted_message = f"{icon} **{_status.upper()}**: {message}"
 
-    # 处理任务类型消息
-    elif _type == "TASK":
-        message = status_data.get("data", {}).get("message", "")
-        return f"🎯 **TASK**: {message}"
+            return formatted_message
 
-    # 处理标准状态消息
-    else:
-        message = status_data.get("message", "")
-
-        # 状态图标映射
-        status_icons = {
-            "starting": "🔄",
-            "running": "⚡",
-            "completed": "✅",
-            "error": "❌",
-            "stopped": "⏹️",
-            "idle": "⏸️",
-        }
-
-        icon = status_icons.get(_status, "📋")
-        formatted_message = f"{icon} **{_status.upper()}**: {message}"
-
-        return formatted_message
+    except Exception as e:
+        print(f"[ERROR] Error formatting status message: {e}")
+        print(f"[ERROR] Status data: {status_data}")
+        # 返回一个安全的错误消息
+        return f"⚠️ **MESSAGE PARSE ERROR**: {str(e)}"
 
 
 def update_or_add_step_message(status_message, msg_id):
     """更新或添加步骤消息，避免重复"""
-    if isinstance(status_message, dict) and "step_key" in status_message:
-        step_key = status_message["step_key"]
+    try:
+        if isinstance(status_message, dict) and "step_key" in status_message:
+            step_key = status_message["step_key"]
 
-        # 查找是否已经存在相同步骤的消息
-        message_index = None
-        for i, msg in enumerate(st.session_state.messages):
-            if msg.get("type") == "status" and msg.get("step_key") == step_key:
-                message_index = i
-                break
+            # 查找是否已经存在相同步骤的消息
+            message_index = None
+            for i, msg in enumerate(st.session_state.messages):
+                if msg.get("type") == "status" and msg.get("step_key") == step_key:
+                    message_index = i
+                    break
 
-        # 构建新的消息对象
-        new_message = {
-            "role": "assistant",
-            "content": status_message["content"],
-            "type": "status",
-            "step_key": step_key,
-            "msg_id": msg_id,
-        }
+            # 构建新的消息对象
+            new_message = {
+                "role": "assistant",
+                "content": status_message["content"],
+                "type": "status",
+                "step_key": step_key,
+                "msg_id": msg_id,
+            }
 
-        # 如果有图片路径，添加图片路径
-        if "image_path" in status_message:
-            new_message["image_path"] = status_message["image_path"]
+            # 如果有图片路径，添加图片路径
+            if "image_path" in status_message:
+                new_message["image_path"] = status_message["image_path"]
 
-        # 如果找到了相同步骤的消息，替换它
-        if message_index is not None:
-            st.session_state.messages[message_index] = new_message
-        else:
-            # 否则添加新消息
-            st.session_state.messages.append(new_message)
+            # 如果找到了相同步骤的消息，替换它
+            if message_index is not None:
+                st.session_state.messages[message_index] = new_message
+            else:
+                # 否则添加新消息
+                st.session_state.messages.append(new_message)
 
-        # 如果包含 screenshot_url，更新 session_state
-        if "screenshot_url" in status_message:
-            st.session_state.equipment_screenshot_url = status_message[
-                "screenshot_url"
-            ]
-
-        if "equipment_web_url" in status_message:
-            st.session_state.equipment_web_url = status_message[
-                "equipment_web_url"
-            ]
-
-    else:
-        # 非步骤消息，直接添加
-        if isinstance(status_message, dict):
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": status_message["content"],
-                    "type": "status",
-                    "image_path": status_message.get("image_path"),
-                    "msg_id": msg_id,
-                },
-            )
             # 如果包含 screenshot_url，更新 session_state
             if "screenshot_url" in status_message:
                 st.session_state.equipment_screenshot_url = status_message[
@@ -470,14 +478,48 @@ def update_or_add_step_message(status_message, msg_id):
                 ]
 
         else:
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": status_message,
-                    "type": "status",
-                    "msg_id": msg_id,
-                },
-            )
+            # 非步骤消息，直接添加
+            if isinstance(status_message, dict):
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": status_message["content"],
+                        "type": "status",
+                        "image_path": status_message.get("image_path"),
+                        "msg_id": msg_id,
+                    },
+                )
+                # 如果包含 screenshot_url，更新 session_state
+                if "screenshot_url" in status_message:
+                    st.session_state.equipment_screenshot_url = status_message[
+                        "screenshot_url"
+                    ]
+
+                if "equipment_web_url" in status_message:
+                    st.session_state.equipment_web_url = status_message[
+                        "equipment_web_url"
+                    ]
+
+            else:
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": str(status_message) if status_message is not None else "Unknown message",
+                        "type": "status",
+                        "msg_id": msg_id,
+                    },
+                )
+    except Exception as e:
+        print(f"[ERROR] Error updating step message: {e}")
+        # 添加一个错误消息，避免完全失败
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": f"⚠️ **MESSAGE UPDATE ERROR**: {str(e)}",
+                "type": "status",
+                "msg_id": msg_id,
+            },
+        )
 
 
 # 添加消息去重和连接管理
@@ -563,7 +605,7 @@ if st.session_state.sse_running:
                             # 特殊处理：如果收到IDLE状态且消息是"Ready to start"，说明任务已完成
                             if (
                                 status == "idle"
-                                and "ready to start" in message_content.lower()
+                                and "ready to start" in str(message_content).lower()
                             ):
                                 print(
                                     "[SSE] Task completed, "
@@ -618,7 +660,11 @@ if st.session_state.sse_running:
                                 )
                                 break
 
-                        except json.JSONDecodeError:
+                        except json.JSONDecodeError as e:
+                            print(f"[SSE] JSON decode error: {e}")
+                            continue
+                        except Exception as e:
+                            print(f"[SSE] Error processing message: {e}")
                             continue
 
                 # 如果有新消息，才重新渲染
