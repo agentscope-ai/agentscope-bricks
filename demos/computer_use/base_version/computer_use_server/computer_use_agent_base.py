@@ -493,12 +493,7 @@ class ComputerUseAgent:
 
     def analyse_screenshot(self, is_debug=False, debug_file_path=None):
         screenshot_img, screenshot_filename = self.screenshot()
-        screenshot_oss_url = self.screenshot_save_oss(
-            screenshot_img,
-            screenshot_filename,
-        )
         auxiliary_info = {}
-        result = ""
         if self.mode == "qwen_vl":
             system_prompt = (
                 "You are an intelligent computer-use "
@@ -604,6 +599,10 @@ class ComputerUseAgent:
 
         elif self.mode == "pc_use":
             try:
+                screenshot_oss_url = self.screenshot_save_oss(
+                    screenshot_img,
+                    screenshot_filename,
+                )
                 m_name = "pre-gui_owl_7b"
                 messages = [
                     {
