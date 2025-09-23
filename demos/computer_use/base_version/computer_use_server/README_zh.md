@@ -95,8 +95,8 @@ nano ~/.zshrc    # 如果你用的是 zsh（macOS Catalina 及以后默认）
 nano ~/.bash_profile  # 如果你用的是 bash
 
 # 添加环境变量例如
-export DASHSCOPE_API_KEY=""
-export ECD_DESKTOP_ID="your_desktop_id"
+export DASHSCOPE_API_KEY=
+export ECD_DESKTOP_ID=
 export EDS_OSS_ACCESS_KEY_ID=
 export EDS_OSS_ACCESS_KEY_SECRET=
 export EDS_OSS_BUCKET_NAME=

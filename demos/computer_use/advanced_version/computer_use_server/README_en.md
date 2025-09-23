@@ -166,8 +166,8 @@ nano ~/.bash_profile  # If you are using bash
 
 # Add environment variables for example
 # Cloud computer configuration
-export DASHSCOPE_API_KEY="your_api_key_here"
-export ECD_DESKTOP_ID="your_desktop_id"
+export DASHSCOPE_API_KEY=
+export ECD_DESKTOP_ID=
 # ... other configurations
 
 # Save and run
