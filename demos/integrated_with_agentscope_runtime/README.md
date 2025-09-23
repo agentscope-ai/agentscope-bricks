@@ -132,9 +132,91 @@ async with create_runner(agent) as runner:
         stream=True,
     )
 ```
+then user could query the agent with a simplified agent api by :
 
-once deployed, user could query the service by
+```shell
+curl http://localhost:8090/process \
+-X POST -H "Content-Type: application/json" \
+-d '{
+    "model": "qwen-max",
+    "input": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Where is Hangzhou?"
+                }
+            ]
+        }
+    ]
+}'
+```
 
+### Advanced Deployment
+
+add response api interface
+
+```python
+from agentscope_runtime.engine.deployers.adapter.responses.response_api_protocol_adapter import ResponseAPIDefaultAdapter   # noqa E501
+
+async with create_runner(agent) as runner:
+    # Deploy as HTTP service
+    deploy_manager = LocalDeployManager(host="localhost", port=8090)
+    deploy_result = await runner.deploy(
+        deploy_manager=deploy_manager,
+        endpoint_path="/process",
+        stream=True,
+        protocol_adapters=[ResponseAPIDefaultAdapter()],
+    )
+```
+after add the response api protocol adapters, user could query the agent by response api.
+
+```python
+from openai import OpenAI, AsyncOpenAI
+import openai
+
+api_url = 'http://0.0.0.0:8090/compatible-mode/v1'
+openai.api_base = api_url
+openai.api_key = ''
+
+openai_client = OpenAI(
+                api_key='',
+                base_url=api_url,
+            )
+
+response = openai_client.responses.create(
+    model='gpt-4',
+    input=[{
+        'role': 'user',
+        'content': 'Tell me a short story about a robot learning to dance.',
+    }],
+    stream=True,
+)
+event_count = 0
+for event in response:
+    event_count += 1
+    event_type = event.type if hasattr(event, 'type') else 'unknown'
+    print(f'   PACKAGE event {event_count}: {event_type}')
+
+    # 打印事件详情
+    if hasattr(event, 'id'):
+        print(f'      ID: {event.id}')
+    if hasattr(event, 'created_at'):
+        print(f'      created: {event.created_at}')
+    if hasattr(event, 'model'):
+        print(f'      model: {event.model}')
+
+    # 打印内容相关字段
+    content_fields = ['content', 'text', 'item', 'output']
+    for field in content_fields:
+        if hasattr(event, field):
+            value = getattr(event, field)
+            if value:
+                print(f'      {field}: {value}')
+
+print(f'   SUCCESS streaming response, total:  {event_count} events')
+```
 
 ### Core Features
 
