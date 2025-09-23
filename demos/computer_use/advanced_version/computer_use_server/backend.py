@@ -10,10 +10,10 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from dotenv import load_dotenv
-from demos.computer_use.advanced_version.computer_use_server.computer_use_agent import (  # noqa E501
+from advanced_version.computer_use_server.computer_use_agent import (  # noqa E501
     ComputerUseAgent,
 )
-from demos.computer_use.agents.agent import AgentRequest
+from agents.agent import AgentRequest
 from redis_resource_allocator import (
     AllocationStatus,
 )
@@ -21,15 +21,15 @@ from cua_utils import init_sandbox
 from enum import Enum
 
 # 导入Redis状态管理器
-from demos.computer_use.advanced_version.computer_use_server.redis_state_manager import (  # noqa E501
+from advanced_version.computer_use_server.redis_state_manager import (  # noqa E501
     RedisStateManager,
 )
 
 # 云设备导入
-from demos.computer_use.sandbox_center.sandboxes.cloud_phone_wy import (
+from sandbox_center.sandboxes.cloud_phone_wy import (
     CloudPhone,
 )
-from demos.computer_use.sandbox_center.sandboxes.cloud_computer_wy import (
+from sandbox_center.sandboxes.cloud_computer_wy import (
     CloudComputer,
 )
 

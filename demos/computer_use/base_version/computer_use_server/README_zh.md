@@ -63,13 +63,27 @@ Computer Use Agent 是一个基于人工智能的桌面自动化系统，能够�
     访问E2B官网注册并获取，然后配置到E2B_API_KEY
     https://e2b.dev
 
-##### 1.1.3环境变量配置示例
+##### 1.1.3 oss开通
+    如果需要使用agent 框架，也就是选择pc-use， 需要OSS配置,直接走qwen-vl 不需要
+    介绍文档：
+    https://help.aliyun.com/zh/oss/?spm=5176.29463013.J_AHgvE-XDhTWrtotIBlDQQ.8.68b834deqSKlrh
+
+备注：购买完后将账号凭证信息配置到下面环境变量中，也就是EDS_OSS_ 的配置 EDS_OSS_ACCESS_KEY相关的信息就是购买OSS的阿里云账号的ak,sk
+
+##### 1.1.4环境变量配置示例
 
 ```bash
-# 在大模型服务平台百炼,创建api-key, 并提供该云账号uid找mobile agent团队加白
+# 在大模型服务平台百炼,创建api-key
 DASHSCOPE_API_KEY=
 # E2B API Key
 E2B_API_KEY=
+# OSS 配置
+EDS_OSS_ACCESS_KEY_ID=
+EDS_OSS_ACCESS_KEY_SECRET=
+EDS_OSS_BUCKET_NAME=
+EDS_OSS_ENDPOINT=
+EDS_OSS_PATH=
+
 ```
 
 可以参考下面全局配置，也可以在根目录新建一个 `.env` 文件，将上面的配置粘贴进去，启动脚本中有读取的逻辑：
@@ -81,31 +95,35 @@ nano ~/.zshrc    # 如果你用的是 zsh（macOS Catalina 及以后默认）
 nano ~/.bash_profile  # 如果你用的是 bash
 
 # 添加环境变量例如
-# 云电脑配置
 export DASHSCOPE_API_KEY=""
 export ECD_DESKTOP_ID="your_desktop_id"
-# ... 其他配置
+export EDS_OSS_ACCESS_KEY_ID=
+export EDS_OSS_ACCESS_KEY_SECRET=
+export EDS_OSS_BUCKET_NAME=
+export EDS_OSS_ENDPOINT=
+export EDS_OSS_PATH=
 
 # 保存后运行
 source ~/.zshrc
 ```
 
-#### 1.4 本地 Demo 启动
+#### 1.2 本地 Demo 启动
 
-##### 1.4.1 进入目录
+##### 1.2.1 进入目录
 ```bash
 cd demos/computer_use
 ```
 
-##### 1.4.2 安装依赖
+##### 1.2.2 安装依赖
 ```bash
-pip install -r requirements.txt
+# 在 demos/computer_use 根目录下执行 安装模块依赖
+pip install .
 ```
 
-##### 1.4.3 启动脚本授权和启动
+##### 1.2.3 启动脚本授权和启动
 
 ```bash
-cd demos/computer_use/computer_use_server/base_version
+cd base_version/computer_use_server
 # 赋予执行权限
 chmod +x start_base.sh
 

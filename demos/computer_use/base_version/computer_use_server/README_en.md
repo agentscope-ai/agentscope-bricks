@@ -65,13 +65,31 @@ Note: qwen-max/qwen-vl-max models are called in the link, new users will have fr
     Visit the E2B website to register and obtain, then configure to E2B_API_KEY
     https://e2b.dev
 
-##### 1.1.3 Environment Variable Configuration Example
+
+##### 1.1.3 OSS Activation
+```bash
+
+If you need to use the agent framework, that is, choose pc-use, you need OSS configuration. If you directly use qwen-vl, you don't need it.
+
+https://help.aliyun.com/zh/oss/?spm=5176.29463013.J_AHgvE-XDhTWrtotIBlDQQ.8.68b834deqSKlrh
+
+
+Note: After purchasing, configure the account credential information into the following environment variables, which is the EDS_OSS_ configuration. The EDS_OSS_ACCESS_KEY related information is the AK, SK of the Alibaba Cloud account that purchased OSS.
+```
+
+##### 1.1.4 Environment Variable Configuration Example
 
 ```bash
-# Create api-key on the large model service platform DashScope, and provide the cloud account uid to the mobile agent team for whitelisting
+# Create api-key on the large model service platform DashScope
 DASHSCOPE_API_KEY=
 # E2B API Key
 E2B_API_KEY=
+# OSS 配置
+EDS_OSS_ACCESS_KEY_ID=
+EDS_OSS_ACCESS_KEY_SECRET=
+EDS_OSS_BUCKET_NAME=
+EDS_OSS_ENDPOINT=
+EDS_OSS_PATH=
 ```
 
 
@@ -84,10 +102,13 @@ nano ~/.zshrc    # If you are using zsh (default in macOS Catalina and later)
 nano ~/.bash_profile  # If you are using bash
 
 # Add environment variables for example
-# Cloud computer configuration
-export DASHSCOPE_API_KEY=""
+export DASHSCOPE_API_KEY="your_api_key_here"
 export ECD_DESKTOP_ID="your_desktop_id"
-# ... other configurations
+export EDS_OSS_ACCESS_KEY_ID=
+export EDS_OSS_ACCESS_KEY_SECRET=
+export EDS_OSS_BUCKET_NAME=
+export EDS_OSS_ENDPOINT=
+export EDS_OSS_PATH=
 
 # After saving, run
 source ~/.zshrc
@@ -104,14 +125,15 @@ cd demos/computer_use
 
 ##### 1.4.2 Install Dependencies
 ```bash
-pip install -r requirements.txt
+# Execute in the root directory of demos/computer_use to install module dependencies
+pip install .
 ```
 
 
 ##### 1.4.3 Script Authorization and Startup
 
 ```bash
-cd demos/computer_use/computer_use_server/base_version
+cd base_version/computer_use_server
 # Grant execution permissions
 chmod +x start_base.sh
 

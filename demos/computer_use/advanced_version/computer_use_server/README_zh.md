@@ -113,7 +113,7 @@ Computer Use Agent 是一个基于人工智能的桌面自动化系统，能够�
 环境变量配置示例
 
 ```bash
-# 在大模型服务平台百炼,创建api-key, 并提供该云账号uid找mobile agent团队加白
+# 在大模型服务平台百炼,创建api-key
 DASHSCOPE_API_KEY=
 
 # 云电脑配置
@@ -264,13 +264,13 @@ python -m pip install asyncio -i https://mirrors.aliyun.com/pypi/simple/
 
 ##### 1.4.1 进入目录
 ```bash
-cd demos/computer_use/computer_use_server
+cd demos/computer_use
 ```
 
 ##### 1.4.2 安装依赖
 ```bash
-# 在 demos/computer_use/computer_use_server 根目录下执行
-pip install -r requirements.txt
+# 在 demos/computer_use 根目录下执行 安装模块依赖
+pip install .
 ```
 
 ##### 1.4.3 启动脚本授权和启动
@@ -278,6 +278,7 @@ pip install -r requirements.txt
 **注意：云电脑、云手机要保证启动运行中，可以在无影控制台，或者客户端设置。
 
 ```bash
+cd advanced_version/computer_use_server
 # 赋予执行权限
 chmod +x start.sh
 

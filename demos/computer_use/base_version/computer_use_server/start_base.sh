@@ -19,14 +19,12 @@ BLUE=$(printf '\033[0;34m')
 GREEN=$(printf '\033[0;32m')
 NC=$(printf '\033[0m')
 
-# 设置 PYTHONPATH 以解决模块导入问题
-export PYTHONPATH="../../../../:../../../../src:$PYTHONPATH"
-echo "🔧 已设置 PYTHONPATH: $PYTHONPATH"
 
 # 启动后端服务
 echo "🔧 启动后端服务 (http://localhost:8002)..."
-python backend_base.py 2>&1 | sed "s/^/${BLUE}[FastAPI]${NC} /" &
+export PYTHONPATH=$(pwd):$PYTHONPATH && python backend_base.py 2>&1 | sed "s/^/${BLUE}[FastAPI]${NC} /" &
 BACKEND_PID=$!
+
 
 # 等待后端启动
 sleep 3

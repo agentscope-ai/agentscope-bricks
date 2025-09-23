@@ -13,7 +13,7 @@ from typing import (
 from pydantic import BaseModel
 import json
 from typing_extensions import Literal, TypeAlias
-from demos.computer_use.agents.agent import (
+from agents.agent import (
     AgentRequest,
 )
 from agentscope_bricks.utils.logger_util import logger

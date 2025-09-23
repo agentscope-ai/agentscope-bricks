@@ -4,7 +4,7 @@ from agentscope_bricks.utils.grounding_utils import (
     perform_gui_grounding_with_api,
 )
 from typing import Callable
-from demos.computer_use.sandbox_center.sandboxes.sandbox_base import (
+from .sandbox_base import (
     SandboxBase,
     OperationStatus,
 )
@@ -83,6 +83,7 @@ class E2bSandBox(SandboxBase):
     ) -> str:
         img_bytes = self.device.screenshot()
         position = perform_gui_grounding_with_api(
+            min_pixels=4096,
             screenshot=img_bytes,
             user_query=query,
         )

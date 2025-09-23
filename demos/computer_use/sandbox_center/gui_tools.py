@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from agentscope_bricks.base.function_tool import function_tool
-from demos.computer_use.sandbox_center.sandboxes.sandbox_base import (
+from sandbox_center.sandboxes.sandbox_base import (
     SandboxBase,
 )
 

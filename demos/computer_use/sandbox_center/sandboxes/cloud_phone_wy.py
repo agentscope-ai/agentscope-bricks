@@ -1,27 +1,22 @@
 # -*- coding: utf-8 -*-
 import os
 import threading
-
 import aiohttp
 import asyncio
-import argparse
 import time
-import logging
-from PIL import Image
-from io import BytesIO
+import uuid
 from pydantic import BaseModel
 from alibabacloud_tea_openapi import models as open_api_models
 from alibabacloud_eds_aic20230930.client import Client as eds_aic20230930Client
 from alibabacloud_eds_aic20230930 import models as eds_aic_20230930_models
 from alibabacloud_tea_util import models as util_models
 from alibabacloud_tea_util.client import Client as UtilClient
-from demos.computer_use.sandbox_center.utils.oss_client import OSSClient
-from demos.computer_use.sandbox_center.sandboxes.sandbox_base import (
+from sandbox_center.utils.oss_client import OSSClient
+from sandbox_center.sandboxes.sandbox_base import (
     SandboxBase,
     OperationStatus,
 )
 from typing import Callable, Tuple, Optional, Any, List
-import uuid
 from agentscope_bricks.utils.logger_util import logger
 
 

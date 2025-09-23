@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import aiohttp
-from io import BytesIO
-from PIL import Image
-import requests
 import os
 import base64
+from io import BytesIO
+from PIL import Image
 from typing import Optional
 
 
