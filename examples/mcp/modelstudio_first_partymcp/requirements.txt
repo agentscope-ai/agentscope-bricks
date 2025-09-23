@@ -1,4 +1,4 @@
-agentscope_bricks @ https://bailian-cn-beijing.oss-cn-beijing.aliyuncs.com/sdk/agentscope_bricks-0.1.0.2-py3-none-any.whl
+agentscope_bricks @ https://bailian-cn-beijing.oss-cn-beijing.aliyuncs.com/sdk/agentscope_bricks-0.1.1.1-py3-none-any.whl
 mcp
 uvicorn[standard]>=0.30.0
 gunicorn>=20.0.0
