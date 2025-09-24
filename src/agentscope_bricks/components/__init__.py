@@ -61,7 +61,7 @@ class McpServerMeta(BaseModel):
 
 mcp_server_metas: Dict[str, McpServerMeta] = {
     "modelstudio_wan_image": McpServerMeta(
-        instructions="基于通义千问大模型的智能图像生成服务，提供高质量的图像处理和编辑功能",
+        instructions="基于通义万相大模型的智能图像生成服务，提供高质量的图像处理和编辑功能",
         components=[ImageGeneration, ImageEdit, ImageStyleRepaint],
     ),
     "modelstudio_wan_video": McpServerMeta(
