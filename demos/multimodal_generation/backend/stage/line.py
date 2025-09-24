@@ -9,7 +9,6 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     Content,
 )
 from agentscope_bricks.utils.schemas.oai_llm import OpenAIMessage
-from agentscope_bricks.utils.logger_util import logger
 from agentscope_bricks.utils.message_util import (
     get_agent_message_finish_reason,
     merge_agent_message,
@@ -46,10 +45,14 @@ LINE_SYSTEM_PROMPT_TEMPLATE = """
 
 # 输出规范
 - 严格按格式输出：完全复述每个分镜的【角色】、【画面】和【旁白/台词】原文，不得杜撰或修改。
+- 处理所有分镜：必须处理输入中的每一个分镜，包括角色为"无"的分镜。
+- 音色分配规则：如果分镜有旁白内容，无论角色是否为"无"，都需要为旁白分配音色。
 - 处理无声分镜：如果分镜中没有任何台词或旁白，则该分镜下无需输出音色信息。
 - 内容安全：输出内容禁止包含任何不适宜、违禁或色情词汇。
 - 台词长度：角色或旁白的单句中文台词不应超过30个字。
 
+# 相关限制
+- 输出的分镜数量，与输入的分镜数量，需要严格相等，且一一对应。
 
 # 备选音色列表如下，请根据对应的台词或旁白选择合适的音色ID
 {tones}
@@ -70,6 +73,11 @@ LINE_SYSTEM_PROMPT_TEMPLATE = """
 画面：妈妈打开瓶盖，倒了一杯橙汁递给小明，小明接过杯子闻了闻。
 旁白：新鲜橙汁的香气让小明眼前一亮。
 
+分镜4：
+角色：无
+画面：特写镜头，百炼橙汁的透明瓶身和纯净的橙汁，包装简洁大方。
+旁白：百炼橙汁，健康生活的选择。
+
 # 示例输出，请按照以下格式返回
 分镜1：
 角色：小明, 妈妈
@@ -88,6 +96,12 @@ LINE_SYSTEM_PROMPT_TEMPLATE = """
 画面：妈妈打开瓶盖，倒了一杯橙汁递给小明，小明接过杯子闻了闻。
 旁白：新鲜橙汁的香气让小明眼前一亮。
 音色：Chelsie
+
+分镜4：
+角色：无
+画面：特写镜头，百炼橙汁的透明瓶身和纯净的橙汁，包装简洁大方。
+旁白：百炼橙汁，健康生活的选择。
+音色：Chelsie
 """
 
 
@@ -99,7 +113,7 @@ class LineHandler(Handler):
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="line",
+        trace_name="line_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -115,8 +129,7 @@ class LineHandler(Handler):
         """
         storyboard = self.stage_session.get_storyboard()
         if not storyboard:
-            logger.error("No storyboard found")
-            return
+            raise ValueError("No storyboard found")
 
         system_message = OpenAIMessage(
             role="system",

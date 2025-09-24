@@ -123,7 +123,7 @@ class ScriptHandler(Handler):
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="script",
+        trace_name="script_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -191,25 +191,27 @@ class ScriptHandler(Handler):
                 content_index = content_idx
                 cumulated_chunks = cumulated
 
-        product_name, product_desc, slogan = parse_script(
-            output_message.content[0].text,
-        )
+        script_text = output_message.content[0].text
+        product_name, product_desc, slogan = parse_script(script_text)
 
-        session_message = Message()
-        if not topic_image and product_name and product_desc and slogan:
+        # Build data dict with script and parsed info
+        data = {"script": script_text}
+        for key, value in [
+            ("product_name", product_name),
+            ("product_desc", product_desc),
+            ("slogan", slogan),
+        ]:
+            if value:
+                data[key] = value
+
+        # Generate image if we have product description and no topic image
+        if not topic_image and product_desc:
             t2i_model = self.config.get("t2i_model")
             image_url = await generate_image_t2i(t2i_model, product_desc)
-            session_message.add_content(
-                DataContent(
-                    data={
-                        "product_name": product_name,
-                        "product_desc": product_desc,
-                        "slogan": slogan,
-                        "image_url": image_url,
-                        "script": output_message.content[0].text,
-                    },
-                ),
-            )
+            data["image_url"] = image_url
+
+        session_message = Message()
+        session_message.add_content(DataContent(data=data))
 
         # Set stage messages
         self.stage_session.set_stage_message(

@@ -1,0 +1,723 @@
+{
+    "Topic": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_b5b5be5c-5b12-4f3e-a124-24bb0126b62a",
+        "type": "Topic",
+        "role": "user",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": null,
+                "delta": false,
+                "msg_id": null,
+                "text": "百炼椰汁"
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "Script": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_e630efa3-e666-4afc-9ab8-9cd651b8232c",
+        "type": "message",
+        "role": null,
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "data",
+                "index": null,
+                "delta": false,
+                "msg_id": null,
+                "data": {
+                    "script": "《百炼椰汁的奇妙之旅》\n\n小明和妈妈在厨房忙碌着，准备为爸爸做一顿特别的晚餐。小明负责切水果，而妈妈则在旁边指导他。\n\n突然，小明停下手里的刀，看着妈妈说：“妈妈，我好渴啊！”\n\n妈妈笑着从冰箱里拿出一瓶百炼椰汁，递给小明：“来，喝这个，这是爸爸最喜欢的百炼椰汁，你也尝尝看。”\n\n小明接过瓶子，好奇地拧开盖子，一股清新的椰香扑鼻而来。他喝了一口，眼睛一亮：“哇，真的好喝！感觉就像在海边度假一样！”\n\n妈妈点点头：“没错，百炼椰汁是用新鲜椰子榨出来的，每一口都充满了自然的味道。而且它还富含多种维生素，对身体特别好。”\n\n小明开心地说：“那我要多喝几口，这样我也会变得像爸爸一样强壮！”\n\n妈妈笑着摸了摸小明的头：“好主意！百炼椰汁不仅美味，还能让你充满活力哦！”\n\n这时，爸爸下班回家，看到厨房里忙碌的小明和妈妈，闻到空气中弥漫的椰香，惊喜地说：“你们在做什么呢？好香啊！”\n\n小明兴奋地跑过去，把百炼椰汁递给他：“爸爸，你快来尝尝，这是我今天的新发现！”\n\n爸爸接过椰汁，喝了一口，满意地点点头：“嗯，真的很好喝！谢谢你，宝贝！”\n\n一家三口围坐在餐桌旁，享受着美味的晚餐和清凉的百炼椰汁，温馨的气氛充满了整个房间。\n\n角色： 妈妈，细心且充满爱心的家庭主妇。\n角色： 小明，活泼可爱的孩子。\n角色： 爸爸，辛勤工作的父亲。\n产品名称：百炼椰汁\n产品描述：百炼椰汁采用新鲜椰子榨制而成，瓶身简洁大方，透明的包装展现出清澈的椰汁色泽。标签上印有热带风情的图案，让人仿佛置身于阳光沙滩。口感清新甜美，带有浓郁的椰香，不含任何添加剂，健康又美味。\n产品标语：天然椰香，清爽每一刻！",
+                    "product_name": "百炼椰汁",
+                    "product_desc": "百炼椰汁采用新鲜椰子榨制而成，瓶身简洁大方，透明的包装展现出清澈的椰汁色泽。标签上印有热带风情的图案，让人仿佛置身于阳光沙滩。口感清新甜美，带有浓郁的椰香，不含任何添加剂，健康又美味。",
+                    "slogan": "天然椰香，清爽每一刻！",
+                    "image_url": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/52/20250927/2cf8887b/e6e7e03e-36a5-4e1f-a8f3-c686735e0bc32562424101.png?Expires=1759068107&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=pUEekcV8hzKHSaid93poMbaP8R4%3D"
+                }
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "Storyboard": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_6ca8fefc-98ab-4944-8488-42ad1bc7646f",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：小明，妈妈\n画面：厨房里，小明在切水果，妈妈在一旁指导。小明停下手中的刀，看向妈妈说：“妈妈，我好渴啊！”\n旁白：忙碌的厨房里，小明感到口渴。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：无\n画面：特写镜头，妈妈从冰箱里拿出一瓶百炼椰汁，递给小明。小明接过瓶子，好奇地拧开盖子，一股清新的椰香扑鼻而来。\n旁白：天然椰香，带来清爽体验。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：小明，爸爸\n画面：小明兴奋地跑向刚下班回家的爸爸，把百炼椰汁递给他。爸爸接过椰汁，喝了一口，满意地点点头。\n旁白：爸爸也爱这清新甜美的味道。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：妈妈，小明，爸爸\n画面：一家三口围坐在餐桌旁，享受着美味的晚餐和清凉的百炼椰汁，温馨的气氛充满了整个房间。\n旁白：天然椰香，让每一刻都充满温馨。"
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "RoleDescription": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_1ae7f9f3-31fb-4b67-835d-80d447b04246",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：细心妈妈\n角色描述：温柔亲切，面带微笑，长发自然垂落。服饰：淡黄色围裙与白色T恤（明亮的厨房）。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：活泼小明\n角色描述：天真可爱，圆脸大眼，短发微卷。服饰：蓝色T恤与牛仔短裤（明亮的厨房）。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：辛勤爸爸\n角色描述：成熟稳重，略带疲惫但充满慈爱，短发整洁。服饰：浅灰色衬衫与深色西裤（温馨的客厅）。"
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "RoleImage": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_25dcbe0c-35dc-48bf-b2fe-a7243411f136",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "data",
+                "index": null,
+                "delta": false,
+                "msg_id": null,
+                "data": {
+                    "细心妈妈": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/db/20250927/2cf8887b/6d10f2ac-9f5d-4554-9824-34197cb6e85e596024442.png?Expires=1759068154&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=lOINz9hHpKtK3j7xTXZlBsDirtI%3D",
+                    "活泼小明": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/b3/20250927/2cf8887b/45cfa0a7-562b-4c23-ac74-69f3a05dbe322944048630.png?Expires=1759068154&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=ytQq5wR7xiMJZYtIPYV9HmqPjWI%3D",
+                    "辛勤爸爸": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/1b/20250927/2cf8887b/43d7e09b-7aa1-4400-80fd-990af28d6e2f3785653490.png?Expires=1759068174&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=5hK9G9eKDMyFMcd%2BnJD8a1%2Bp2sI%3D"
+                }
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "FirstFrameDescription": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_c127910a-66b3-4d22-8da4-f20adfc65228",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：小明, 妈妈\n首帧描述：现代简约风格，在明亮的厨房里，穿着蓝色T恤和牛仔短裤的小明正在切水果，旁边是穿着淡黄色围裙与白色T恤、面带微笑的妈妈在指导他。小明停下手中的刀，看向妈妈说：“妈妈，我好渴啊！”色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：无\n首帧描述：现代简约风格，特写镜头，冰箱门打开，妈妈从里面拿出一瓶简洁大方、透明包装的百炼椰汁，递给小明。小明接过瓶子，好奇地拧开盖子，一股清新的椰香扑鼻而来。色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：小明, 爸爸\n首帧描述：现代简约风格，在温馨的客厅里，穿着蓝色T恤和牛仔短裤的小明兴奋地跑向刚下班回家、穿着浅灰色衬衫与深色西裤的爸爸，把百炼椰汁递给他。爸爸接过椰汁，喝了一口，满意地点点头。色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：妈妈, 小明, 爸爸\n首帧描述：现代简约风格，在明亮的餐厅里，一家三口围坐在餐桌旁，桌上摆满了美味的晚餐和清凉的百炼椰汁。穿着淡黄色围裙与白色T恤的妈妈、穿着蓝色T恤和牛仔短裤的小明以及穿着浅灰色衬衫与深色西裤的爸爸，脸上洋溢着幸福的笑容。色彩鲜艳，商业摄影质感，4K高清画质。"
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "FirstFrameImage": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_2b209ead-c860-429f-89f5-cac7a0dc0858",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：小明, 妈妈\n首帧描述：现代简约风格，在明亮的厨房里，穿着蓝色T恤和牛仔短裤的小明正在切水果，旁边是穿着淡黄色围裙与白色T恤、面带微笑的妈妈在指导他。小明停下手中的刀，看向妈妈说：“妈妈，我好渴啊！”色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "image",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "image_url": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/27/20250927/2cf8887b/5ebc426f-8ed0-477e-987b-2aeffb67d42e2123137509.png?Expires=1759068214&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=pOFZQQ5WzL9qPx7Idte6BscYCo0%3D"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：无\n首帧描述：现代简约风格，特写镜头，冰箱门打开，妈妈从里面拿出一瓶简洁大方、透明包装的百炼椰汁，递给小明。小明接过瓶子，好奇地拧开盖子，一股清新的椰香扑鼻而来。色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "image",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "image_url": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/5f/20250927/2cf8887b/4809e595-f7f1-4c64-b40b-dd6d7b03dda73601317633.png?Expires=1759068231&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=lgGkkoPzRg3366Mvt2rKPd19rTM%3D"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：小明, 爸爸\n首帧描述：现代简约风格，在温馨的客厅里，穿着蓝色T恤和牛仔短裤的小明兴奋地跑向刚下班回家、穿着浅灰色衬衫与深色西裤的爸爸，把百炼椰汁递给他。爸爸接过椰汁，喝了一口，满意地点点头。色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "image",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "image_url": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/32/20250927/2cf8887b/3807c089-f2a6-4160-a301-b7bf4c1efd5b3879358224.png?Expires=1759068252&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=yM%2BTxn4ypStUKxq40bf5q7WiLmc%3D"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "text": "角色：妈妈, 小明, 爸爸\n首帧描述：现代简约风格，在明亮的餐厅里，一家三口围坐在餐桌旁，桌上摆满了美味的晚餐和清凉的百炼椰汁。穿着淡黄色围裙与白色T恤的妈妈、穿着蓝色T恤和牛仔短裤的小明以及穿着浅灰色衬衫与深色西裤的爸爸，脸上洋溢着幸福的笑容。色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "image",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "image_url": "https://dashscope-result-wlcb-acdr-1.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/de/20250927/2cf8887b/23b9dc3f-637a-4a72-84ef-a0a7334393432577085194.png?Expires=1759068252&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=W1OsH2zluxXvgOwvikcgeO9xnOs%3D"
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "VideoDescription": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_75a2996a-20fc-466a-b33e-819a85a1d6e2",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：中景，现代简约风格的明亮厨房里，穿着蓝色T恤和牛仔短裤的小明正在切水果，旁边是穿着淡黄色围裙与白色T恤、面带微笑的妈妈在指导他。小明停下手中的刀，看向妈妈说：“妈妈，我好渴啊！”画面色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：特写镜头，冰箱门打开，妈妈从里面拿出一瓶简洁大方、透明包装的百炼椰汁，递给小明。小明接过瓶子，好奇地拧开盖子，一股清新的椰香扑鼻而来。椰汁清澈透亮，标签上的热带风情图案清晰可见。画面色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：中景，在温馨的客厅里，穿着蓝色T恤和牛仔短裤的小明兴奋地跑向刚下班回家、穿着浅灰色衬衫与深色西裤的爸爸，把百炼椰汁递给他。爸爸接过椰汁，喝了一口，满意地点点头。画面展示爸爸脸上满意的表情，以及椰汁瓶身的细节。色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：中景，在明亮的餐厅里，一家三口围坐在餐桌旁，桌上摆满了美味的晚餐和清凉的百炼椰汁。穿着淡黄色围裙与白色T恤的妈妈、穿着蓝色T恤和牛仔短裤的小明以及穿着浅灰色衬衫与深色西裤的爸爸，脸上洋溢着幸福的笑容。画面通过推拉镜头，展示一家人温馨的用餐场景，色彩鲜艳，商业摄影质感，4K高清画质。"
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "Video": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_a69a4bc5-9679-4364-b55d-d82ab2375464",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：特写镜头，冰箱门打开，妈妈从里面拿出一瓶简洁大方、透明包装的百炼椰汁，递给小明。小明接过瓶子，好奇地拧开盖子，一股清新的椰香扑鼻而来。椰汁清澈透亮，标签上的热带风情图案清晰可见。画面色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "data",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "data": {
+                    "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/1d/5a/20250927/8a4a76d1/b78efdec-8e28-42e1-aad6-19248ac14987.mp4?Expires=1759068307&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=2pPYz0zXISpYMNHTKcSfVSCxR7o%3D": "描述：特写镜头，冰箱门打开，妈妈从里面拿出一瓶简洁大方、透明包装的百炼椰汁，递给小明。小明接过瓶子，好奇地拧开盖子，一股清新的椰香扑鼻而来。椰汁清澈透亮，标签上的热带风情图案清晰可见。画面色彩鲜艳，商业摄影质感，4K高清画质。"
+                }
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：中景，现代简约风格的明亮厨房里，穿着蓝色T恤和牛仔短裤的小明正在切水果，旁边是穿着淡黄色围裙与白色T恤、面带微笑的妈妈在指导他。小明停下手中的刀，看向妈妈说：“妈妈，我好渴啊！”画面色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "data",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "data": {
+                    "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/1d/c1/20250927/8a4a76d1/0439f7f5-9abe-4b6c-ad4f-5447ed0ee727.mp4?Expires=1759068308&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=w4Ej1gpNWa5A81Qn0GWtED6D7Jc%3D": "描述：中景，现代简约风格的明亮厨房里，穿着蓝色T恤和牛仔短裤的小明正在切水果，旁边是穿着淡黄色围裙与白色T恤、面带微笑的妈妈在指导他。小明停下手中的刀，看向妈妈说：“妈妈，我好渴啊！”画面色彩鲜艳，商业摄影质感，4K高清画质。"
+                }
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：中景，在温馨的客厅里，穿着蓝色T恤和牛仔短裤的小明兴奋地跑向刚下班回家、穿着浅灰色衬衫与深色西裤的爸爸，把百炼椰汁递给他。爸爸接过椰汁，喝了一口，满意地点点头。画面展示爸爸脸上满意的表情，以及椰汁瓶身的细节。色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "data",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "data": {
+                    "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/1d/80/20250927/8a4a76d1/11cdd970-f231-4a14-b4c6-85b84cfe0a89.mp4?Expires=1759068353&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=qd8mQRIJTWI8fOf4xcCjhydKMcU%3D": "描述：中景，在温馨的客厅里，穿着蓝色T恤和牛仔短裤的小明兴奋地跑向刚下班回家、穿着浅灰色衬衫与深色西裤的爸爸，把百炼椰汁递给他。爸爸接过椰汁，喝了一口，满意地点点头。画面展示爸爸脸上满意的表情，以及椰汁瓶身的细节。色彩鲜艳，商业摄影质感，4K高清画质。"
+                }
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "text": "描述：中景，在明亮的餐厅里，一家三口围坐在餐桌旁，桌上摆满了美味的晚餐和清凉的百炼椰汁。穿着淡黄色围裙与白色T恤的妈妈、穿着蓝色T恤和牛仔短裤的小明以及穿着浅灰色衬衫与深色西裤的爸爸，脸上洋溢着幸福的笑容。画面通过推拉镜头，展示一家人温馨的用餐场景，色彩鲜艳，商业摄影质感，4K高清画质。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "data",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "data": {
+                    "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/1d/09/20250927/8a4a76d1/59a86307-a6f5-4377-80bb-21ca954ef6ba.mp4?Expires=1759068354&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=VJL%2BXgCz%2BHbuYJDl5XV%2FcioBlD4%3D": "描述：中景，在明亮的餐厅里，一家三口围坐在餐桌旁，桌上摆满了美味的晚餐和清凉的百炼椰汁。穿着淡黄色围裙与白色T恤的妈妈、穿着蓝色T恤和牛仔短裤的小明以及穿着浅灰色衬衫与深色西裤的爸爸，脸上洋溢着幸福的笑容。画面通过推拉镜头，展示一家人温馨的用餐场景，色彩鲜艳，商业摄影质感，4K高清画质。"
+                }
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "Line": {
+        "sequence_number": null,
+        "object": "message",
+        "status": "created",
+        "error": null,
+        "id": "msg_6202a529-964d-43f5-8eb8-cba0b1bb0eac",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 0,
+                "delta": false,
+                "msg_id": null,
+                "text": "小明，妈妈"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 1,
+                "delta": false,
+                "msg_id": null,
+                "text": "忙碌的厨房里，小明感到口渴。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 2,
+                "delta": false,
+                "msg_id": null,
+                "text": "Chelsie"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 3,
+                "delta": false,
+                "msg_id": null,
+                "text": "无"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 4,
+                "delta": false,
+                "msg_id": null,
+                "text": "天然椰香，带来清爽体验。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 5,
+                "delta": false,
+                "msg_id": null,
+                "text": "Chelsie"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 6,
+                "delta": false,
+                "msg_id": null,
+                "text": "小明，爸爸"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 7,
+                "delta": false,
+                "msg_id": null,
+                "text": "爸爸也爱这清新甜美的味道。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 8,
+                "delta": false,
+                "msg_id": null,
+                "text": "Chelsie"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 9,
+                "delta": false,
+                "msg_id": null,
+                "text": "妈妈，小明，爸爸"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 10,
+                "delta": false,
+                "msg_id": null,
+                "text": "天然椰香，让每一刻都充满温馨。"
+            },
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "text",
+                "index": 11,
+                "delta": false,
+                "msg_id": null,
+                "text": "Chelsie"
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "Audio": {
+        "sequence_number": 0,
+        "object": "message",
+        "status": "completed",
+        "error": null,
+        "id": "msg_c58b04c7-262a-448f-bf2a-4fb6c71aad01",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": null,
+                "error": null,
+                "type": "data",
+                "index": null,
+                "delta": false,
+                "msg_id": null,
+                "data": {
+                    "http://dashscope-result-wlcb.oss-cn-wulanchabu.aliyuncs.com/1d/e5/20250927/e6c1b9cc/6153ac4c-30b3-458a-b1a6-d63543adad39.wav?Expires=1759068369&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Xb8TIESvZbAlkdGFFv7876V%2BhU4%3D": "忙碌的厨房里，小明感到口渴。",
+                    "http://dashscope-result-wlcb.oss-cn-wulanchabu.aliyuncs.com/1d/d6/20250927/e6c1b9cc/d4a204d7-90f1-43c2-9ca8-cbe75c9aaed0.wav?Expires=1759068369&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=OSgdLKXkR%2FecQG5PDvIvHtbogBQ%3D": "天然椰香，带来清爽体验。",
+                    "http://dashscope-result-wlcb.oss-cn-wulanchabu.aliyuncs.com/1d/a0/20250927/e6c1b9cc/cc6b53bd-18cf-42f8-9a92-f880e4ddbaad.wav?Expires=1759068369&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=El%2FxIc40KFCtKWrKxud%2BC1Y0bIU%3D": "爸爸也爱这清新甜美的味道。",
+                    "http://dashscope-result-wlcb.oss-cn-wulanchabu.aliyuncs.com/1d/0b/20250927/e6c1b9cc/ecf565c5-895b-4631-b966-20bdfbd82420.wav?Expires=1759068370&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=gTNVFRjFIu0rQUTeMaGyC4eA%2BOg%3D": "天然椰香，让每一刻都充满温馨。"
+                }
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    },
+    "Film": {
+        "sequence_number": 0,
+        "object": "message",
+        "status": "completed",
+        "error": null,
+        "id": "msg_c2c20896-226d-4c81-8fdc-026713c25fd2",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "sequence_number": null,
+                "object": "content",
+                "status": "completed",
+                "error": null,
+                "type": "data",
+                "index": 0,
+                "delta": false,
+                "msg_id": "msg_c2c20896-226d-4c81-8fdc-026713c25fd2",
+                "data": {
+                    "video_url": "https://bailian-cn-beijing.oss-cn-beijing.aliyuncs.com/multimodal_generation%2Fmock_session_id%2Ffilm.mp4?OSSAccessKeyId=LTAI5tSr8GHZekwmKPw28SMf&Expires=1758985595&Signature=D%2FU5I0j7hJkUU%2B6Ho0Xlhb%2BEZPM%3D"
+                }
+            }
+        ],
+        "code": null,
+        "message": null,
+        "usage": null
+    }
+}

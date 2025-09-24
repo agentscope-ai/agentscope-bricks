@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import json
-import os
 from pathlib import Path
 from typing import Dict, Any
 from agentscope_bricks.utils.logger_util import logger

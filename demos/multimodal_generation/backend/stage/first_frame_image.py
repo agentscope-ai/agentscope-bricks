@@ -6,13 +6,7 @@ from typing import AsyncGenerator
 from agentscope_bricks.components.generations.qwen_image_edit import (
     QwenImageEditInput,
 )
-
-from agentscope_bricks.components.generations.qwen_image_generation import (
-    QwenImageGen,
-)
-
 from agentscope_bricks.components import (
-    ImageGeneration,
     ImageEdit,
     QwenImageEdit,
 )
@@ -27,7 +21,6 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     Content,
 )
 from agentscope_bricks.utils.tracing_utils import trace, TraceType
-from agentscope_bricks.utils.logger_util import logger
 from agentscope_bricks.utils.message_util import (
     get_agent_message_finish_reason,
     merge_agent_message,
@@ -42,6 +35,7 @@ from demos.multimodal_generation.backend.common.stage_manager import (
 from demos.multimodal_generation.backend.utils.generation_util import (
     generate_image_t2i,
 )
+from demos.multimodal_generation.backend.utils.task_util import batch_run_tasks
 
 
 class FirstFrameImageHandler(Handler):
@@ -53,7 +47,7 @@ class FirstFrameImageHandler(Handler):
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="first_frame_image",
+        trace_name="first_frame_image_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -76,76 +70,79 @@ class FirstFrameImageHandler(Handler):
             not first_frame_desc_message
             or not first_frame_desc_message.content
         ):
-            logger.error("No first frame description message found")
-            return
+            raise ValueError("No first frame description message found")
 
         # Create assistant message
         assistant_message = Message(
             role=Role.ASSISTANT,
         )
 
-        # Generate images in parallel for all first frame descriptions
-        image_tasks = []
-        # script_message = self.stage_session.get_stage_message(Stage.SCRIPT)
-        # product_image_url = (
-        #     script_message.content[0].data.get("image_url")
-        #     if script_message
-        #     else None
-        # )
+        # Generate images using batch_run_tasks for streaming results
         ti2_model = self.config.get("t2i_model")
-        for i, content in enumerate(first_frame_desc_message.content):
-            # if product_image_url:
-            #     task = self._i2i_generate_single_image(
-            #         content.text,
-            #         product_image_url,
-            #     )
-            # else:
-            # Use text-to-image generation
-            task = generate_image_t2i(ti2_model, content.text)
-            image_tasks.append(task)
-
         rps = self.config.get("rps", 1)
-        task_results = []
-        for i in range(0, len(image_tasks), rps):
-            batch_tasks = image_tasks[i : i + rps]
-            batch_results = await asyncio.gather(*batch_tasks)
-            task_results.extend(batch_results)
 
-        image_urls = task_results
+        # Create coroutines with index for batch processing
+        coro_list = []
+        for i, content in enumerate(first_frame_desc_message.content):
+            coro = generate_image_t2i(ti2_model, content.text, index=i)
+            coro_list.append(coro)
 
-        if len(image_urls) != len(first_frame_desc_message.content):
-            logger.error(
-                f"Number of generated images ({len(image_urls)}) not equals to"
-                f" number of first frame desc"
-                f" ({len(first_frame_desc_message.content)})",
-            )
-            return
+        # Track completion and yield results as they come
+        all_mixed_contents = (
+            []
+        )  # Keep track of all accumulated content for final result
+        completed_count = 0
+        total_count = len(first_frame_desc_message.content)
 
-        # Create mixed content: description and image URL pairs
-        mixed_contents = []
-        for i, (content, url) in enumerate(
-            zip(first_frame_desc_message.content, image_urls),
-        ):
+        # Process images in batches and yield results incrementally
+        async for index, image_url in batch_run_tasks(coro_list, rps):
+            completed_count += 1
+
+            # Get the corresponding content for this index
+            content = first_frame_desc_message.content[index]
+
+            # Create incremental mixed content for this frame
+            incremental_contents = []
+
             # Add description content
             desc_content = TextContent(
                 text=content.text,
+                index=index,
             )
-            mixed_contents.append(desc_content)
+            incremental_contents.append(desc_content)
 
             # Add image content if URL is available
-            if url:
+            if image_url:
                 image_content = ImageContent(
-                    image_url=url,
+                    image_url=image_url,
+                    index=index,
                 )
-                mixed_contents.append(image_content)
+                incremental_contents.append(image_content)
 
-        # Update message with final content and status
-        assistant_message.content = mixed_contents
+            # Also keep track for final accumulated result
+            all_mixed_contents.extend(incremental_contents)
 
-        # Yield the completed message
-        yield assistant_message.completed()
+            # Create partial message with incremental content
+            partial_message = Message(role=Role.ASSISTANT)
+            partial_message.content = incremental_contents
 
-        # Set stage messages
+            # Yield the incremental result
+            if completed_count == total_count:
+                # Final result - mark as completed
+                yield partial_message.completed()
+            else:
+                # Intermediate result - don't mark as completed yet
+                yield partial_message
+
+        # Verify all images were generated
+        if completed_count != total_count:
+            raise RuntimeError(
+                f"Number of generated images ({completed_count}) not equals to"
+                f" number of first frame desc ({total_count})",
+            )
+
+        # Update assistant message with final content and set stage messages
+        assistant_message.content = all_mixed_contents
         self.stage_session.set_stage_message(
             Stage.FIRST_FRAME_IMAGE,
             assistant_message,
@@ -182,8 +179,9 @@ class FirstFrameImageHandler(Handler):
             if image_edit_output.results:
                 return image_edit_output.results[0]
             else:
-                logger.error(f"Failed to generate image for prompt: {prompt}")
-                return ""
+                raise RuntimeError(
+                    f"Failed to generate image for prompt: {prompt}",
+                )
         else:
             image_edit_input = ImageEditInput(
                 function="remove_watermark",
@@ -200,8 +198,9 @@ class FirstFrameImageHandler(Handler):
             if image_edit_output.results:
                 return image_edit_output.results[0]
             else:
-                logger.error(f"Failed to generate image for prompt: {prompt}")
-                return ""
+                raise RuntimeError(
+                    f"Failed to generate image for prompt: {prompt}",
+                )
 
 
 if __name__ == "__main__":

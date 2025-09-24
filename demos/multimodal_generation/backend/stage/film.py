@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import tempfile
-import time
 import os
 from typing import AsyncGenerator, List
 from pathlib import Path
@@ -248,8 +247,10 @@ class FilmHandler(Handler):
                 video_path = await download_file(video_url, video_path)
                 audio_path = await download_file(audio_url, audio_path)
                 if not video_path or not audio_path:
-                    logger.error(f"Failed to download files for clip {i}")
-                    continue
+                    raise RuntimeError(
+                        f"Failed to download files for clip {i}: "
+                        f"audio_path={audio_path}, video_path={video_path}",
+                    )
 
                 video_paths.append(video_path)
                 audio_paths.append(audio_path)
@@ -324,12 +325,11 @@ class FilmHandler(Handler):
             return str(output_path)
 
         except Exception as e:
-            logger.error(f"Error synthesizing film: {e}")
-            raise
+            raise RuntimeError(f"Error synthesizing film: {e}")
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="film",
+        trace_name="film_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -349,23 +349,19 @@ class FilmHandler(Handler):
         line_message = self.stage_session.get_stage_message(Stage.LINE)
 
         if not audio_message or not audio_message.content:
-            logger.error("No audio message found")
-            return
+            raise ValueError("No audio message found")
 
         if not video_message or not video_message.content:
-            logger.error("No video message found")
-            return
+            raise ValueError("No video message found")
 
         if not line_message or not line_message.content:
-            logger.error("No line message found")
-            return
+            raise ValueError("No line message found")
 
         # Create assistant message
         assistant_message = Message(
             role=Role.ASSISTANT,
             content=[],
         )
-        yield assistant_message
 
         # Extract video URLs from video message
         video_urls = []
@@ -396,12 +392,11 @@ class FilmHandler(Handler):
         if len(video_urls) != len(audio_urls) or len(video_urls) != len(
             subtitle_texts,
         ):
-            logger.error(
+            raise ValueError(
                 f"Mismatch between video ({len(video_urls)}), "
                 f"audio ({len(audio_urls)}) and subtitle "
                 f"({len(subtitle_texts)}) counts",
             )
-            return
 
         # Synthesize film
         try:
@@ -436,8 +431,7 @@ class FilmHandler(Handler):
             )
 
         except Exception as e:
-            logger.error(f"Failed to synthesize film: {e}")
-            raise
+            raise RuntimeError(f"Failed to synthesize film: {e}")
 
     def __del__(self):
         """Clean up temporary files"""
@@ -453,12 +447,7 @@ class FilmHandler(Handler):
             ):
                 shutil.rmtree(self.temp_dir)
         except Exception as e:
-            # Only log if Python is not shutting down
-            try:
-                if hasattr(sys, "meta_path") and sys.meta_path is not None:
-                    logger.error(f"Error cleaning up temp directory: {e}")
-            except Exception:
-                pass
+            raise RuntimeError(f"Error cleaning up temp directory: {e}")
 
 
 if __name__ == "__main__":

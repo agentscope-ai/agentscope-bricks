@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import copy
 import json
 import re
 from typing import (
@@ -9,7 +8,6 @@ from typing import (
     Dict,
     Optional,
     Union,
-    Mapping,
     Callable,
 )
 from agentscope_bricks.utils.logger_util import logger
@@ -18,7 +16,6 @@ from openai.types.chat import ChatCompletionChunk
 
 from agentscope_bricks.base.component import Component
 from agentscope_bricks.utils.schemas.oai_llm import OpenAIMessage
-from agentscope_bricks.utils.message_util import merge_incremental_chunk
 from agentscope_runtime.engine.schemas.agent_schemas import (
     Message,
     Role,
@@ -30,30 +27,42 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
 
 def parse_script(text: str) -> tuple[str, str, str]:
     """
-    从脚本文字中提取核心产品和广告语。
+    Extract product information from script text.
 
     Args:
-        text (str): 包含产品和广告语的脚本文字。
+        text (str): Script text containing product information.
 
     Returns:
-        tuple[str, str]: 一个包含产品名称和广告语的元组 (product, slogan)。
-                         如果找不到，对应的值会是空字符串。
+        tuple[str, str, str]: Product name, description, and slogan.
+                             Empty strings if not found.
     """
-    product_name = ""
-    product_desc = ""
-    slogan = ""
+    # Simplified pattern: match any non-letter characters before key terms
+    # This covers all common prefixes: ###, *, -, 1., etc.
+    prefix_pattern = r"^[^\u4e00-\u9fff]*"
 
-    product_name_match = re.search(r"产品名称：(.*)", text)
-    if product_name_match:
-        product_name = product_name_match.group(1).strip()
+    # Extract product name
+    name_match = re.search(
+        rf"{prefix_pattern}产品名称：\s*(.*?)$",
+        text,
+        re.M,
+    )
+    product_name = name_match.group(1).strip() if name_match else ""
 
-    product_desc_match = re.search(r"产品描述：(.*)", text)
-    if product_desc_match:
-        product_desc = product_desc_match.group(1).strip()
+    # Extract product description (may span multiple lines)
+    desc_match = re.search(
+        rf"{prefix_pattern}产品描述：\s*(.*?)(?={prefix_pattern}产品标语：|$)",
+        text,
+        re.M | re.S,
+    )
+    product_desc = desc_match.group(1).strip() if desc_match else ""
 
-    slogan_match = re.search(r"产品标语：(.*)", text)
-    if slogan_match:
-        slogan = slogan_match.group(1).strip()
+    # Extract slogan
+    slogan_match = re.search(
+        rf"{prefix_pattern}产品标语：\s*(.*?)$",
+        text,
+        re.M,
+    )
+    slogan = slogan_match.group(1).strip() if slogan_match else ""
 
     return product_name, product_desc, slogan
 
