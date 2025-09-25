@@ -51,7 +51,7 @@ class TracerHandler(ABC):
 
     @abstractmethod
     def on_log(self, message: str, **kwargs: Any) -> None:
-        """Handle a log message during tracing_utils.
+        """Handle a log message during tracing.
 
         Args:
             message (str): The log message.
@@ -69,7 +69,7 @@ class TracerHandler(ABC):
         traceback_info: str,
         **kwargs: Any,
     ) -> None:
-        """Handle an error during tracing_utils.
+        """Handle an error during tracing.
 
         Args:
             event_name (str): The type of event being traced.
@@ -129,7 +129,7 @@ class BaseLogHandler(TracerHandler):
         )
 
     def on_log(self, message: str, **kwargs: Any) -> None:
-        """Log a message during tracing_utils.
+        """Log a message during tracing.
 
         Args:
             message (str): The log message.
@@ -146,7 +146,7 @@ class BaseLogHandler(TracerHandler):
         traceback_info: str,
         **kwargs: Any,
     ) -> None:
-        """Log an error during tracing_utils.
+        """Log an error during tracing.
 
         Args:
             event_name (str): The name of event being traced.
@@ -193,7 +193,7 @@ class Tracer:
         payload: Dict[str, Any],
         **kwargs: Any,
     ) -> Any:
-        """Create a context manager for tracing_utils an event.
+        """Create a context manager for tracing an event.
 
         Args:
             span(Any): span of event
