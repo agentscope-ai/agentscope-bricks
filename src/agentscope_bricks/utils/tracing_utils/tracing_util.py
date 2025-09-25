@@ -99,7 +99,7 @@ class TracingUtil:
 
 
 def get_global_attributes() -> dict:
-    """Set global common attributes for tracing_utils."""
+    """Set global common attributes for tracing."""
     attributes = {"gen_ai.framework": "Alibaba Cloud Model Studio"}
 
     if app_env := (os.getenv("APPLICATION_ENV") or os.getenv("DS_ENV")):
@@ -119,7 +119,7 @@ def get_global_attributes() -> dict:
         attributes["gen_ai.user.id"] = user_id
 
     if app_tracing := os.getenv("APPLICATION_TRACING"):
-        attributes["bailian.app.tracing_utils"] = app_tracing
+        attributes["bailian.app.tracing"] = app_tracing
 
     if workspace_id := os.getenv("WORKSPACE_ID"):
         attributes["bailian.app.workspace"] = workspace_id
