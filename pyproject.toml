@@ -24,6 +24,7 @@ classifiers = [
 dependencies = [
     "agentscope-runtime==0.1.5b2",
     "agentscope-runtime[deployment]==0.1.5b2",
+    "agentscope-runtime[sandbox]==0.1.5b2",
     "aiohttp",
     "anyio",
     "dashscope>=1.24.4",
