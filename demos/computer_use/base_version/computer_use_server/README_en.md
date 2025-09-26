@@ -102,8 +102,8 @@ nano ~/.zshrc    # If you are using zsh (default in macOS Catalina and later)
 nano ~/.bash_profile  # If you are using bash
 
 # Add environment variables for example
-export DASHSCOPE_API_KEY=""
-export ECD_DESKTOP_ID="your_desktop_id"
+export DASHSCOPE_API_KEY=
+export ECD_DESKTOP_ID=
 export EDS_OSS_ACCESS_KEY_ID=
 export EDS_OSS_ACCESS_KEY_SECRET=
 export EDS_OSS_BUCKET_NAME=

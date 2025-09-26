@@ -65,7 +65,7 @@ class ComputerUseAgent(Agent):
         sandbox_type = config.get("sandbox_type", "pc_wuyin")
         status_callback = config.get("status_callback")
         pc_use_add_info = config.get("pc_use_add_info", "")
-        max_steps = config.get("max_steps", 10)
+        max_steps = config.get("max_steps", 20)
         chat_id = config.get("chat_id", "")
         user_id = config.get("user_id", "")
         e2e_info = config.get("e2e_info", [])
@@ -383,7 +383,7 @@ class ComputerUseAgent(Agent):
                 "step": "",
                 "stage": "start",
                 "type": "text",
-                "text": f"🤖 开始执行任务: {instruction}\\n模式: {self.mode}",
+                "text": f"🤖 开始执行任务: {instruction}",
             },
         )
         # 清楚上一次的停止信号
@@ -429,7 +429,7 @@ class ComputerUseAgent(Agent):
                             "step": f"{step_count}",
                             "stage": "output",
                             "type": "text",
-                            "text": f"🔄 执行第 {step_count}步",
+                            "text": f"🔄 第 {step_count} 步",
                         },
                     )
                     step_info = {
@@ -473,7 +473,7 @@ class ComputerUseAgent(Agent):
                                 "step": f"{step_count}",
                                 "stage": "output",
                                 "type": "text",
-                                "text": "🔍 正在分析屏幕截图...",
+                                "text": "🔍 分析屏幕截图",
                             },
                         )
 
@@ -520,7 +520,7 @@ class ComputerUseAgent(Agent):
                                 "step": f"{step_count}",
                                 "stage": "error",
                                 "type": "text",
-                                "text": f"❌ 错误: {error_msg}",
+                                "text": f"错误: {error_msg}",
                             },
                         )
                         raise analyse_error
@@ -542,7 +542,7 @@ class ComputerUseAgent(Agent):
                             "step": f"{step_count}",
                             "stage": "output",
                             "type": "text",
-                            "text": "⚡ 执行操作中...",
+                            "text": "⚡ 执行操作",
                         },
                     )
 
@@ -657,7 +657,7 @@ class ComputerUseAgent(Agent):
                                 "step": f"{step_count}",
                                 "stage": "error",
                                 "type": "text",
-                                "text": f"❌ {error_msg}",
+                                "text": f"{error_msg}",
                             },
                         )
                         continue
@@ -678,7 +678,7 @@ class ComputerUseAgent(Agent):
                             "step": "",
                             "stage": "limit_completed",
                             "type": "text",
-                            "text": f"⚠️ 达到最大步数限制 ({self.max_steps})，任务停止",
+                            "text": f"达到最大步数限制 ({self.max_steps})，任务停止",
                         },
                     )
                     break
@@ -695,14 +695,36 @@ class ComputerUseAgent(Agent):
                     break
 
         except Exception as e:
-            error_msg = f"执行任务时出错: {str(e)}"
-            logger.error(error_msg)
+            error_msg = str(e)
+            # 检查是否为GUI服务请求失败的错误
+            if (
+                "Error querying" in error_msg
+                and "GUI服务请求失败" in error_msg
+            ):
+                # 尝试提取请求ID
+                import re
+
+                request_id_match = re.search(
+                    r'"request_id":"([^"]+)"',
+                    error_msg,
+                )
+                if request_id_match:
+                    request_id = request_id_match.group(1)
+                    formatted_error = (
+                        f"内部agent调用异常，请求ID: {request_id}"
+                    )
+                else:
+                    formatted_error = "内部agent调用异常"
+            else:
+                formatted_error = f"执行任务时出错: {error_msg}"
+
+            logger.error(f"执行任务时出错: {error_msg}")
             yield DataContent(
                 data={
                     "step": "",
                     "stage": "error",
                     "type": "text",
-                    "text": f"❌ {error_msg}",
+                    "text": formatted_error,
                 },
             )
         finally:
@@ -1360,27 +1382,7 @@ class ComputerUseAgent(Agent):
                 result = json.dumps(result_data, ensure_ascii=False)
 
             except Exception as e:
-                yield DataContent(
-                    data={
-                        "step": f"{step_count}",
-                        "stage": "error",
-                        "type": "SYSTEM",
-                        "text": "Error querying PC use model %s" % e,
-                    },
-                )
                 logger.error(f"Error querying PC use model: {e}")
-
-                # 发送分析阶段失败状态，确保前端不会卡在AI分析阶段
-                yield DataContent(
-                    data={
-                        "step": f"{step_count}",
-                        "stage": "error",
-                        "type": "analysis_stage",
-                        "text": "Analysis failed",
-                        "timestamp": time.time(),
-                        "uuid": str(uuid4()),
-                    },
-                )
                 raise RuntimeError(f"Error querying PC use model: {e}")
         elif self.mode == "phone_use":
             try:
