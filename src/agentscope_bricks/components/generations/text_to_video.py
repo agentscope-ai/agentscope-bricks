@@ -32,7 +32,7 @@ class TextToVideoInput(BaseModel):
     )
     size: Optional[str] = Field(
         default=None,
-        description="用于指定视频分辨率，格式为宽*高，例如 1280*720",
+        description="视频分辨率，默认不设置",
     )
     duration: Optional[int] = Field(
         default=None,
@@ -238,8 +238,7 @@ if __name__ == "__main__":
         try:
             # Execute concurrent calls using asyncio.gather
             tasks = [
-                text_to_video.arun(test_input, model_name="wan2.2-t2v-plus")
-                for test_input in test_inputs
+                text_to_video.arun(test_input) for test_input in test_inputs
             ]
 
             results = await asyncio.gather(*tasks, return_exceptions=True)

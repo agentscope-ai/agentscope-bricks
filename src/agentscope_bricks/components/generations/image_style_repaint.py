@@ -3,6 +3,7 @@ import asyncio
 import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from distutils.util import strtobool
 from http import HTTPStatus
 from typing import Any, Optional
 
@@ -125,6 +126,11 @@ class ImageStyleRepaint(
                 "wanx-style-repaint-v1",
             ),
         )
+        watermark_env = os.getenv("IMAGE_STYLE_REPAINT_ENABLE_WATERMARK")
+        if watermark_env is not None:
+            watermark = strtobool(watermark_env)
+        else:
+            watermark = kwargs.pop("watermark", True)
 
         has_uploaded = False
 
@@ -153,13 +159,16 @@ class ImageStyleRepaint(
 
         # 🔄 将BaseAsyncApi.call放到线程池中执行，避免阻塞事件循环
         def _sync_style_repaint_call() -> Any:
+            input = {
+                "image_url": image_url,
+                "style_index": args.style_index,
+                "style_ref_url": style_ref_url,
+            }
+            if watermark is not None:
+                input["watermark"] = watermark
             return BaseAsyncApi.call(
                 model=model_name,
-                input={
-                    "image_url": image_url,
-                    "style_index": args.style_index,
-                    "style_ref_url": style_ref_url,
-                },
+                input=input,
                 task_group="aigc",
                 task="image-generation",
                 function="generation",

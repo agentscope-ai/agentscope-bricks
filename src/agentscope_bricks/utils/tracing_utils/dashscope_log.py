@@ -276,7 +276,7 @@ class DashscopeLogHandler(TracerHandler):
         )
 
     def on_log(self, message: str, **kwargs: Any) -> None:
-        """Handle a log message during tracing_utils.
+        """Handle a log message during tracing.
 
         Args:
             message (str): The log message.
@@ -334,7 +334,7 @@ class DashscopeLogHandler(TracerHandler):
         traceback_info: str,
         **kwargs: Any,
     ) -> None:
-        """Handle an error during tracing_utils.
+        """Handle an error during tracing.
 
         Args:
             event_name (str): The name of event being traced.

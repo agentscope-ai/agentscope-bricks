@@ -35,9 +35,7 @@ class SpeechToVideoSubmitInput(BaseModel):
     )
     resolution: Optional[str] = Field(
         default=None,
-        description="视频分辨率档位。可选值为480P、720P。默认值为480P。"
-        "模型会尽量保持输出视频与输入图像的宽高比一致，在宽高比不变的基础上，"
-        "将视频总像素调整到所选档位附近。",
+        description="视频分辨率，默认不设置",
     )
     ctx: Optional[Context] = Field(
         default=None,

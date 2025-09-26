@@ -4,10 +4,9 @@ This example demonstrates multimodal video generation with the following workflo
 
 ![Workflow](assets/flow.png)
 
-### Environment Variables Setup
+### Set Environment Variables
 ```shell
-
-# ModelStudio Platform API-Key
+# ModelStudio Platform API Key
 DASHSCOPE_API_KEY={your_api_key}
 
 # Alibaba Cloud OSS Configuration
@@ -16,24 +15,17 @@ OSS_ACCESS_KEY_SECRET={your_sk}
 OSS_ENDPOINT={your_endpoint}
 OSS_BUCKET={your_bucket}
 OSS_DIRECTORY={your_directory}
-
-# Observability Configuration
-TRACE_ENABLE_LOG=1
-TRACE_ENABLE_REPORT=0
-TRACE_ENABLE_DEBUG=0
 ```
 
+Navigate to the project root directory
 
-### Start the Server
+### Install Dependencies
+
 ```shell
-export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/multimodal_generation/backend/app.py
+pip install -r demos/multimodal_generation/backend/requirements.txt
 ```
 
-### Start the Client
+### Run the Program
 ```shell
-export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/multimodal_generation/backend/test/agent_api_client.py
+export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/multimodal_generation/backend/test/utils.py
 ```
-
-
-
-

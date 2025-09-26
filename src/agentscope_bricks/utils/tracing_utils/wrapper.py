@@ -85,7 +85,7 @@ def trace(
         Callable[[Any], Union[BaseModel, dict, str, None]]
     ] = merge_incremental_chunk,
 ) -> Any:
-    """Decorator for tracing_utils function execution.
+    """Decorator for tracing function execution.
 
     Args:
         trace_type (Union[TraceType, str]): The type of trace event.
@@ -96,22 +96,22 @@ def trace(
         merge_output_func(Optional[Callable]): The function to merge outputs
 
     Returns:
-        Any: The decorated function with tracing_utils capabilities.
+        Any: The decorated function with tracing capabilities.
     """
 
     def wrapper(func: Any) -> Any:
-        """Wrapper function that applies tracing_utils to the target function.
+        """Wrapper function that applies tracing to the target function.
 
         Args:
             func (Any): The function to be traced.
 
         Returns:
-            Any: The wrapped function with appropriate tracing_utils logic.
+            Any: The wrapped function with appropriate tracing logic.
         """
 
         @wraps(func)
         async def async_exec(*args: Any, **kwargs: Any) -> Any:
-            """Execute async function with tracing_utils.
+            """Execute async function with tracing.
 
             Args:
                 *args (Any): Positional arguments for the function.
@@ -211,7 +211,7 @@ def trace(
 
         @wraps(func)
         def sync_exec(*args: Any, **kwargs: Any) -> Any:
-            """Execute sync function with tracing_utils.
+            """Execute sync function with tracing.
 
             Args:
                 *args (Any): Positional arguments for the function.
@@ -314,14 +314,14 @@ def trace(
             *args: Any,
             **kwargs: Any,
         ) -> AsyncGenerator[T, None]:
-            """Execute async generator function with tracing_utils.
+            """Execute async generator function with tracing.
 
             Args:
                 *args (Any): Positional arguments for the function.
                 **kwargs (Any): Keyword arguments for the function.
 
             Yields:
-                T: Items from the original generator with tracing_utils.
+                T: Items from the original generator with tracing.
             """
             _init_trace_context()
 
@@ -390,8 +390,7 @@ def trace(
                         """Internal async generator for processing items.
 
                         Yields:
-                            T: Items from the original generator with
-                            tracing_utils.
+                            T: Items from the original generator with tracing.
                         """
                         try:
                             start_time = int(time.time() * 1000)
@@ -445,7 +444,7 @@ def trace(
 
         @wraps(func)
         def iter_task(*args: Any, **kwargs: Any) -> Iterable[T]:
-            """Execute generator function with tracing_utils.
+            """Execute generator function with tracing.
 
             Args:
                 *args (Any): Positional arguments for the function.
@@ -587,7 +586,7 @@ def _get_start_payload(args: Any, kwargs: Any, func: Any = None) -> Dict:
         func (Any): The function being traced (optional).
 
     Returns:
-        Dict: The formatted start payload for tracing_utils.
+        Dict: The formatted start payload for tracing.
     """
     merged = {}
 
@@ -807,7 +806,7 @@ def _validate_trace_options(
 
 
 def _obj_to_dict(obj: Any) -> Any:
-    """Convert an object to a dictionary representation for tracing_utils.
+    """Convert an object to a dictionary representation for tracing.
 
     Args:
         obj (Any): The object to convert.
