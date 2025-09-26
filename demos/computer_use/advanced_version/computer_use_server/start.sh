@@ -18,12 +18,6 @@ BLUE=$(printf '\033[0;34m')
 GREEN=$(printf '\033[0;32m')
 NC=$(printf '\033[0m')
 
-#export PYTHONPATH="../../../..:../../../../src:$PYTHONPATH"
-#echo "🔧 已设置 PYTHONPATH: $PYTHONPATH"
-#
-## 启动后端服务
-#echo "🔧 启动后端服务..."
-#python3 backend.py  &
 # 启动后端服务
 echo "🔧 启动后端服务 (http://localhost:8002)..."
 export PYTHONPATH=$(pwd):$PYTHONPATH && python backend.py 2>&1 | sed "s/^/${BLUE}[FastAPI]${NC} /" &
@@ -36,10 +30,6 @@ sleep 3
 echo "🎨 启动前端静态资源服务..."
 cd static || { echo "❌ 无法进入 static 目录"; exit 1; }
 python3 -m http.server 8001 --bind 127.0.0.1 &
-
-# 启动 Nginx 如果本地不需要，可以注释
-#echo "🌐 启动 Nginx 服务..."
-#sudo nginx
 
 echo "✅ 服务已启动!"
 echo "📱 访问地址: http://localhost:8001/index.html"

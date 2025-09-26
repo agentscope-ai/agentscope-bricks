@@ -379,6 +379,14 @@
             <i class="fas fa-exclamation-triangle"></i> <span id="errorMessageText"></span>
         </div>
 
+        <!-- Token验证状态区域 -->
+        <div id="tokenValidationContainer" class="alert alert-info" style="display: none; margin-bottom: 1rem;">
+            <div class="d-flex align-items-center">
+                <div class="loading-spinner me-2"></div>
+                <span>正在验证用户身份，请稍候...</span>
+            </div>
+        </div>
+
         <!-- 配置区域 -->
         <div class="card mb-4">
             <div class="card-header" id="configCardHeader">
@@ -421,7 +429,7 @@
                             <input type="number" class="form-control" id="maxStepsInput" min="1" max="100" value="10">
                         </div>
 
-                        <div class="mb-3" style="display: none;">
+                        <div class="mb-3">
                             <label class="form-label">补充信息</label>
                             <input type="text" class="form-control" id="addonInfoInput" placeholder="请输入PC_USE模型补充信息">
                         </div>
@@ -440,7 +448,8 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="mb-3" style="display: none;">
+<!--                        <div class="mb-3" style="display: none;">-->
+                        <div class="mb-3">
                             <label class="form-label">模型名称</label>
                             <input type="text"
                                    class="form-control"
@@ -470,9 +479,6 @@
                     <button id="activateBtn" class="btn btn-success">
                         <i class="fas fa-bolt"></i> 激活环境
                     </button>
-                    <button id="stopTaskBtn" class="btn btn-danger" style="display: none;">
-                        <i class="fas fa-stop"></i> 停止任务
-                    </button>
                 </div>
             </div>
         </div>
@@ -498,6 +504,9 @@
                             <input type="text" class="form-control" id="taskInput" placeholder="请输入您想要执行的任务..." disabled>
                             <button class="btn btn-primary" type="button" id="sendBtn" disabled>
                                 <i class="fas fa-paper-plane"></i> 发送
+                            </button>
+                            <button id="stopTaskBtn" class="btn btn-danger" style="display: none;">
+                                <i class="fas fa-stop"></i> 停止任务
                             </button>
                             <button class="btn btn-secondary" type="button" id="clearBtn">
                                 <i class="fas fa-trash"></i> 清空
@@ -635,6 +644,8 @@
         let countdownInterval = null;
         let userId = 'user_a'; // 默认用户ID
         let chatId = 'chat_a'; // 默认对话ID
+        let isTokenValidated = false; // Token验证状态
+        let tempUserId = null; // 临时用户ID，避免验证期间冲突
 
         // 从URL参数获取userId和chatId
         function getUserAndChatIdFromUrl() {
@@ -652,17 +663,21 @@
             if (isLocal) {
                 // 本地环境直接返回本地用户和对话ID
                 console.log("检测为本地环境，使用本地用户和对话ID");
-                return { userId: 'local_user', chatId: 'local_chat' };
+                isTokenValidated = true; // 本地环境直接标记为已验证
+                const chatId = 'chat_' + Math.random().toString(36).substr(2, 9);
+                return { userId: 'local_user', chatId: chatId };
             } else {
                 // 远程环境保持原有逻辑
                 console.log("检测为远程环境，使用远程认证");
                 const urlParams = new URLSearchParams(window.location.search);
                 const studioToken = urlParams.get('studio_token');
                 if (studioToken) {
+                    // 生成临时唯一用户ID，避免验证期间冲突
+                    tempUserId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                     // 调用后端API验证token并获取userId，chatId随机生成
                     const chatId = 'chat_' + Math.random().toString(36).substr(2, 9);
                     validateStudioToken(studioToken, chatId);
-                    return { userId: 'user_a', chatId: chatId }; // 先返回默认值，后续异步更新userId
+                    return { userId: tempUserId, chatId: chatId }; // 先返回临时值，后续异步更新userId
                 }
                 // 如果没有提供studio_token，返回null表示未登录
                 return null;
@@ -671,6 +686,8 @@
 
         // 验证studio token并获取userId
         async function validateStudioToken(studioToken, generatedChatId) {
+            showTokenValidationUI(true); // 显示验证中UI
+
             try {
                 // 使用后端代理避免 CORS 问题
                 const response = await fetch(
@@ -682,18 +699,26 @@
                     if (data.Success && data.Data && data.Data.Uuid) {
                         userId = data.Data.Uuid; // 更新userId
                         chatId = generatedChatId; // 使用生成的chatId
+                        isTokenValidated = true; // 标记Token验证完成
                         userStateManager.setCurrentUser(chatId);
                         console.log(`用户验证成功: userId=${userId}, chatId=${chatId}`);
+
+                        showTokenValidationUI(false); // 隐藏验证中UI
+                        enableUserOperations(); // 启用用户操作
+
                         return { userId, chatId };
                     } else {
                         showErrorMessage("Token验证失败，请检查您的Studio Token");
+                        showTokenValidationUI(false);
                     }
                 } else {
                     showErrorMessage("Token验证失败，请检查您的Studio Token");
+                    showTokenValidationUI(false);
                 }
             } catch (error) {
                 console.error("检查studio token时出错:", error);
                 showErrorMessage("Token验证出错，请稍后重试");
+                showTokenValidationUI(false);
             }
             return null;
         }
@@ -716,7 +741,69 @@
             userStateManager.setCurrentUser(chatId);
             setupEventListeners();
             setupConfigToggle(); // 添加配置区域折叠功能
+
+            // 如果Token尚未验证完成，禁用用户操作
+            if (!isTokenValidated) {
+                disableUserOperations();
+            }
         });
+
+        // 显示/隐藏Token验证UI
+        function showTokenValidationUI(show) {
+            const validationContainer = document.getElementById('tokenValidationContainer');
+            if (validationContainer) {
+                validationContainer.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // 禁用用户操作（Token验证期间）
+        function disableUserOperations() {
+            // 禁用激活环境按钮
+            const activateBtn = document.getElementById('activateBtn');
+            if (activateBtn) {
+                activateBtn.disabled = true;
+                activateBtn.innerHTML = '<span class="loading-spinner"></span> 等待身份验证...';
+            }
+
+            // 禁用输入框和发送按钮
+            const taskInput = document.getElementById('taskInput');
+            const sendBtn = document.getElementById('sendBtn');
+            if (taskInput) {
+                taskInput.disabled = true;
+                taskInput.placeholder = '请等待身份验证完成...';
+            }
+            if (sendBtn) {
+                sendBtn.disabled = true;
+            }
+
+            // 禁用配置相关的输入
+            const configInputs = document.querySelectorAll('#configCardBody input, #configCardBody select');
+            configInputs.forEach(input => {
+                input.disabled = true;
+            });
+        }
+
+        // 启用用户操作（Token验证完成后）
+        function enableUserOperations() {
+            // 启用激活环境按钮
+            const activateBtn = document.getElementById('activateBtn');
+            if (activateBtn) {
+                activateBtn.disabled = false;
+                activateBtn.innerHTML = '<i class="fas fa-bolt"></i> 激活环境';
+            }
+
+            // 保持输入框和发送按钮禁用状态（需要先激活环境）
+            const taskInput = document.getElementById('taskInput');
+            if (taskInput) {
+                taskInput.placeholder = '请先激活环境后再输入任务...';
+            }
+
+            // 启用配置相关的输入
+            const configInputs = document.querySelectorAll('#configCardBody input, #configCardBody select');
+            configInputs.forEach(input => {
+                input.disabled = false;
+            });
+        }
 
         // 显示需要登录的提示信息
         function showLoginRequiredMessage() {
@@ -3439,7 +3526,7 @@
             '帮我在抖音搜一下济南游玩攻略相关的视频，并播放收藏',
             '帮我在通义APP中询问济南的两天旅游攻略'];
         const pcPresets    = ['在edge浏览器中搜索阿里巴巴的股价，然后在WPS中新建一个表格，在第一列填入公司名，在第二列填入股价',
-            '新建一个空白PPT，然后在第一张幻灯片中插入一段艺术字形式的文本，内容为阿里巴巴',
+            '在WPS新建一个空白PPT，然后在第一张幻灯片中插入一段艺术字形式的文本，内容为阿里巴巴',
             '进入bilibili，查看雷军的视频，然后点赞第一个视频',
             "帮我在 WPS Office 文档中写一段阿里巴巴的简介，并把字体颜色改为蓝色",
             "将系统颜色设置为浅色模式"];
@@ -3575,7 +3662,6 @@
 
             // 本地开发环境
             return currentOrigin.replace(':8001', ':8002');
-<!--            return "https://mcp-commtnysdmv-xcdaadoqnh.cn-hangzhou.fcapp.run"-->
         }
 
         // 获取基础URL（静态资源URL）

@@ -80,10 +80,6 @@ class AsyncRedisResourceAllocator:
                         self.FREE_INSTANCES_KEY,
                         *self.instance_ids,
                     )
-                    await self.redis.expire(
-                        self.FREE_INSTANCES_KEY,
-                        self.ALLOCATION_TTL,
-                    )
                     logger.info(
                         f"Initialized {self.resource_type} resource pool with "
                         f"{len(self.instance_ids)} instances",
@@ -187,10 +183,6 @@ class AsyncRedisResourceAllocator:
 
             # 将实例放回可用池
             await self.redis.sadd(self.FREE_INSTANCES_KEY, instance_id)
-            await self.redis.expire(
-                self.FREE_INSTANCES_KEY,
-                self.ALLOCATION_TTL,
-            )
 
             logger.info(f"[{self.resource_type}] 资源 {instance_id} 已释放")
 
@@ -211,7 +203,7 @@ class AsyncRedisResourceAllocator:
             return instance_id, AllocationStatus.SUCCESS
         return "", AllocationStatus.NOT_ALLOCATED
 
-    async def get_chat_wait_position_async(
+    async def get_chat_position(
         self,
         user_id: str,
     ) -> Tuple[int, AllocationStatus]:
