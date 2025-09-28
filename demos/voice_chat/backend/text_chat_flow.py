@@ -1,0 +1,176 @@
+# -*- coding: utf-8 -*-
+import json
+import os
+import time
+from typing import Tuple, List, Optional, Union
+
+from openai import Stream, OpenAI, NOT_GIVEN
+from openai.types.chat import ChatCompletionChunk, ChatCompletion
+
+from agentscope_bricks.components.memory.local_memory import MessageT
+from agentscope_bricks.constants import BASE_URL, DASHSCOPE_API_KEY
+from agentscope_bricks.utils.schemas.oai_llm import (
+    UserMessage,
+    AssistantMessage,
+    OpenAIMessage,
+)
+from agentscope_bricks.utils.logger_util import logger
+from agentscope_bricks.utils.message_util import merge_incremental_chunk
+from system_prompt import SYSTEM_PROMPT
+
+
+def load_tools(tools_dir: str) -> List[dict]:
+    """
+    动态加载tools目录下的所有JSON文件中的工具定义
+
+    Args:
+        tools_dir: tools目录路径
+
+    Returns:
+        合并后的工具列表
+    """
+    all_tools = []
+
+    if not os.path.exists(tools_dir):
+        logger.warning(f"tools directory does not exist: {tools_dir}")
+        return all_tools
+
+    # 遍历tools目录下的所有JSON文件
+    for filename in os.listdir(tools_dir):
+        if filename.endswith(".json"):
+            file_path = os.path.join(tools_dir, filename)
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    tools_data = json.load(f)
+                    if isinstance(tools_data, list):
+                        all_tools.extend(tools_data)
+                    else:
+                        all_tools.append(tools_data)
+                logger.info(f"load tools from: {filename}")
+            except Exception as e:
+                logger.error(f"failed to load tools from {filename}: {e}")
+
+    logger.info(f"total loaded tools: {len(all_tools)}")
+    return all_tools
+
+
+class TextChatFlow:
+
+    @staticmethod
+    def chat(
+        model: str,
+        query: str,
+        chat_id: str,
+        history: Optional[List[MessageT]] = [],
+        tools: Optional[List[dict]] = [],
+        stream: Optional[bool] = True,
+    ) -> Tuple[str, Union[Stream[ChatCompletionChunk], ChatCompletion]]:
+        client = OpenAI(
+            api_key=DASHSCOPE_API_KEY,
+            base_url=BASE_URL,
+        )
+
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+        # Convert historical messages to the format expected by OpenAI API
+        for msg in history:
+            if isinstance(msg, UserMessage):
+                messages.append({"role": "user", "content": msg.content})
+            elif isinstance(msg, AssistantMessage):
+                messages.append({"role": "assistant", "content": msg.content})
+            elif isinstance(msg, OpenAIMessage):
+                messages.append({"role": msg.role, "content": msg.content})
+
+        # Add current user query
+        messages.append({"role": "user", "content": query})
+
+        responses = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            stream=stream,
+            extra_body={"enable_search": True},
+            tools=tools if tools else NOT_GIVEN,
+        )
+
+        return chat_id, responses
+
+
+if __name__ == "__main__":
+    # 动态加载tools目录下的所有工具文件
+    tools = load_tools("tools")
+
+    # Test with a query that should trigger set_clock function
+    # query = "每周五下午三点半提醒我开会"
+    # query = "音量调到60"
+    # query = "播放周杰伦的七里香"
+    # query = "打电话给小王"
+    query = "请帮忙发信息问小王何时方便见面"
+    history = [
+        UserMessage(content="你好"),
+        AssistantMessage(content="你好！有什么可以帮助你的吗？"),
+    ]
+
+    stream = True
+    logger.info("chat_start"),
+    chat_start_time = int(time.time() * 1000)
+    chat_id, responses = TextChatFlow.chat(
+        query=query,
+        chat_id="0",
+        history=[],
+        tools=tools,
+        stream=stream,
+    )
+
+    ttft_first_resp = True
+    cumulated_responses = []
+
+    if stream is True:
+        for response in responses:
+            # logger.info("chat_response: chat_id=%s, response=%s" %
+            # (chat_id, json.dumps(response.model_dump(), ensure_ascii=False)))
+            logger.info(
+                "chat_response: chat_id=%s, response=%s"
+                % (
+                    chat_id,
+                    json.dumps(response.model_dump(), ensure_ascii=False),
+                ),
+            )
+
+            if ttft_first_resp:
+                logger.info(
+                    "chat_ttft: chat_id=%s, ttft=%d"
+                    % (chat_id, int(time.time() * 1000) - chat_start_time),
+                )
+                ttft_first_resp = False
+
+            if (
+                response.choices[0].finish_reason
+                and response.choices[0].finish_reason != "null"
+            ):
+                logger.info(
+                    "chat_end: chat_id=%s, tail=%d, finish_reason=%s,"
+                    " response=%s"
+                    % (
+                        chat_id,
+                        int(time.time() * 1000) - chat_start_time,
+                        response.choices[0].finish_reason,
+                        json.dumps(response.model_dump(), ensure_ascii=False),
+                    ),
+                )
+
+            cumulated_responses.append(response)
+
+        merged_response = merge_incremental_chunk(cumulated_responses)
+        logger.info(
+            "merge response:\n%s"
+            % json.dumps(merged_response.model_dump(), ensure_ascii=False),
+        )
+    else:
+        logger.info(
+            "chat_end: chat_id=%s, ttft=%d, responses=\n%s"
+            % (
+                chat_id,
+                int(time.time() * 1000) - chat_start_time,
+                json.dumps(responses.model_dump(), ensure_ascii=False),
+            ),
+        )
