@@ -1,0 +1,63 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "change_volume",
+            "description": "将音量调节到某个具体值",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "volume": {
+                        "type": "integer",
+                        "description": "音量大小，取值范围: [0,100]"
+                    }
+                },
+                "required": [
+                    "volume"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "increase_volume",
+            "description": "将音量调高，支持通过具体数值调节",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "amount": {
+                        "type": "integer",
+                        "description": "音量增加的具体数值（例如：5 表示增加 5 个单位，取值范围 1-100）"
+                    },
+                    "to": {
+                        "type": "integer",
+                        "description": "增加到/至/为某个绝对值"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "decrease_volume",
+            "description": "将音量调低，支持通过具体数值调节",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "amount": {
+                        "type": "integer",
+                        "description": "音量减小的具体数值，取值范围 1-100（例如：10 表示音量减小 10 个单位）"
+                    },
+                    "to": {
+                        "type": "integer",
+                        "description": "减小到/至/为某个绝对值"
+                    }
+                },
+                "required": []
+            }
+        }
+    }
+]

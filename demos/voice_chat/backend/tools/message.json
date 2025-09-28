@@ -1,0 +1,74 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "send_contacts_message",
+            "description": "给指定联系人发送其他联系人信息",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "description": "信息类型，如手机"
+                    },
+                    "receiver": {
+                        "type": "string",
+                        "description": "接收人"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "需要发送的联系人"
+                    }
+                },
+                "required": [
+                    "receiver",
+                    "name"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_message",
+            "description": "给指定联系人发送信息",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": "信息内容"
+                    },
+                    "contact": {
+                        "type": "string",
+                        "description": "接收信息的联系人"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "description": "接收人的手机号码"
+                    }
+                },
+                "required": [
+                    "contact"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "view_message",
+            "description": "查看消息",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "message_type": {
+                        "type": "string",
+                        "description": "消息类型。如：短信、邮件等"
+                    }
+                },
+                "required": []
+            }
+        }
+    }
+]

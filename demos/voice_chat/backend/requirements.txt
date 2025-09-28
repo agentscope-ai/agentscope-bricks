@@ -1,0 +1,4 @@
+azure-cognitiveservices-speech
+websocket-client
+pyaudio
+starlette
