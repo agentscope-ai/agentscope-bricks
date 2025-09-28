@@ -12,6 +12,9 @@ export class AudioManager {
   private readonly sampleRate: number;
   private readonly bufferSize = 4096;
 
+  // Audio playback timing management to prevent popping
+  private nextPlaybackTime = 0;
+
   // Recorder.js相关
   private recorder: any = null;
   private sendPcmBufferRef = new Int16Array(0);
@@ -23,6 +26,7 @@ export class AudioManager {
     this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
       sampleRate: this.sampleRate
     });
+    this.nextPlaybackTime = 0;
   }
 
   // 使用Recorder.js的方法
@@ -181,35 +185,43 @@ export class AudioManager {
     }
 
     try {
-      // 将 ArrayBuffer 转换为 Int16Array (PCM数据)
+      // Convert ArrayBuffer to Int16Array (PCM data)
       const pcmData = new Int16Array(audioData);
 
-      // 将 16 位整数 PCM 转换为 -1.0 到 1.0 之间的浮点数
+      // Convert 16-bit integer PCM to float32 (-1.0 to 1.0)
       const float32Data = new Float32Array(pcmData.length);
       for (let i = 0; i < pcmData.length; i++) {
         float32Data[i] = pcmData[i] / 32768.0;  // 32768 = 2^15
       }
 
-      // 创建 AudioBuffer
+      // Create AudioBuffer
       const audioBuffer = this.audioContext.createBuffer(
-        1,                    // 通道数：1 表示单声道
-        float32Data.length,   // 采样帧数
-        16000                 // 采样率，需要与录音时的采样率匹配
+        1,                    // channels: 1 for mono
+        float32Data.length,   // sample frames
+        this.sampleRate       // use consistent sample rate
       );
 
-      // 将数据写入 AudioBuffer
-      audioBuffer.copyToChannel(float32Data, 0);  // 写入到第一个通道
+      // Write data to AudioBuffer
+      audioBuffer.copyToChannel(float32Data, 0);
 
       const source = this.audioContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(this.audioContext.destination);
 
+      // Calculate timing to prevent audio popping
+      const currentTime = this.audioContext.currentTime;
+      const startTime = Math.max(currentTime, this.nextPlaybackTime);
+      const duration = audioBuffer.length / audioBuffer.sampleRate;
+
+      // Update next playback time for seamless audio streaming
+      this.nextPlaybackTime = startTime + duration;
+
       source.addEventListener('ended', () => {
-        console.log('🎵 音频播放结束');
+        // Silent completion - no logging to reduce noise
       });
 
-      source.start(0);
-      console.log('🎵 开始播放音频:', audioData.byteLength, '字节');
+      // Schedule playback at the correct time to prevent overlaps/gaps
+      source.start(startTime);
 
     } catch (error) {
       console.error('❌ 播放音频失败:', error);
@@ -229,6 +241,11 @@ export class AudioManager {
 
   getRecordingStatus(): boolean {
     return this.isRecording;
+  }
+
+  // Reset audio playback timing for new audio sessions
+  resetPlaybackTiming(): void {
+    this.nextPlaybackTime = this.audioContext ? this.audioContext.currentTime : 0;
   }
 
   // 保留原有的ScriptProcessorNode方法作为备用
