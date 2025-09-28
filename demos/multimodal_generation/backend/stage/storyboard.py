@@ -9,7 +9,6 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     Content,
 )
 from agentscope_bricks.utils.schemas.oai_llm import OpenAIMessage
-from agentscope_bricks.utils.logger_util import logger
 from agentscope_bricks.utils.message_util import (
     get_agent_message_finish_reason,
     merge_agent_message,
@@ -30,13 +29,15 @@ STORYBOARD_SYSTEM_PROMPT_TEMPLATE = """
 你是专业的广告分镜师，你将根据客户提供的产品信息和广告主题，为电商视频广告生成分镜脚本。
 
 # 任务描述与要求
-- 根据产品和广告主题，生成分镜描述。每个分镜需要包含：画面、旁白。如果画面中出现人物，则需要额外列出角色列表。
+- 根据产品和广告主题，生成分镜描述。每个分镜必须包含：角色、画面、旁白三个部分。
 - 每个分镜均必须与产品或其带来的体验直接相关。
 - 旁白（画外音）是对画面的简要陈述或情感升华，而不是角色之间的对话。
+- 角色处理规则：如果画面中出现人物，列出具体角色名称；如果画面中没有人物（如产品特写），角色行写"无"。
 - 如果画面中出现多个角色，需要分别列出他们的名字或代称（如：男主角，女主角），不要合并。
 - 旁白需要生成中文版。
 - 每个分镜必须都有旁白。
-- 输出内容直接从“分镜1”开始，不需要先铺垫其他内容。
+- 输出内容直接从"分镜1"开始，不需要先铺垫其他内容。
+- 每个分镜的内容严格按照下面的示例输出的格式，即包括角色、画面、旁白三个部分，缺一不可。
 
 # 相关限制
 - 不要出现过于复杂或负面的情节。
@@ -81,6 +82,7 @@ STORYBOARD_SYSTEM_PROMPT_TEMPLATE = """
 旁白：工作日的早晨，总是需要一杯咖啡来唤醒。
 
 分镜2：
+角色：无
 画面：特写镜头，一只手从包里拿出银色的智能便携咖啡机，按下按钮，咖啡液缓缓流入杯中，蒸汽氤氲。
 旁白：无需等待，一键萃取，即刻享受你的专属风味。
 
@@ -88,6 +90,11 @@ STORYBOARD_SYSTEM_PROMPT_TEMPLATE = """
 角色：年轻白领
 画面：白领手持咖啡杯，轻嗅香气后满足地喝了一口，脸上露出精神焕发的笑容，望向窗外的阳光。
 旁白：随时随地，让醇香灵感伴你左右。
+
+分镜4：
+角色：无
+画面：产品特写镜头，智能便携咖啡机的精致外观，银色金属质感，现代科技设计。
+旁白：科技改变生活，品质成就梦想。
 """  # noqa
 
 
@@ -99,7 +106,7 @@ class StoryboardHandler(Handler):
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="storyboard",
+        trace_name="storyboard_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -115,8 +122,7 @@ class StoryboardHandler(Handler):
         """
         script = self.stage_session.get_script()
         if not script:
-            logger.error("No script found")
-            return
+            raise ValueError("No script found")
 
         system_message = OpenAIMessage(
             role="system",

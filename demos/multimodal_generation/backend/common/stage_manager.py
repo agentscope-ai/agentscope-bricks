@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
-
 from typing import Optional
 
 from agentscope_runtime.engine.schemas.agent_schemas import (

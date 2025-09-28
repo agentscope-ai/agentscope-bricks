@@ -167,7 +167,6 @@ class TextToVideo(Component[TextToVideoInput, TextToVideoOutput]):
                     if res.output.task_status == "SUCCEEDED":
                         break
                     elif res.output.task_status in ["FAILED", "CANCELED"]:
-                        print(f"error response: {res}")
                         raise RuntimeError(
                             f"Video generation failed: task_status="
                             f"{res.output.task_status}, response={res}",
