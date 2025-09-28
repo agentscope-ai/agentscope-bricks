@@ -322,7 +322,8 @@ class AzureTtsClient(TtsClient):
         config: AzureTtsConfig,
     ) -> speech_sdk.SpeechSynthesisOutputFormat:
         """
-        将自定义 TTS 配置转换为 Azure Speech SDK 的 SpeechSynthesisOutputFormat
+        Convert custom TTS configuration to Azure Speech SDK's
+        SpeechSynthesisOutputFormat
         """
 
         if config.format and config.format.lower() != "pcm":

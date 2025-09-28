@@ -21,13 +21,14 @@ from system_prompt import SYSTEM_PROMPT
 
 def load_tools(tools_dir: str) -> List[dict]:
     """
-    动态加载tools目录下的所有JSON文件中的工具定义
+    Dynamically load tool definitions from all JSON files in the tools
+    directory
 
     Args:
-        tools_dir: tools目录路径
+        tools_dir: Path to the tools directory
 
     Returns:
-        合并后的工具列表
+        Merged list of tools
     """
     all_tools = []
 
@@ -35,7 +36,7 @@ def load_tools(tools_dir: str) -> List[dict]:
         logger.warning(f"tools directory does not exist: {tools_dir}")
         return all_tools
 
-    # 遍历tools目录下的所有JSON文件
+    # Iterate through all JSON files in the tools directory
     for filename in os.listdir(tools_dir):
         if filename.endswith(".json"):
             file_path = os.path.join(tools_dir, filename)
@@ -96,7 +97,7 @@ class TextChatFlow:
 
 
 if __name__ == "__main__":
-    # 动态加载tools目录下的所有工具文件
+    # Dynamically load all tool files from the tools directory
     tools = load_tools("tools")
 
     # Test with a query that should trigger set_clock function

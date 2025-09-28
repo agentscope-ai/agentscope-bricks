@@ -49,7 +49,7 @@ class ModelstudioTtsClient(TtsClient, ResultCallback):
         self.state = RealtimeState.IDLE
 
         logger.info(
-            f"bailian_tts_config: {json.dumps(self.config.model_dump())}",
+            f"modelstudio_tts_config: {json.dumps(self.config.model_dump())}",
         )
 
     def start(self, **kwargs: Any) -> None:

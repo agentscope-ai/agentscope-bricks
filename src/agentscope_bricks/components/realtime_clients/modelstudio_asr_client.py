@@ -46,7 +46,7 @@ class ModelstudioAsrClient(AsrClient, TranslationRecognizerCallback):
         self.state = RealtimeState.IDLE
 
         logger.info(
-            f"bailian_asr_config: {json.dumps(self.config.model_dump())}",
+            f"modelstudio_asr_config: {json.dumps(self.config.model_dump())}",
         )
 
     def start(self, **kwargs: Any) -> None:

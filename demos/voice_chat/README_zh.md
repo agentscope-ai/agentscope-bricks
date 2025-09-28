@@ -6,21 +6,27 @@
 
 ### 启动后端服务
 ```shell
+# 先进入本项目的根目录
 
+# 安装依赖项
+pip install -e .
+pip install -r demos/voice_chat/backend/requirements.txt
 
 # 配置百炼API Key
 export DASHSCOPE_API_KEY={your_api_key}
 
-# 配置微软Key和Region 如果需要使用的话。
+# 配置微软Key和Region(如果需要使用)
 export AZURE_KEY={your_api_key}
 export AZURE_REGION={your_region}
 
-export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/realtime/backend/voice_chat_serivce.py
+export PYTHONPATH=$(pwd):$PYTHONPATH && python demos/voice_chat/backend/app.py
 ```
 
 ## 启动前端
 ```shell
-cd demos/realtime/frontend
+# 先进入本项目的根目录
+
+cd demos/voice_chat/frontend/
 
 # 安装
 npm install

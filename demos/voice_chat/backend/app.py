@@ -241,7 +241,6 @@ class VoiceChatService(RealtimeService):
         first_resp = True
         cumulated_responses = []
         chat_start_time = int(time.time() * 1000)
-        # chat_id, responses = self._chat_qwenos(text, chat_id)
         chat_id, responses = self._chat_llm(text, chat_id)
         # chat_id, responses = self._chat_rag_with_llm(text, chat_id)
         for response in responses:
@@ -645,51 +644,6 @@ class VoiceChatService(RealtimeService):
 
         return messages
 
-    @staticmethod
-    def _chat_qwenos(query: str, chat_id: str):
-        url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/copilot/generation"  # noqa
-
-        headers = {
-            "Authorization": os.environ.get("DASHSCOPE_API_KEY"),
-            "X-DashScope-SSE": "enable",
-            "Content-Type": "application/json",
-        }
-
-        data = {
-            "model": "qwenos-copilot",
-            "input": {
-                "copilot_id": "d35a291a56834c449c837c96139b15cf",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": {"text": query},
-                    },
-                ],
-            },
-            "parameters": {
-                "stream": True,
-            },
-        }
-
-        # 发送请求
-        response = requests.post(url, headers=headers, json=data, stream=True)
-
-        # print(f"response: {response}")
-
-        def gen():
-            for line in response.iter_lines():
-                if line:
-                    decoded_line = line.decode("utf-8")
-                    if decoded_line.startswith("data:"):
-                        json_str = decoded_line[5:].strip()
-                        try:
-                            json_data = json.loads(json_str)
-                            yield json_data
-                        except json.JSONDecodeError:
-                            continue
-
-        return chat_id, gen()
-
     def _chat_llm(
         self,
         query: str,
@@ -730,7 +684,7 @@ class VoiceChatService(RealtimeService):
                 "role": "system",
                 "content": """
         你是一个智能助手。
-        # 知识库
+        # Knowledge base
         请记住以下材料，他们可能对回答问题有帮助。
         ${documents}
         """,
@@ -746,10 +700,10 @@ class VoiceChatService(RealtimeService):
             rest_token=1000,
         )
         try:
-            # 异步运行RAG组件
+            # Run RAG component asynchronously
             rag_output = await rag_component.arun(rag_input)
 
-            # 输出结果
+            # Output results
             print("RAG Result:", rag_output.rag_result)
             print("Updated Messages:")
             chunks = llm.astream(
@@ -777,7 +731,7 @@ class VoiceChatService(RealtimeService):
             logger.warning(f"tools directory does not exist: {tools_dir}")
             return all_tools
 
-        # 遍历tools目录下的所有JSON文件
+        # Iterate through all JSON files in the tools directory
         for filename in os.listdir(tools_dir):
             if filename.endswith(".json"):
                 file_path = os.path.join(tools_dir, filename)
@@ -807,5 +761,5 @@ if __name__ == "__main__":
 # call the service with
 """
 export PYTHONPATH=$(pwd):$PYTHONPATH
-python demos/realtime/backend/src/app.py
+python demos/voice_chat/backend/app.py
 """

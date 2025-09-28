@@ -17,9 +17,9 @@ except ImportError:
 
 import websocket
 
-g_vendor = "azure"  # bailian, azure
+g_vendor = "azure"  # modelstudio, azure
 
-g_input_files = ["../../../tests/resources/chat.pcm"]
+g_input_files = ["./chat.pcm"]
 
 g_output_dir = os.path.expanduser(
     os.environ.get("OUTPUT_FILE_DIR", "~/Downloads/"),
@@ -84,7 +84,7 @@ def create_session_start_req(request_id: str) -> str:
             },
             "parameters": {
                 "enable_tool_call": True,
-                # "bailian_kb": {
+                # "modelstudio_kb": {
                 #     "api_key": os.environ.get("DASHSCOPE_API_KEY"),
                 #     "workspace_id": "llm-czal8nvvwb8d47ks",
                 #     "index_ids": ["dxau0m7a5j", "opsatpu3ct"],
@@ -312,5 +312,4 @@ class VoiceChatClient:
 
 if __name__ == "__main__":
     client = VoiceChatClient(g_input_files)
-    # client = VoiceChatClient(["/Users/zhiyi/projects/bailian/realtime_test/tts.pcm"]) # noqa
     client.run()
