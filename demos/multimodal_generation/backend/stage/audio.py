@@ -34,7 +34,7 @@ class AudioHandler(Handler):
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="audio",
+        trace_name="audio_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -51,8 +51,7 @@ class AudioHandler(Handler):
         # Get line message from stage session
         line_message = self.stage_session.get_stage_message(Stage.LINE)
         if not line_message or not line_message.content:
-            logger.error("No line message found")
-            return
+            raise ValueError("No line message found")
 
         # Create assistant message
         assistant_message = Message(
@@ -67,8 +66,7 @@ class AudioHandler(Handler):
         ]
 
         if not text_contents:
-            logger.error("No text content found in line message")
-            return
+            raise ValueError("No text content found in line message")
 
         # Process content in groups of 3 (role, dialogue, voice)
         audio_tasks = []
@@ -82,7 +80,10 @@ class AudioHandler(Handler):
                 task = self._generate_single_audio(dialogue, voice)
                 audio_tasks.append(task)
             else:
-                logger.warning(f"Incomplete triplet at index {i}")
+                raise ValueError(
+                    f"Incomplete triplet at index {i}: expected 3 elements "
+                    f"(role, dialogue, voice) but found incomplete data",
+                )
 
         # Wait for all audio generation tasks to complete
         audio_urls = await asyncio.gather(*audio_tasks)
@@ -136,11 +137,10 @@ class AudioHandler(Handler):
             audio_url = response.output.audio["url"]
             return audio_url
         except Exception as e:
-            logger.error(
+            raise RuntimeError(
                 f"Error generating audio for text '{text}' "
                 f"with voice '{voice}': {e}",
             )
-            return ""
 
 
 if __name__ == "__main__":

@@ -9,7 +9,6 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     Content,
 )
 from agentscope_bricks.utils.schemas.oai_llm import OpenAIMessage
-from agentscope_bricks.utils.logger_util import logger
 from agentscope_bricks.utils.message_util import (
     get_agent_message_finish_reason,
     merge_agent_message,
@@ -67,7 +66,7 @@ class RoleDescriptionHandler(Handler):
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="role_description",
+        trace_name="role_description_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -84,13 +83,11 @@ class RoleDescriptionHandler(Handler):
         """
         script = self.stage_session.get_script()
         if not script:
-            logger.error("No script found")
-            return
+            raise ValueError("No script found")
 
         storyboard = self.stage_session.get_storyboard()
         if not storyboard:
-            logger.error("No storyboard found")
-            return
+            raise ValueError("No storyboard found")
 
         content = script + "\n" + storyboard
 

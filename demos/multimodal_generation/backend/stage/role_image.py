@@ -3,10 +3,6 @@ import asyncio
 import re
 from typing import AsyncGenerator
 
-from agentscope_bricks.components import ImageGeneration
-from agentscope_bricks.components.generations.image_generation import (
-    ImageGenInput,
-)
 from agentscope_runtime.engine.schemas.agent_schemas import (
     Message,
     TextContent,
@@ -15,7 +11,6 @@ from agentscope_runtime.engine.schemas.agent_schemas import (
     Content,
 )
 from agentscope_bricks.utils.tracing_utils import trace, TraceType
-from agentscope_bricks.utils.logger_util import logger
 from agentscope_bricks.utils.message_util import (
     get_agent_message_finish_reason,
     merge_agent_message,
@@ -30,6 +25,7 @@ from demos.multimodal_generation.backend.common.stage_manager import (
 from demos.multimodal_generation.backend.utils.generation_util import (
     generate_image_t2i,
 )
+from demos.multimodal_generation.backend.utils.task_util import batch_run_tasks
 
 
 class RoleImageHandler(Handler):
@@ -39,7 +35,7 @@ class RoleImageHandler(Handler):
 
     @trace(
         trace_type=TraceType.AGENT_STEP,
-        trace_name="role_image",
+        trace_name="role_image_stage",
         get_finish_reason_func=get_agent_message_finish_reason,
         merge_output_func=merge_agent_message,
     )
@@ -58,8 +54,7 @@ class RoleImageHandler(Handler):
             Stage.ROLE_DESCRIPTION,
         )
         if not role_desc_message or not role_desc_message.content:
-            logger.error("No role description message found")
-            return
+            raise ValueError("No role description message found")
 
         # Create assistant message
         assistant_message = Message(
@@ -70,51 +65,81 @@ class RoleImageHandler(Handler):
         if topic_image:
             # TODO(zhiyi): support more images
             image_urls = [topic_image]
-        else:
-            # Generate images in parallel for all role descriptions
-            model_name = self.config.get("model")
-            image_tasks = []
-            for content in role_desc_message.content:
-                task = generate_image_t2i(model_name, content.text)
-                image_tasks.append(task)
+            # Create mixed content: description and image URL pairs
+            data = {}
+            for i, (content, url) in enumerate(
+                zip(role_desc_message.content, image_urls),
+            ):
+                if not content or not url:
+                    continue
 
-            rps = self.config.get("rps", 1)
-            task_results = []
-            for i in range(0, len(image_tasks), rps):
-                batch_tasks = image_tasks[i : i + rps]
-                batch_results = await asyncio.gather(*batch_tasks)
-                task_results.extend(batch_results)
-
-            image_urls = task_results
-
-            if len(image_urls) != len(role_desc_message.content):
-                logger.error(
-                    f"Number of generated images ({len(image_urls)}) not"
-                    f" equals to number of role desc"
-                    f" ({len(role_desc_message.content)})",
+                role_name = (
+                    re.search(r"角色：([^\n]*)", content.text).group(1).strip()
                 )
-                return
+                data[role_name] = url
 
-        # Create mixed content: description and image URL pairs
-        data = {}
-        for i, (content, url) in enumerate(
-            zip(role_desc_message.content, image_urls),
-        ):
-            if not content or not url:
-                continue
+            # Update message with final content and status
+            assistant_message.content = [DataContent(data=data)]
 
-            role_name = (
-                re.search(r"角色：([^\n]*)", content.text).group(1).strip()
-            )
-            data[role_name] = url
+            # Yield the completed message
+            yield assistant_message.completed()
+        else:
+            # Generate images using batch_run_tasks for streaming results
+            model_name = self.config.get("model")
+            rps = self.config.get("rps", 1)
 
-        # Update message with final content and status
-        assistant_message.content = [DataContent(data=data)]
+            # Create coroutines with index for batch processing
+            coro_list = []
+            for i, content in enumerate(role_desc_message.content):
+                coro = generate_image_t2i(model_name, content.text, index=i)
+                coro_list.append(coro)
 
-        # Yield the completed message
-        yield assistant_message.completed()
+            # Track completion and yield results as they come
+            all_data = (
+                {}
+            )  # Keep track of all accumulated data for final result
+            completed_count = 0
+            total_count = len(role_desc_message.content)
 
-        # Set stage messages
+            # Process images in batches and yield results incrementally
+            async for index, image_url in batch_run_tasks(coro_list, rps):
+                completed_count += 1
+
+                # Get the corresponding content for this index
+                content = role_desc_message.content[index]
+                if content and image_url:
+                    role_name = (
+                        re.search(r"角色：([^\n]*)", content.text)
+                        .group(1)
+                        .strip()
+                    )
+                    all_data[role_name] = image_url
+
+                    # Create incremental message with only the new role data
+                    incremental_data = {role_name: image_url}
+                    partial_message = Message(role=Role.ASSISTANT)
+                    partial_message.content = [
+                        DataContent(data=incremental_data, index=index),
+                    ]
+
+                    # Yield the incremental result
+                    if completed_count == total_count:
+                        # Final result - mark as completed
+                        yield partial_message.completed()
+                    else:
+                        # Intermediate result - don't mark as completed yet
+                        yield partial_message
+
+            # Verify all images were generated
+            if len(all_data) != total_count:
+                raise RuntimeError(
+                    f"Number of generated images ({len(all_data)}) not"
+                    f" equals to number of role desc ({total_count})",
+                )
+
+        # Set stage messages with final assistant message
+        if not topic_image:
+            assistant_message.content = [DataContent(data=all_data)]
         self.stage_session.set_stage_message(
             Stage.ROLE_IMAGE,
             assistant_message,

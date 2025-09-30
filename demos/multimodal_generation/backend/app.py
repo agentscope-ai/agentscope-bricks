@@ -9,7 +9,6 @@ from agentscope_runtime.engine.services.session_history_service import (
     InMemorySessionHistoryService,
 )
 
-# Sandbox service import moved to try-catch block to handle optional dependency
 from pathlib import Path
 from dotenv import load_dotenv
 from agent import FilmAgent

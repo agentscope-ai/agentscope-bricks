@@ -135,7 +135,7 @@ class ImageToVideo(Component[ImageToVideoInput, ImageToVideoOutput]):
             watermark = kwargs.pop("watermark", True)
 
         parameters = {}
-        if args.resolution is not None:
+        if args.resolution:
             parameters["resolution"] = args.resolution
         if args.duration is not None:
             parameters["duration"] = args.duration
@@ -179,7 +179,6 @@ class ImageToVideo(Component[ImageToVideoInput, ImageToVideoOutput]):
                     if res.output.task_status == "SUCCEEDED":
                         break
                     elif res.output.task_status in ["FAILED", "CANCELED"]:
-                        print(f"error response: {res}")
                         raise RuntimeError(
                             f"Video generation failed: task_status="
                             f"{res.output.task_status}, response={res}",

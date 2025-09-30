@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-from typing import AsyncGenerator, Optional, List
+from typing import Optional
 
 from agentscope_bricks.models import BaseLLM
 from agentscope_runtime.engine.schemas.agent_schemas import (
-    AgentRequest,
     Message,
     TextContent,
     Role,
-    Content,
 )
 from agentscope_bricks.utils.schemas.oai_llm import OpenAIMessage
 from agentscope_bricks.utils.logger_util import logger

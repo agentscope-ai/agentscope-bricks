@@ -1,0 +1,107 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "make_phone_call",
+            "description": "打电话，支持通过电话号码或联系人名称拨打",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "phone_num": {
+                        "type": "string",
+                        "description": "电话号码"
+                    },
+                    "contact_name": {
+                        "type": "string",
+                        "description": "联系人"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "cancel_phone_call",
+            "description": "取消呼叫",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_contacts",
+            "description": "新建联系人",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "电话号码"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "联系人名称"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "answer_phone_call",
+            "description": "接电话",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "reject_phone_call",
+            "description": "拒听电话",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "update_contacts",
+            "description": "更新通讯录",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "contact_name": {
+                        "type": "string",
+                        "description": "待更新的联系人"
+                    },
+                    "update_name": {
+                        "type": "string",
+                        "description": "若更新联系人名字，更新后的名字"
+                    },
+                    "update_phone": {
+                        "type": "string",
+                        "description": "若更新联系人电话，更新后的电话"
+                    }
+                },
+                "required": [
+                    "contact_name"
+                ]
+            }
+        }
+    }
+]

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
-from typing import List, Type, Optional
+from pathlib import Path
+from typing import Type, Optional
 
 from agentscope_runtime.engine.schemas.agent_schemas import (
     Message,
@@ -15,7 +16,6 @@ from demos.multimodal_generation.backend.common.stage_manager import (
     Stage,
     STAGE_ORDER,
 )
-from demos.multimodal_generation.backend.test.mock import MOCK_STAGES
 
 
 async def test_handler(
@@ -52,14 +52,29 @@ async def test_handler(
 
 def mock_stages() -> dict[Stage, Message]:
     """
-    Convert MOCK_STAGES to the expected return type
+    Load mock data from mock.json and convert to the expected return type
 
     Returns:
         dict[Stage, Message]: Dictionary Stage to Message
     """
+    # Get the directory of current file to build relative path
+    current_dir = Path(__file__).parent
+    mock_json_path = current_dir / "mock.json"
+
+    # Load mock data from JSON file
+    try:
+        with open(mock_json_path, "r", encoding="utf-8") as f:
+            mock_stages_data = json.load(f)
+    except FileNotFoundError:
+        logger.error(f"Mock data file not found: {mock_json_path}")
+        return {}
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing mock data JSON: {e}")
+        return {}
+
     result = {}
 
-    for stage_name, msg_data in MOCK_STAGES.items():
+    for stage_name, msg_data in mock_stages_data.items():
         # Convert stage name to Stage enum
         try:
             stage = Stage(stage_name)

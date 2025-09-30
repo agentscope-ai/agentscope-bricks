@@ -1,0 +1,33 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "set_alarm",
+            "description": "设定闹钟。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "time": {
+                        "type": "string",
+                        "description": "设置时间，标准格式：HH:mm，例如：06:00、15:30"
+                    },
+                    "date": {
+                        "type": "string",
+                        "description": "设置日期，标准格式：YYYY-MM-DD，例如：2025-06-20。可选参数，不填则使用当前日期或明天。"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "闹钟内容、标签，例如设置目的，如：开会、起床、提醒等。可选参数。"
+                    },
+                    "repeat": {
+                        "type": "string",
+                        "description": "重复设置的日期，可选值：每天/工作日/周一/周二/周三/周四/周五/周六/周日。不填默认不重复。可选参数。"
+                    }
+                },
+                "required": [
+                    "time"
+                ]
+            }
+        }
+    }
+]

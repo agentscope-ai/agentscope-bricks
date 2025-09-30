@@ -1,0 +1,107 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "play_music",
+            "description": "播放音乐，支持多种参数组合：歌曲名、歌手、专辑、音乐类型、风格、语言、场景标签、年代、排序、播放模式、播放器",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "song": {
+                        "type": "string",
+                        "description": "歌曲名"
+                    },
+                    "artist": {
+                        "type": "string",
+                        "description": "歌手"
+                    },
+                    "album": {
+                        "type": "string",
+                        "description": "专辑"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "音乐类型，如：电子、流行、摇滚、抒情、乡村、爵士、纯音乐等"
+                    },
+                    "style": {
+                        "type": "string",
+                        "description": "风格/流派"
+                    },
+                    "language": {
+                        "type": "string",
+                        "description": "方言/语种"
+                    },
+                    "general_tag": {
+                        "type": "string",
+                        "description": "场景/标签"
+                    },
+                    "era": {
+                        "type": "string",
+                        "description": "年代"
+                    },
+                    "sort": {
+                        "type": "string",
+                        "description": "排序，包括：最新、最热"
+                    },
+                    "mode": {
+                        "type": "string",
+                        "description": "播放模式，例如：单曲循环、列表循环、随机播放、心动模式"
+                    },
+                    "player": {
+                        "type": "string",
+                        "description": "播放音乐的应用程序或设备"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "play_daily_list",
+            "description": "播放每日推荐歌单",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "play_collection",
+            "description": "播放我喜欢的歌单",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "play_random_music",
+            "description": "随机播放歌曲（猜你喜欢），适合用户未指定任何歌曲信息时调用",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "like_music",
+            "description": "喜欢/收藏当前播放的歌曲",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    }
+]
