@@ -31,7 +31,7 @@ from sandbox_center.sandboxes.cloud_computer_wy import (
 )
 
 # 心跳超时时间（秒）
-heartbeat_timeout = float(os.getenv("HEARTBEAT_TIMEOUT", 30))
+heartbeat_timeout = float(os.getenv("HEARTBEAT_TIMEOUT", 120))
 
 
 class EnvironmentOperationStatus(Enum):
