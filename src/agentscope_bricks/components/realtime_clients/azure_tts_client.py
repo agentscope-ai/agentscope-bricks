@@ -28,6 +28,7 @@ class AzureTtsCallbacks(BaseModel):
     on_complete: Optional[Callable] = None
     on_canceled: Optional[Callable] = None
     on_data: Optional[Callable] = None
+    on_synthesizing: Optional[Callable] = None
 
 
 class PushStreamCallback(speech_sdk.audio.PushAudioOutputStreamCallback):
@@ -128,14 +129,14 @@ class AzureTtsClient(TtsClient):
         )
         self.tts_task = self.synthesizer.speak_async(self.tts_request)
 
-        # pre warm
-        if not self.pre_warmed:
-            logger.info(
-                f"tts_pre_warm: chat_id={self.config.chat_id},"
-                f" object={id(self)}",
-            )
-            self.tts_request.input_stream.write(" ")
-            self.pre_warmed = True
+        # # pre warm
+        # if not self.pre_warmed:
+        #     logger.info(
+        #         f"tts_pre_warm: chat_id={self.config.chat_id},"
+        #         f" object={id(self)}",
+        #     )
+        #     self.tts_request.input_stream.write(" ")
+        #     self.pre_warmed = True
 
         self.state = RealtimeState.RUNNING
 

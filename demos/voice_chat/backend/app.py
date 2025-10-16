@@ -6,7 +6,6 @@ import time
 from typing import Tuple, List
 from dataclasses import dataclass
 
-import requests
 from openai import Stream
 from openai.types.chat import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall
@@ -61,6 +60,9 @@ from agentscope_bricks.utils.schemas.oai_llm import (
     UserMessage,
     OpenAIMessage,
 )
+import faulthandler
+
+faulthandler.enable()
 
 
 class AsrEvent(BaseModel):
@@ -103,6 +105,7 @@ class VoiceChatService(RealtimeService):
         self._input_stats = DataStats(log_count_period=10)
         self._tts_output_stats = DataStats(log_count_period=10)
         self._tts_client_pool = None
+        self._text_chat_flow = TextChatFlow()
         logger.info("create voice chat")
 
     async def process_message(self, request: ModelstudioVoiceChatRequest):
@@ -170,18 +173,18 @@ class VoiceChatService(RealtimeService):
             self._downstream.tts_options,
         )
 
-        tts_callbacks = {
-            "on_data": self._on_tts_data,
-            "on_complete": self._on_tts_complete,
-        }
-        if self._downstream.tts_vendor == TtsVendor.AZURE:
-            self._tts_client_pool = TtsClientPool()
-            self._tts_client_pool.initialize(
-                1,
-                self._downstream.tts_vendor,
-                self._downstream.tts_options,
-                tts_callbacks,
-            )
+        # tts_callbacks = {
+        #     "on_data": self._on_tts_data,
+        #     "on_complete": self._on_tts_complete,
+        # }
+        # if self._downstream.tts_vendor == TtsVendor.AZURE:
+        #     self._tts_client_pool = TtsClientPool()
+        #     self._tts_client_pool.initialize(
+        #         1,
+        #         self._downstream.tts_vendor,
+        #         self._downstream.tts_options,
+        #         tts_callbacks,
+        #     )
 
         self._thread_executor.submit(self._output_stream_cycle)
 
@@ -656,7 +659,7 @@ class VoiceChatService(RealtimeService):
 
         historical_messages = self._chat_store.get_messages(self._session_id)
 
-        return TextChatFlow.chat(
+        return self._text_chat_flow.chat(
             model=model,
             query=query,
             chat_id=chat_id,
@@ -717,13 +720,13 @@ class VoiceChatService(RealtimeService):
 
     def _load_tools(self, tools_dir: str) -> List[dict]:
         """
-        动态加载tools目录下的所有JSON文件中的工具定义
+        Dynamically load tool definitions from all JSON files
 
         Args:
-            tools_dir: tools目录路径
+            tools_dir: Path to the tools directory
 
         Returns:
-            合并后的工具列表
+            List of merged tools
         """
         all_tools = []
 

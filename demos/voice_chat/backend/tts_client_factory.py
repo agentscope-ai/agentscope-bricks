@@ -106,9 +106,8 @@ class TtsClientFactory:
             callbacks = ModelstudioTtsCallbacks.model_validate(tts_callbacks)
             return ModelstudioTtsClient(tts_config, callbacks)
         elif tts_vendor == TtsVendor.AZURE:
-            client = azure_tts_client_pool.get()
-            client.set_chat_id(tts_config.chat_id)
-            return client
+            callbacks = AzureTtsCallbacks.model_validate(tts_callbacks)
+            return AzureTtsClient(tts_config, callbacks)
         else:
             return None
 
