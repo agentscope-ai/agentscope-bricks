@@ -4,7 +4,7 @@ import os
 import time
 from typing import Tuple, List, Optional, Union
 
-from openai import Stream, OpenAI, NOT_GIVEN
+from openai import AsyncStream, AsyncOpenAI, NOT_GIVEN
 from openai.types.chat import ChatCompletionChunk, ChatCompletion
 
 from agentscope_bricks.components.memory.local_memory import MessageT
@@ -12,7 +12,6 @@ from agentscope_bricks.constants import BASE_URL, DASHSCOPE_API_KEY
 from agentscope_bricks.utils.schemas.oai_llm import (
     UserMessage,
     AssistantMessage,
-    OpenAIMessage,
 )
 from agentscope_bricks.utils.logger_util import logger
 from agentscope_bricks.utils.message_util import merge_incremental_chunk
@@ -57,35 +56,85 @@ def load_tools(tools_dir: str) -> List[dict]:
 
 class TextChatFlow:
 
-    @staticmethod
-    def chat(
+    def __init__(self):
+        """
+        Initialize TextChatFlow.
+        AsyncOpenAI client will be created lazily per event loop.
+        """
+        self._clients = {}
+        logger.info("TextChatFlow initialized")
+
+    def _get_or_create_client(self) -> AsyncOpenAI:
+        """
+        Get or create AsyncOpenAI client for current event loop.
+
+        Returns:
+            AsyncOpenAI client instance for the current event loop
+        """
+        import asyncio
+
+        try:
+            loop = asyncio.get_running_loop()
+            loop_id = id(loop)
+        except RuntimeError:
+            # No running loop, use a default key
+            loop_id = "default"
+
+        if loop_id not in self._clients:
+            self._clients[loop_id] = AsyncOpenAI(
+                api_key=DASHSCOPE_API_KEY,
+                base_url=BASE_URL,
+            )
+            logger.info(
+                "Created AsyncOpenAI client for event loop: %s" % loop_id,
+            )
+
+        return self._clients[loop_id]
+
+    async def chat(
+        self,
         model: str,
         query: str,
         chat_id: str,
         history: Optional[List[MessageT]] = [],
         tools: Optional[List[dict]] = [],
         stream: Optional[bool] = True,
-    ) -> Tuple[str, Union[Stream[ChatCompletionChunk], ChatCompletion]]:
-        client = OpenAI(
-            api_key=DASHSCOPE_API_KEY,
-            base_url=BASE_URL,
-        )
+    ) -> Tuple[str, Union[AsyncStream[ChatCompletionChunk], ChatCompletion]]:
+        """
+        Execute async chat completion with the given parameters.
 
+        Args:
+            model: Model name to use for chat completion
+            query: User query text
+            chat_id: Unique identifier for this chat session
+            history: List of historical messages
+            tools: List of tool definitions for function calling
+            stream: Whether to stream the response
+
+        Returns:
+            Tuple of (chat_id, responses)
+        """
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-        # Convert historical messages to the format expected by OpenAI API
+        # Convert historical messages to format expected by OpenAI API
         for msg in history:
-            if isinstance(msg, UserMessage):
+            # Use type name check instead of isinstance to avoid
+            # Pydantic's __instancecheck__ in multi-threading env
+            msg_type = type(msg).__name__
+            if msg_type == "UserMessage":
                 messages.append({"role": "user", "content": msg.content})
-            elif isinstance(msg, AssistantMessage):
+            elif msg_type == "AssistantMessage":
                 messages.append({"role": "assistant", "content": msg.content})
-            elif isinstance(msg, OpenAIMessage):
+            elif msg_type == "OpenAIMessage":
                 messages.append({"role": msg.role, "content": msg.content})
 
         # Add current user query
         messages.append({"role": "user", "content": query})
 
-        responses = client.chat.completions.create(
+        # Get client for current event loop
+        client = self._get_or_create_client()
+
+        responses = await client.chat.completions.create(
             model=model,
             messages=messages,
             stream=stream,
@@ -96,7 +145,8 @@ class TextChatFlow:
         return chat_id, responses
 
 
-if __name__ == "__main__":
+async def main():
+    """Main function for testing TextChatFlow."""
     # Dynamically load all tool files from the tools directory
     tools = load_tools("tools")
 
@@ -111,13 +161,17 @@ if __name__ == "__main__":
         AssistantMessage(content="你好！有什么可以帮助你的吗？"),
     ]
 
+    # Create TextChatFlow instance
+    chat_flow = TextChatFlow()
+
     stream = True
     logger.info("chat_start"),
     chat_start_time = int(time.time() * 1000)
-    chat_id, responses = TextChatFlow.chat(
+    chat_id, responses = await chat_flow.chat(
+        model="qwen-plus",
         query=query,
         chat_id="0",
-        history=[],
+        history=history,
         tools=tools,
         stream=stream,
     )
@@ -126,9 +180,7 @@ if __name__ == "__main__":
     cumulated_responses = []
 
     if stream is True:
-        for response in responses:
-            # logger.info("chat_response: chat_id=%s, response=%s" %
-            # (chat_id, json.dumps(response.model_dump(), ensure_ascii=False)))
+        async for response in responses:
             logger.info(
                 "chat_response: chat_id=%s, response=%s"
                 % (
@@ -175,3 +227,9 @@ if __name__ == "__main__":
                 json.dumps(responses.model_dump(), ensure_ascii=False),
             ),
         )
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())
