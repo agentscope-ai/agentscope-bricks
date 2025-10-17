@@ -2,6 +2,7 @@
 import json
 import os
 import time
+import threading
 from typing import Tuple, List, Optional, Union
 
 from openai import Stream, OpenAI, NOT_GIVEN
@@ -57,8 +58,36 @@ def load_tools(tools_dir: str) -> List[dict]:
 
 class TextChatFlow:
 
-    @staticmethod
+    def __init__(self):
+        """
+        Initialize TextChatFlow with thread-local storage for OpenAI
+        client instances.
+        """
+        # Use thread-local storage to ensure each thread has its own
+        # OpenAI client instance, avoiding thread-safety issues
+        self._thread_local = threading.local()
+
+    def _get_client(self) -> OpenAI:
+        """
+        Get or create thread-local OpenAI client instance.
+
+        Returns:
+            OpenAI client instance for the current thread
+        """
+        if not hasattr(self._thread_local, "client"):
+            # Create client for this thread
+            self._thread_local.client = OpenAI(
+                api_key=DASHSCOPE_API_KEY,
+                base_url=BASE_URL,
+            )
+            logger.info(
+                "Created OpenAI client for thread: %s"
+                % threading.current_thread().name,
+            )
+        return self._thread_local.client
+
     def chat(
+        self,
         model: str,
         query: str,
         chat_id: str,
@@ -66,11 +95,20 @@ class TextChatFlow:
         tools: Optional[List[dict]] = [],
         stream: Optional[bool] = True,
     ) -> Tuple[str, Union[Stream[ChatCompletionChunk], ChatCompletion]]:
-        client = OpenAI(
-            api_key=DASHSCOPE_API_KEY,
-            base_url=BASE_URL,
-        )
+        """
+        Execute chat completion with the given parameters.
 
+        Args:
+            model: Model name to use for chat completion
+            query: User query text
+            chat_id: Unique identifier for this chat session
+            history: List of historical messages
+            tools: List of tool definitions for function calling
+            stream: Whether to stream the response
+
+        Returns:
+            Tuple of (chat_id, responses)
+        """
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
         # Convert historical messages to the format expected by OpenAI API
@@ -84,6 +122,9 @@ class TextChatFlow:
 
         # Add current user query
         messages.append({"role": "user", "content": query})
+
+        # Get thread-local client instance
+        client = self._get_client()
 
         responses = client.chat.completions.create(
             model=model,
@@ -111,10 +152,14 @@ if __name__ == "__main__":
         AssistantMessage(content="你好！有什么可以帮助你的吗？"),
     ]
 
+    # Create TextChatFlow instance
+    chat_flow = TextChatFlow()
+
     stream = True
     logger.info("chat_start"),
     chat_start_time = int(time.time() * 1000)
-    chat_id, responses = TextChatFlow.chat(
+    chat_id, responses = chat_flow.chat(
+        model="qwen-plus",
         query=query,
         chat_id="0",
         history=[],

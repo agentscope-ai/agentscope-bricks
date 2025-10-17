@@ -6,6 +6,7 @@ from typing import Optional, Callable, Any
 from azure.cognitiveservices.speech import (
     SessionEventArgs,
     SpeechRecognitionEventArgs,
+    SpeechRecognitionCanceledEventArgs,
 )
 from pydantic import BaseModel
 
@@ -127,13 +128,19 @@ class AzureAsrClient(AsrClient):
     def on_session_started(self, event: SessionEventArgs) -> None:
         self.state = RealtimeState.RUNNING
         self.asr_request_id = event.session_id
-        logger.info(f"asr_on_started: asr_request_id={event.session_id}")
+        logger.info(
+            f"asr_on_started: asr_request_id={event.session_id},"
+            f" event={event}",
+        )
         if self.callbacks and self.callbacks.on_started:
             self.callbacks.on_started()
 
     def on_session_stopped(self, event: SessionEventArgs) -> None:
         self.state = RealtimeState.IDLE
-        logger.info(f"asr_on_stopped: asr_request_id={event.session_id}")
+        logger.info(
+            f"asr_on_stopped: asr_request_id={event.session_id},"
+            f" event={event}",
+        )
         if self.callbacks and self.callbacks.on_stopped:
             self.callbacks.on_stopped()
 
@@ -143,11 +150,23 @@ class AzureAsrClient(AsrClient):
 
     def on_speech_end(self, event: SessionEventArgs) -> None:
         # self.state = RealtimeState.IDLE
-        logger.info(f"asr_on_speech_end: asr_request_id={event.session_id}")
+        logger.info(
+            f"asr_on_speech_end: asr_request_id={event.session_id},"
+            f" event={event}",
+        )
 
-    def on_canceled(self, event: SessionEventArgs) -> None:
-        self.state = RealtimeState.IDLE
-        logger.info(f"asr_on_canceled: asr_request_id={event.session_id}")
+    def on_canceled(self, event: SpeechRecognitionCanceledEventArgs) -> None:
+        # self.state = RealtimeState.IDLE
+        logger.warn(
+            f"asr_on_canceled: asr_request_id={event.session_id},"
+            f" event={event}",
+        )
+        details = event.cancellation_details
+        logger.info(
+            f"asr_cancellation_details: reason={details.reason},"
+            f" error_code={details.code},"
+            f" error_details={details.error_details}, ",
+        )
         if self.callbacks and self.callbacks.on_canceled:
             self.callbacks.on_canceled()
 

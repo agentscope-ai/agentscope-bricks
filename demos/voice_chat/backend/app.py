@@ -3,7 +3,6 @@ import json
 import os
 import queue
 import time
-import threading
 from typing import Tuple, List
 from dataclasses import dataclass
 
@@ -61,6 +60,9 @@ from agentscope_bricks.utils.schemas.oai_llm import (
     UserMessage,
     OpenAIMessage,
 )
+import faulthandler
+
+faulthandler.enable()
 
 
 class AsrEvent(BaseModel):
@@ -103,7 +105,7 @@ class VoiceChatService(RealtimeService):
         self._input_stats = DataStats(log_count_period=10)
         self._tts_output_stats = DataStats(log_count_period=10)
         self._tts_client_pool = None
-        self._tts_clients_lock = threading.Lock()
+        self._text_chat_flow = TextChatFlow()
         logger.info("create voice chat")
 
     async def process_message(self, request: ModelstudioVoiceChatRequest):
@@ -171,18 +173,18 @@ class VoiceChatService(RealtimeService):
             self._downstream.tts_options,
         )
 
-        tts_callbacks = {
-            "on_data": self._on_tts_data,
-            "on_complete": self._on_tts_complete,
-        }
-        if self._downstream.tts_vendor == TtsVendor.AZURE:
-            self._tts_client_pool = TtsClientPool()
-            self._tts_client_pool.initialize(
-                1,
-                self._downstream.tts_vendor,
-                self._downstream.tts_options,
-                tts_callbacks,
-            )
+        # tts_callbacks = {
+        #     "on_data": self._on_tts_data,
+        #     "on_complete": self._on_tts_complete,
+        # }
+        # if self._downstream.tts_vendor == TtsVendor.AZURE:
+        #     self._tts_client_pool = TtsClientPool()
+        #     self._tts_client_pool.initialize(
+        #         1,
+        #         self._downstream.tts_vendor,
+        #         self._downstream.tts_options,
+        #         tts_callbacks,
+        #     )
 
         self._thread_executor.submit(self._output_stream_cycle)
 
@@ -219,13 +221,6 @@ class VoiceChatService(RealtimeService):
 
         if self._asr_client:
             self._asr_client.stop()
-
-        # Clean up all TTS clients
-        with self._tts_clients_lock:
-            for chat_id in list(self._tts_clients.keys()):
-                if chat_id in self._tts_clients:
-                    self._tts_clients[chat_id].close()
-                    self._tts_clients.pop(chat_id, None)
 
         if self._tts_client_pool:
             self._tts_client_pool.release()
@@ -330,14 +325,8 @@ class VoiceChatService(RealtimeService):
             )
             self._chat_store.add_messages(self._session_id, messages)
 
-        if chat_id:
-            with self._tts_clients_lock:
-                if chat_id in self._tts_clients:
-                    # Ensure TTS client is completed before cleanup
-                    tts_client = self._tts_clients[chat_id]
-                    tts_client.async_stop()
-                    # Wait a short time to ensure async stop completes
-                    time.sleep(0.1)
+        if chat_id and chat_id in self._tts_clients:
+            self._tts_clients[chat_id].async_stop()
 
         logger.info("chat_end: chat_id=%s, text=%s" % (chat_id, text))
 
@@ -429,61 +418,31 @@ class VoiceChatService(RealtimeService):
         )
 
     def _start_tts_client(self, chat_id):
-        try:
-            with self._tts_clients_lock:
-                # Clean up completed or cancelled TTS clients, not all clients
-                tts_to_remove = []
-                for tts_chat_id in self._tts_clients:
-                    client = self._tts_clients[tts_chat_id]
-                    # Check client status, clean up if completed or idle
-                    if (
-                        hasattr(client, "state")
-                        and client.state == RealtimeState.IDLE
-                    ):
-                        client.close()
-                        tts_to_remove.append(tts_chat_id)
+        for tts_chat_id in self._tts_clients:
+            self._tts_clients[tts_chat_id].close()
+        self._tts_clients.clear()
 
-                for tts_chat_id in tts_to_remove:
-                    self._tts_clients.pop(tts_chat_id, None)
-
-                # If current chat_id already has TTS client, reuse it directly
-                if chat_id in self._tts_clients:
-                    return
-
-            self._downstream.tts_options.chat_id = chat_id
-            callbacks = {
-                "on_data": self._on_tts_data,
-                "on_complete": self._on_tts_complete,
-            }
-            if self._tts_client_pool:
-                tts_client = self._tts_client_pool.get()
-                if tts_client is None:
-                    logger.error("Failed to get TTS client from pool")
-                    return
-                # Ensure client's chat_id is set correctly
-                tts_client.set_chat_id(chat_id)
-            else:
-                tts_client = TtsClientFactory.create_client(
-                    self._downstream.tts_vendor,
-                    self._downstream.tts_options,
-                    callbacks,
-                )
-            tts_client.start()
-
-            with self._tts_clients_lock:
-                self._tts_clients[chat_id] = tts_client
-        except Exception as e:
-            logger.error(
-                "Error starting TTS client for chat_id=%s: %s"
-                % (chat_id, str(e)),
+        self._downstream.tts_options.chat_id = chat_id
+        callbacks = {
+            "on_data": self._on_tts_data,
+            "on_complete": self._on_tts_complete,
+        }
+        if self._tts_client_pool:
+            tts_client = self._tts_client_pool.get()
+        else:
+            tts_client = TtsClientFactory.create_client(
+                self._downstream.tts_vendor,
+                self._downstream.tts_options,
+                callbacks,
             )
+        tts_client.start()
+
+        self._tts_clients[chat_id] = tts_client
 
     def _cancel_tts(self, chat_id):
-        logger.info("cancel tts: chat_id=%s" % chat_id)
-        with self._tts_clients_lock:
-            if chat_id in self._tts_clients:
-                self._tts_clients[chat_id].close()
-                self._tts_clients.pop(chat_id, None)
+        logger.info("cancel tts")
+        self._tts_clients[chat_id].close()
+        self._tts_clients.pop(chat_id, None)
 
     def _on_asr_event(self, sentence_end: bool, sentence_text: str) -> None:
         asr_event_time = int(round(time.time() * 1000))
@@ -538,16 +497,9 @@ class VoiceChatService(RealtimeService):
         )
 
         # interrupt
-        with self._tts_clients_lock:
-            tts_to_cancel = []
-            for tts_chat_id in self._tts_clients:
-                tts_to_cancel.append(tts_chat_id)
-
-            for tts_chat_id in tts_to_cancel:
-                client = self._tts_clients.get(tts_chat_id)
-                if client:
-                    client.close()
-                    self._tts_clients.pop(tts_chat_id, None)
+        for tts_chat_id in self._tts_clients:
+            self._tts_clients[tts_chat_id].close()
+        self._tts_clients.clear()
 
         if not self._tts_audio_queue.empty():
             logger.info(
@@ -707,7 +659,7 @@ class VoiceChatService(RealtimeService):
 
         historical_messages = self._chat_store.get_messages(self._session_id)
 
-        return TextChatFlow.chat(
+        return self._text_chat_flow.chat(
             model=model,
             query=query,
             chat_id=chat_id,
