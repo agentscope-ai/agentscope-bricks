@@ -20,7 +20,10 @@ Specific reference: [README_zh.md](./base_version/computer_use_server/README_en.
 
 ## Chapter 4: Advanced Usage
 
-In the code directory under the advanced_version package:
-- Frontend: static directory
-- Backend: [backend.py](./advanced_version/computer_use_server/backend.py)
-Specific reference: [README_en.md](./advanced_version/computer_use_server/README_en.md)
+In the `advanced_version` code package within the code directory:
+- **Frontend**:
+  - Basic GUI version: `computer-use-server/static` directory
+  - Advanced version: In the `adk-computer-use` code package within the code directory
+    - For details, please refer to: [README_zh.md](./advanced_version/adk-computer-use/README.md)
+- **Backend**: `backend.py`
+For details, please refer to: [README_zh.md](./advanced_version/computer_use_server/README_zh.md)
