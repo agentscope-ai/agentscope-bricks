@@ -29,7 +29,7 @@ class ImageGenInput(BaseModel):
     )
     size: Optional[str] = Field(
         default=None,
-        description="输出图像的分辨率。默认值是1024*1024 最高可达200万像素",
+        description="输出图像的分辨率。默认值是1280*1280，可不填。",
     )
     negative_prompt: Optional[str] = Field(
         default=None,
@@ -63,17 +63,17 @@ class ImageGenOutput(BaseModel):
     )
 
 
-class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
+class ImageGenerationWan25(Component[ImageGenInput, ImageGenOutput]):
     """
     文生图调用.
     """
 
-    name: str = "modelstudio_image_gen"
+    name: str = "modelstudio_image_gen_wan25"
     description: str = (
         "AI绘画（图像生成）服务，输入文本描述和图像分辨率，返回根据文本信息绘制的图片URL。"
     )
 
-    @trace(trace_type="AIGC", trace_name="image_generation")
+    @trace(trace_type="AIGC", trace_name="image_generation_wan25")
     async def arun(self, args: ImageGenInput, **kwargs: Any) -> ImageGenOutput:
         """Modelstudio Images generation from text prompts
 
@@ -108,7 +108,7 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("IMAGE_GENERATION_MODEL_NAME", "wan2.2-t2i-flash"),
+            os.getenv("IMAGE_GENERATION_MODEL_NAME", "wan2.5-t2i-preview"),
         )
         watermark_env = os.getenv("IMAGE_GENERATION_ENABLE_WATERMARK")
         if watermark_env is not None:
@@ -196,7 +196,7 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
 
 if __name__ == "__main__":
 
-    image_generation = ImageGeneration()
+    image_generation = ImageGenerationWan25()
 
     image_gent_input = ImageGenInput(
         prompt="帮我画一个国宝熊猫,",
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     async def main() -> None:
         image_gent_output = await image_generation.arun(
             image_gent_input,
-            # model_name="wan2.2-t2i-flash",
+            # model_name="wan2.5-t2i-preview",
         )
         print(image_gent_output)
         print(image_generation.function_schema.model_dump())

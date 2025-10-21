@@ -12,32 +12,29 @@ from mcp.server.fastmcp import Context
 from pydantic import BaseModel, Field
 
 from agentscope_bricks.base.component import Component
-from agentscope_bricks.utils.tracing_utils.wrapper import trace
 
+from agentscope_bricks.utils.tracing_utils.wrapper import trace
 from agentscope_bricks.utils.api_key_util import ApiNames, get_api_key
 from agentscope_bricks.utils.mcp_util import MCPUtil
 
 
 class ImageGenInput(BaseModel):
     """
-    文生图Input
+    图生图Input
     """
 
+    images: list[str] = Field(
+        ...,  # 必选
+        description="输入图像URL数组。URL不能包含中文字符，需为公网可访问地址。",
+    )
     prompt: str = Field(
         ...,
-        description="正向提示词，用来描述生成图像中期望包含的元素和视觉特点,超过800自动截断",
-    )
-    size: Optional[str] = Field(
-        default=None,
-        description="输出图像的分辨率。默认值是1024*1024 最高可达200万像素",
+        description="正向提示词，用来描述生成图像中期望包含的元素和视觉特点,"
+        "超过2000自动截断",
     )
     negative_prompt: Optional[str] = Field(
         default=None,
         description="反向提示词，用来描述不希望在画面中看到的内容，可以对画面进行限制，超过500个字符自动截断",
-    )
-    prompt_extend: Optional[bool] = Field(
-        default=None,
-        description="是否开启prompt智能改写，开启后使用大模型对输入prompt进行智能改写",
     )
     n: Optional[int] = Field(
         default=1,
@@ -63,32 +60,30 @@ class ImageGenOutput(BaseModel):
     )
 
 
-class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
+class ImageEditWan25(Component[ImageGenInput, ImageGenOutput]):
     """
-    文生图调用.
+    图生图调用.
     """
 
-    name: str = "modelstudio_image_gen"
+    name: str = "modelstudio_image_edit_wan25"
     description: str = (
-        "AI绘画（图像生成）服务，输入文本描述和图像分辨率，返回根据文本信息绘制的图片URL。"
+        "AI图像编辑（图生图）服务，输入原图URL、编辑功能、文本描述和分辨率，"
+        "返回编辑后的图片URL。"
     )
 
-    @trace(trace_type="AIGC", trace_name="image_generation")
+    @trace(trace_type="AIGC", trace_name="image_edit_wan25")
     async def arun(self, args: ImageGenInput, **kwargs: Any) -> ImageGenOutput:
-        """Modelstudio Images generation from text prompts
+        """Modelstudio image editing from base image and text prompts
 
-        This method wrap DashScope's ImageSynthesis service to generate images
-        based on text descriptions. It supports various image sizes and can
-        generate multiple images in a single request.
+        This method wraps DashScope's ImageSynthesis service to generate new
+        images based on the input image and editing instructions.  Supports
+        various editing functions, resolutions, and batch generation.
 
         Args:
-            args: ImageGenInput containing the prompt, size, and number of
-                images to generate.
-            **kwargs: Additional keyword arguments including:
-                - request_id: Optional request ID for tracking
-                - trace_event: Optional trace event for logging
-                - model_name: Model name to use (defaults to wan2.2-t2i-flash)
-                - api_key: DashScope API key for authentication
+            args: ImageGenInput containing function, base_image_url,
+                mask_image_url, prompt, size, n.
+            **kwargs: Additional keyword arguments including request_id,
+                trace_event, model_name, api_key.
 
         Returns:
             ImageGenOutput containing the list of generated image URLs and
@@ -108,31 +103,29 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("IMAGE_GENERATION_MODEL_NAME", "wan2.2-t2i-flash"),
+            os.getenv("IMAGE_EDIT_MODEL_NAME", "wan2.5-i2i-preview"),
         )
-        watermark_env = os.getenv("IMAGE_GENERATION_ENABLE_WATERMARK")
+
+        watermark_env = os.getenv("IMAGE_EDIT_ENABLE_WATERMARK")
         if watermark_env is not None:
             watermark = strtobool(watermark_env)
         else:
             watermark = kwargs.pop("watermark", True)
-        # 🔄 使用DashScope的异步任务API实现真正的并发
-        # 1. 提交异步任务
 
         parameters = {}
-        if args.size:
-            parameters["size"] = args.size
-        if args.prompt_extend is not None:
-            parameters["prompt_extend"] = args.prompt_extend
         if args.n is not None:
             parameters["n"] = args.n
         if watermark is not None:
             parameters["watermark"] = watermark
 
+        # 🔄 使用DashScope异步任务API实现真正的并发
+        # 1. 提交异步任务
         task_response = await AioImageSynthesis.async_call(
             model=model_name,
             api_key=api_key,
             prompt=args.prompt,
             negative_prompt=args.negative_prompt,
+            images=args.images,
             **parameters,
         )
 
@@ -158,8 +151,7 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
                         break
                     elif res.output.task_status in ["FAILED", "CANCELED"]:
                         raise RuntimeError(
-                            f"Image generation failed: "
-                            f"{res.output.task_status}",
+                            f"Image editing failed: {res.output.task_status}",
                         )
                 else:
                     # 如果没有task_status字段，认为已完成
@@ -168,7 +160,7 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
             # 超时检查
             if time.time() - start_time > max_wait_time:
                 raise TimeoutError(
-                    f"Image generation timeout after {max_wait_time}s",
+                    f"Image editing timeout after {max_wait_time}s",
                 )
 
         if request_id == "":
@@ -196,17 +188,24 @@ class ImageGeneration(Component[ImageGenInput, ImageGenOutput]):
 
 if __name__ == "__main__":
 
-    image_generation = ImageGeneration()
+    images = [
+        "https://img.alicdn.com/imgextra/i4/O1CN01TlDlJe1LR9zso3xAC_"
+        "!!6000000001295-2-tps-1104-1472.png",
+        "https://img.alicdn.com/imgextra/i4/O1CN01M9azZ41YdblclkU6Z_"
+        "!!6000000003082-2-tps-1696-960.png",
+    ]
+
+    image_generation = ImageEditWan25()
 
     image_gent_input = ImageGenInput(
-        prompt="帮我画一个国宝熊猫,",
+        images=images,
+        # mask_image_url="https://example.com/mask_image.jpg",
+        prompt="将图1中的闹钟放置到图2的餐桌的花瓶旁边位置",
+        n=1,
     )
 
     async def main() -> None:
-        image_gent_output = await image_generation.arun(
-            image_gent_input,
-            # model_name="wan2.2-t2i-flash",
-        )
+        image_gent_output = await image_generation.arun(image_gent_input)
         print(image_gent_output)
         print(image_generation.function_schema.model_dump())
 

@@ -4,6 +4,17 @@ from typing import Dict, Type, List
 from pydantic import BaseModel, Field
 
 from agentscope_bricks.base import Component
+from agentscope_bricks.components.generations.async_image_to_video_wan25 import (  # noqa
+    ImageToVideoWan25Fetch,
+    ImageToVideoWan25Submit,
+)
+from agentscope_bricks.components.generations.async_text_to_video_wan25 import (  # noqa
+    TextToVideoWan25Submit,
+    TextToVideoWan25Fetch,
+)
+from agentscope_bricks.components.generations.image_edit_wan25 import (
+    ImageEditWan25,
+)
 from agentscope_bricks.components.generations.qwen_image_edit import (
     QwenImageEdit,
 )
@@ -25,6 +36,9 @@ from agentscope_bricks.components.searches.modelstudio_search_lite import (
 )
 from agentscope_bricks.components.generations.image_generation import (
     ImageGeneration,
+)
+from agentscope_bricks.components.generations.image_generation_wan25 import (
+    ImageGenerationWan25,
 )
 from agentscope_bricks.components.generations.image_edit import ImageEdit
 from agentscope_bricks.components.generations.image_style_repaint import (
@@ -73,6 +87,17 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             ImageToVideoFetch,
             SpeechToVideoSubmit,
             SpeechToVideoFetch,
+        ],
+    ),
+    "modelstudio_wan25_media": McpServerMeta(
+        instructions="基于通义万相大模型2.5版本提供的图像和视频生成服务",
+        components=[
+            ImageGenerationWan25,
+            ImageEditWan25,
+            TextToVideoWan25Submit,
+            TextToVideoWan25Fetch,
+            ImageToVideoWan25Submit,
+            ImageToVideoWan25Fetch,
         ],
     ),
     "modelstudio_qwen_image": McpServerMeta(
