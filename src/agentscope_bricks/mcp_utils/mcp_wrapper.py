@@ -88,6 +88,15 @@ class MCPWrapper(Generic[T, U]):
                 field_info = component.input_type.model_fields[param]
                 # Extract type annotation
                 param_type = field_info.annotation
+
+                # Special handling for ctx parameter
+                if param == "ctx":
+                    # Keep ctx in function signature for FastMCP auto-injection
+                    # but use Context type directly
+                    param_line = f"{param}: Context = None"
+                    params_types_with_default.append(param_line)
+                    continue
+
                 # Convert type to string representation
                 if hasattr(param_type, "__name__"):
                     type_str = param_type.__name__
@@ -150,13 +159,12 @@ async def {func_name}({args_str}):
 """
 
             # make namespace for component
+            from mcp.server.fastmcp import Context
+
             namespace = {
                 "component": component,
                 "method_name": method_name,
-                "Context": __import__(
-                    "mcp.server.fastmcp",
-                    fromlist=["Context"],
-                ).Context,
+                "Context": Context,
                 "PydanticUndefined": PydanticUndefined,
             }
 
@@ -184,7 +192,12 @@ async def {func_name}({args_str}):
             decorator=tool_decorator,
         )
 
-        self.mcp._tool_manager._tools[component.name].parameters.update(
-            component.function_schema.parameters.model_dump(),
-        )
+        # Update schema and remove ctx parameter
+        schema = component.function_schema.parameters.model_dump()
+        if "properties" in schema and "ctx" in schema["properties"]:
+            schema["properties"].pop("ctx")
+        if "required" in schema and "ctx" in schema["required"]:
+            schema["required"].remove("ctx")
+
+        self.mcp._tool_manager._tools[component.name].parameters.update(schema)
         return wrapped_tool
