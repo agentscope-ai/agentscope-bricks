@@ -261,3 +261,16 @@ class Component(BaseComponent, Generic[ComponentArgsT, ComponentReturnT]):
             return str(dumped)
 
         return str(value)
+
+    def get_function_schema(self) -> FunctionTool:
+        """Get the function schema of the component.
+
+        This method returns the FunctionTool schema that contains the
+        component's name, description, and parameter specifications in a
+        format compatible with function calling protocols.
+
+        Returns:
+            FunctionTool: Function schema containing name, description, and
+                parameters (type, properties, required fields).
+        """
+        return self.function_schema
