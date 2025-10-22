@@ -2,7 +2,6 @@
 import asyncio
 import os
 import uuid
-from distutils.util import strtobool
 from http import HTTPStatus
 from typing import Any, Optional
 
@@ -61,6 +60,10 @@ class ImageToVideoWan25SubmitInput(BaseModel):
     prompt_extend: Optional[bool] = Field(
         default=None,
         description="是否开启prompt智能改写，开启后使用大模型对输入prompt进行智能改写",
+    )
+    watermark: Optional[bool] = Field(
+        default=None,
+        description="是否添加水印，默认不设置",
     )
     ctx: Optional[Context] = Field(
         default=None,
@@ -154,12 +157,6 @@ class ImageToVideoWan25Submit(
             os.getenv("IMAGE_TO_VIDEO_MODEL_NAME", "wan2.5-i2v-preview"),
         )
 
-        watermark_env = os.getenv("IMAGE_TO_VIDEO_ENABLE_WATERMARK")
-        if watermark_env is not None:
-            watermark = strtobool(watermark_env)
-        else:
-            watermark = kwargs.pop("watermark", True)
-
         parameters = {}
         if args.audio is not None:
             parameters["audio"] = args.audio
@@ -169,8 +166,8 @@ class ImageToVideoWan25Submit(
             parameters["duration"] = args.duration
         if args.prompt_extend is not None:
             parameters["prompt_extend"] = args.prompt_extend
-        if watermark is not None:
-            parameters["watermark"] = watermark
+        if args.watermark is not None:
+            parameters["watermark"] = args.watermark
 
         # Create AioVideoSynthesis instance
         aio_video_synthesis = AioVideoSynthesis()
@@ -380,6 +377,7 @@ if __name__ == "__main__":
                 image_url=image_url,
                 prompt="女孩把小狗抱起来",
                 audio_url=audio_url,
+                watermark=True,
                 # resolution="1080P",
             ),
             # ImageToVideoWan25SubmitInput(
