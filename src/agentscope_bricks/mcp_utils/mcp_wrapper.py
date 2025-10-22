@@ -88,7 +88,7 @@ class MCPWrapper(Generic[T, U]):
                 field_info = component.input_type.model_fields[param]
                 # Extract type annotation
                 param_type = field_info.annotation
-                
+
                 # Special handling for ctx parameter
                 if param == "ctx":
                     # Keep ctx in function signature for FastMCP auto-injection
@@ -96,7 +96,7 @@ class MCPWrapper(Generic[T, U]):
                     param_line = f"{param}: Context = None"
                     params_types_with_default.append(param_line)
                     continue
-                
+
                 # Convert type to string representation
                 if hasattr(param_type, "__name__"):
                     type_str = param_type.__name__
@@ -160,6 +160,7 @@ async def {func_name}({args_str}):
 
             # make namespace for component
             from mcp.server.fastmcp import Context
+
             namespace = {
                 "component": component,
                 "method_name": method_name,
@@ -197,6 +198,6 @@ async def {func_name}({args_str}):
             schema["properties"].pop("ctx")
         if "required" in schema and "ctx" in schema["required"]:
             schema["required"].remove("ctx")
-        
+
         self.mcp._tool_manager._tools[component.name].parameters.update(schema)
         return wrapped_tool
