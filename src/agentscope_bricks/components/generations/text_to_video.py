@@ -3,7 +3,6 @@ import asyncio
 import os
 import time
 import uuid
-from distutils.util import strtobool
 from http import HTTPStatus
 from typing import Any, Optional
 
@@ -41,6 +40,10 @@ class TextToVideoInput(BaseModel):
     prompt_extend: Optional[bool] = Field(
         default=None,
         description="是否开启prompt智能改写，开启后使用大模型对输入prompt进行智能改写",
+    )
+    watermark: Optional[bool] = Field(
+        default=None,
+        description="是否添加水印，默认不设置",
     )
     ctx: Optional[Context] = Field(
         default=None,
@@ -118,12 +121,6 @@ class TextToVideo(Component[TextToVideoInput, TextToVideoOutput]):
             os.getenv("TEXT_TO_VIDEO_MODEL_NAME", "wan2.2-t2v-plus"),
         )
 
-        watermark_env = os.getenv("TEXT_TO_VIDEO_ENABLE_WATERMARK")
-        if watermark_env is not None:
-            watermark = strtobool(watermark_env)
-        else:
-            watermark = kwargs.pop("watermark", True)
-
         parameters = {}
         if args.prompt_extend is not None:
             parameters["prompt_extend"] = args.prompt_extend
@@ -131,8 +128,8 @@ class TextToVideo(Component[TextToVideoInput, TextToVideoOutput]):
             parameters["size"] = args.size
         if args.duration is not None:
             parameters["duration"] = args.duration
-        if watermark is not None:
-            parameters["watermark"] = watermark
+        if args.watermark is not None:
+            parameters["watermark"] = args.watermark
 
         # Create AioVideoSynthesis instance
         aio_video_synthesis = AioVideoSynthesis()
