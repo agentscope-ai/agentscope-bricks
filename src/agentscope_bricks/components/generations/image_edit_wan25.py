@@ -3,7 +3,6 @@ import asyncio
 import os
 import time
 import uuid
-from distutils.util import strtobool
 from http import HTTPStatus
 from typing import Any, Optional
 
@@ -39,6 +38,10 @@ class ImageGenInput(BaseModel):
     n: Optional[int] = Field(
         default=1,
         description="生成图片的数量。取值范围为1~4张 默认1",
+    )
+    watermark: Optional[bool] = Field(
+        default=None,
+        description="是否添加水印，默认不设置",
     )
     ctx: Optional[Context] = Field(
         default=None,
@@ -106,17 +109,11 @@ class ImageEditWan25(Component[ImageGenInput, ImageGenOutput]):
             os.getenv("IMAGE_EDIT_MODEL_NAME", "wan2.5-i2i-preview"),
         )
 
-        watermark_env = os.getenv("IMAGE_EDIT_ENABLE_WATERMARK")
-        if watermark_env is not None:
-            watermark = strtobool(watermark_env)
-        else:
-            watermark = kwargs.pop("watermark", True)
-
         parameters = {}
         if args.n is not None:
             parameters["n"] = args.n
-        if watermark is not None:
-            parameters["watermark"] = watermark
+        if args.watermark is not None:
+            parameters["watermark"] = args.watermark
 
         # 🔄 使用DashScope异步任务API实现真正的并发
         # 1. 提交异步任务
@@ -202,6 +199,7 @@ if __name__ == "__main__":
         # mask_image_url="https://example.com/mask_image.jpg",
         prompt="将图1中的闹钟放置到图2的餐桌的花瓶旁边位置",
         n=1,
+        # watermark=True
     )
 
     async def main() -> None:

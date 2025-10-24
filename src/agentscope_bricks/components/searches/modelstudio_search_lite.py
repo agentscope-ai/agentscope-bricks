@@ -79,7 +79,7 @@ class ModelstudioSearchLite(Component[SearchLiteInput, SearchLiteOutput]):
     """
 
     description = "搜索可用于查询百科知识、时事新闻、天气等信息"
-    name = "modelstudio_web_search"
+    name = "bailian_web_search"
 
     @trace(trace_type="SEARCH", trace_name="modelstudio_search_lite")
     async def _arun(
