@@ -152,6 +152,12 @@ async def {func_name}({args_str}):
         # Skip optional fields with None values - let Pydantic use defaults
 
     input_model = component.input_type(**kwargs_dict)
+
+    # Set request_id from MCP context before calling component method
+    if 'ctx' in locals_dict and locals_dict['ctx'] is not None:
+        request_id = MCPUtil._get_mcp_dash_request_id(locals_dict['ctx'])
+        TracingUtil.set_request_id(request_id)
+
     method = getattr(component, method_name)
     result = await method(input_model)
     import json
@@ -160,12 +166,18 @@ async def {func_name}({args_str}):
 
             # make namespace for component
             from mcp.server.fastmcp import Context
+            from agentscope_bricks.utils.mcp_util import MCPUtil
+            from agentscope_bricks.utils.tracing_utils.tracing_util import (
+                TracingUtil,
+            )
 
             namespace = {
                 "component": component,
                 "method_name": method_name,
                 "Context": Context,
                 "PydanticUndefined": PydanticUndefined,
+                "MCPUtil": MCPUtil,
+                "TracingUtil": TracingUtil,
             }
 
             # generate code generations
