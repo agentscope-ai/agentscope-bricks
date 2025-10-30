@@ -9,10 +9,12 @@ from mcp.server.fastmcp import Context
 from pydantic import BaseModel, Field
 
 from agentscope_bricks.base.component import Component
-from agentscope_bricks.utils.tracing_utils import TraceType
-from agentscope_bricks.utils.tracing_utils import trace
+from agentscope_bricks.utils.tracing_utils import (
+    TraceType,
+    TracingUtil,
+    trace,
+)
 from agentscope_bricks.utils.api_key_util import ApiNames, get_api_key
-from agentscope_bricks.utils.mcp_util import MCPUtil
 
 
 class QwenImageGenInput(BaseModel):
@@ -104,7 +106,7 @@ class QwenImageGen(Component[QwenImageGenInput, QwenImageGenOutput]):
         """
 
         trace_event = kwargs.pop("trace_event", None)
-        request_id = MCPUtil._get_mcp_dash_request_id(args.ctx)
+        request_id = TracingUtil.get_request_id()
 
         try:
             api_key = get_api_key(ApiNames.dashscope_api_key, **kwargs)

@@ -15,7 +15,7 @@ from agentscope_bricks.base.component import Component
 from agentscope_bricks.utils.tracing_utils.wrapper import trace
 
 from agentscope_bricks.utils.api_key_util import get_api_key, ApiNames
-from agentscope_bricks.utils.mcp_util import MCPUtil
+from agentscope_bricks.utils.tracing_utils import TracingUtil
 
 
 class ImageStyleRepaintInput(BaseModel):
@@ -116,7 +116,7 @@ class ImageStyleRepaint(
         """
 
         trace_event = kwargs.pop("trace_event", None)
-        request_id = MCPUtil._get_mcp_dash_request_id(args.ctx)
+        request_id = TracingUtil.get_request_id()
 
         try:
             api_key = get_api_key(ApiNames.dashscope_api_key, **kwargs)
