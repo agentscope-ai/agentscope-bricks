@@ -123,6 +123,20 @@ class SpeechToText(Component[SpeechToTextInput, SpeechToTextOutput]):
             **parameters,
         )
 
+        if (
+            task.status_code != HTTPStatus.OK
+            or not task.output
+            or (
+                hasattr(task.output, "task_status")
+                and task.output.task_status
+                in [
+                    TaskStatus.FAILED,
+                    TaskStatus.CANCELED,
+                ]
+            )
+        ):
+            raise RuntimeError(f"Failed to submit task: {task}")
+
         # Poll for task completion
         max_wait_time = 300  # 5 minutes timeout for transcription
         poll_interval = 2  # 2 seconds polling interval
@@ -133,6 +147,20 @@ class SpeechToText(Component[SpeechToTextInput, SpeechToTextOutput]):
             while True:
                 # Fetch task result
                 results = Transcription.fetch(task.output.task_id)
+
+                if (
+                    results.status_code != HTTPStatus.OK
+                    or not results.output
+                    or (
+                        hasattr(results.output, "task_status")
+                        and results.output.task_status
+                        in [
+                            TaskStatus.FAILED,
+                            TaskStatus.CANCELED,
+                        ]
+                    )
+                ):
+                    raise RuntimeError(f"Failed to fetch result: {results}")
 
                 if results.status_code == HTTPStatus.OK:
                     if (

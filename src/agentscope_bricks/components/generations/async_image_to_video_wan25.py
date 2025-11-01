@@ -197,6 +197,13 @@ class ImageToVideoWan25Submit(
                 },
             )
 
+        if (
+            response.status_code != HTTPStatus.OK
+            or not response.output
+            or response.output.task_status in ["FAILED", "CANCELED"]
+        ):
+            raise RuntimeError(f"Failed to submit task: {response}")
+
         if not request_id:
             request_id = (
                 response.request_id
@@ -321,9 +328,6 @@ class ImageToVideoWan25Fetch(
             task=args.task_id,
         )
 
-        if response.status_code != HTTPStatus.OK:
-            raise RuntimeError(f"Failed to get video URL: {response}")
-
         # Log trace event if provided
         if trace_event:
             trace_event.on_log(
@@ -336,6 +340,13 @@ class ImageToVideoWan25Fetch(
                     },
                 },
             )
+
+        if (
+            response.status_code != HTTPStatus.OK
+            or not response.output
+            or response.output.task_status in ["FAILED", "CANCELED"]
+        ):
+            raise RuntimeError(f"Failed to fetch result: {response}")
 
         # Handle request ID
         if not request_id:

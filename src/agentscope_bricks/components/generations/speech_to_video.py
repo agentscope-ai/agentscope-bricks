@@ -198,6 +198,16 @@ class SpeechToVideo(Component[SpeechToVideoInput, SpeechToVideoOutput]):
             **parameters,
         )
 
+        if (
+            task_response.status_code != HTTPStatus.OK
+            or not task_response.output
+            or (
+                hasattr(task_response.output, "task_status")
+                and task_response.output.task_status in ["FAILED", "CANCELED"]
+            )
+        ):
+            raise RuntimeError(f"Failed to submit task: {task_response}")
+
         # Poll for task completion using async methods
         max_wait_time = 600  # 10 minutes timeout for video generation
         poll_interval = 5  # 5 seconds polling interval
@@ -213,6 +223,16 @@ class SpeechToVideo(Component[SpeechToVideoInput, SpeechToVideoOutput]):
                 task=task_response,
             )
 
+            if (
+                res.status_code != HTTPStatus.OK
+                or not res.output
+                or (
+                    isinstance(res.output, dict)
+                    and res.output.get("task_status") in ["FAILED", "CANCELED"]
+                )
+            ):
+                raise RuntimeError(f"Failed to fetch result: {res}")
+
             # Check task completion status
             if res.status_code == HTTPStatus.OK:
                 # res.output is a dict when using BaseAsyncAioApi
@@ -223,10 +243,7 @@ class SpeechToVideo(Component[SpeechToVideoInput, SpeechToVideoOutput]):
                     if res.output["task_status"] == "SUCCEEDED":
                         break
                     elif res.output["task_status"] in ["FAILED", "CANCELED"]:
-                        raise RuntimeError(
-                            f"Video generation failed: task_status="
-                            f"{res.output['task_status']}, response={res}",
-                        )
+                        raise RuntimeError(f"Failed to generate: {res}")
                     # Continue polling for PENDING, RUNNING, etc.
                 else:
                     # If no task_status field, assume completed

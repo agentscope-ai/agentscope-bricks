@@ -138,14 +138,8 @@ class QwenImageEdit(Component[QwenImageEditInput, QwenImageEditOutput]):
             raise RuntimeError(f"Failed to call Qwen Image Edit API: {str(e)}")
 
         # Check response status
-        if response.status_code != 200:
-            error_msg = (
-                f"HTTP status code: {response.status_code}, "
-                f"Error code: {getattr(response, 'code', 'Unknown')}, "
-                f"Error message:"
-                f" {getattr(response, 'message', 'Unknown error')}"
-            )
-            raise RuntimeError(f"Qwen Image Edit API error: {error_msg}")
+        if response.status_code != 200 or not response.output:
+            raise RuntimeError(f"Failed to generate: {response}")
 
         # Extract the edited image URLs from response
         try:

@@ -180,6 +180,9 @@ class ImageStyleRepaint(
             _sync_style_repaint_call,
         )
 
+        if res.status_code != HTTPStatus.OK or not res.output:
+            raise RuntimeError(f"Failed to generate image: {res}")
+
         if request_id == "":
             request_id = (
                 res.request_id if res.request_id else str(uuid.uuid4())
