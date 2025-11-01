@@ -126,6 +126,12 @@ class ImageEditWan25(Component[ImageGenInput, ImageGenOutput]):
             **parameters,
         )
 
+        if (
+            task_response.status_code != HTTPStatus.OK
+            or not task_response.output
+        ):
+            raise RuntimeError(f"Failed to submit task: {task_response}")
+
         # 2. 循环异步查询任务状态
         max_wait_time = 300  # 5分钟超时
         poll_interval = 2  # 2秒轮询间隔
@@ -141,15 +147,23 @@ class ImageEditWan25(Component[ImageGenInput, ImageGenOutput]):
                 task=task_response,
             )
 
+            if (
+                res.status_code != HTTPStatus.OK
+                or not res.output
+                or (
+                    hasattr(res.output, "task_status")
+                    and res.output.task_status in ["FAILED", "CANCELED"]
+                )
+            ):
+                raise RuntimeError(f"Failed to fetch result: {res}")
+
             # 检查任务是否完成
             if res.status_code == HTTPStatus.OK:
                 if hasattr(res.output, "task_status"):
                     if res.output.task_status == "SUCCEEDED":
                         break
                     elif res.output.task_status in ["FAILED", "CANCELED"]:
-                        raise RuntimeError(
-                            f"Image editing failed: {res.output.task_status}",
-                        )
+                        raise RuntimeError(f"Failed to generate: {res}")
                 else:
                     # 如果没有task_status字段，认为已完成
                     break

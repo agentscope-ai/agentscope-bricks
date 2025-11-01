@@ -156,6 +156,13 @@ class ImageToVideo(Component[ImageToVideoInput, ImageToVideoOutput]):
             **parameters,
         )
 
+        if (
+            task_response.status_code != HTTPStatus.OK
+            or not task_response.output
+            or task_response.output.task_status in ["FAILED", "CANCELED"]
+        ):
+            raise RuntimeError(f"Failed to submit task: {task_response}")
+
         # Poll for task completion using async methods
         max_wait_time = 600  # 10 minutes timeout for video generation
         poll_interval = 5  # 5 seconds polling interval
@@ -171,16 +178,20 @@ class ImageToVideo(Component[ImageToVideoInput, ImageToVideoOutput]):
                 task=task_response,
             )
 
+            if (
+                res.status_code != HTTPStatus.OK
+                or not res.output
+                or res.output.task_status in ["FAILED", "CANCELED"]
+            ):
+                raise RuntimeError(f"Failed to fetch result: {res}")
+
             # Check task completion status
             if res.status_code == HTTPStatus.OK:
                 if hasattr(res.output, "task_status"):
                     if res.output.task_status == "SUCCEEDED":
                         break
                     elif res.output.task_status in ["FAILED", "CANCELED"]:
-                        raise RuntimeError(
-                            f"Video generation failed: task_status="
-                            f"{res.output.task_status}, response={res}",
-                        )
+                        raise RuntimeError(f"Failed to generate: {res}")
                 else:
                     # If no task_status field, assume completed
                     break
