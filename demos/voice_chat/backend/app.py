@@ -91,6 +91,18 @@ class VoiceChatService(RealtimeService):
             if os.environ.get("OUTPUT_FILE_DIR")
             else None
         )
+        # Validate and create output directory if configured
+        if self._output_file_dir:
+            try:
+                os.makedirs(self._output_file_dir, exist_ok=True)
+                logger.info(
+                    f"Output directory ready: {self._output_file_dir}",
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to create output directory: {e}",
+                )
+                self._output_file_dir = None
         self._output_file_streams = {}
         self._parameters = ModelstudioVoiceChatParameters()
         self._upstream = ModelstudioVoiceChatUpstream()
@@ -550,17 +562,25 @@ class VoiceChatService(RealtimeService):
 
         self._tts_audio_queue.put((chat_id, data_index, data))
         if self._output_file_dir:
-            if data_index == 0:
-                file_path = os.path.join(
-                    self._output_file_dir,
-                    "server_%s.pcm" % chat_id,
+            try:
+                if data_index == 0:
+                    # Ensure directory exists before creating file
+                    os.makedirs(self._output_file_dir, exist_ok=True)
+                    file_path = os.path.join(
+                        self._output_file_dir,
+                        "server_%s.pcm" % chat_id,
+                    )
+                    fs = open(file_path, "wb")
+                    self._output_file_streams[chat_id] = fs
+                    self._thread_executor.submit(fs.write, data)
+                else:
+                    fs = self._output_file_streams[chat_id]
+                    self._thread_executor.submit(fs.write, data)
+            except Exception as e:
+                logger.error(
+                    f"Failed to write output file for chat_id={chat_id},"
+                    f" data_index={data_index}: {e}",
                 )
-                fs = open(file_path, "wb")
-                self._output_file_streams[chat_id] = fs
-                self._thread_executor.submit(fs.write, data)
-            else:
-                fs = self._output_file_streams[chat_id]
-                self._thread_executor.submit(fs.write, data)
 
     def _on_tts_complete(self, chat_id: str) -> None:
         logger.info("on_tts_complete: chat_id=%s" % chat_id)
