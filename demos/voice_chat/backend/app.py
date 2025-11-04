@@ -6,7 +6,7 @@ import time
 from typing import Tuple, List
 from dataclasses import dataclass
 
-from openai import Stream
+from openai import AsyncStream
 from openai.types.chat import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall
 from pydantic import BaseModel
@@ -245,7 +245,7 @@ class VoiceChatService(RealtimeService):
     async def _send_data(self, data: bytes):
         await self.ws.send_bytes(data)
 
-    def _chat_process(self, text: str, chat_id: str):
+    async def _chat_process(self, text: str, chat_id: str):
 
         logger.info("chat_start: chat_id=%s, text=%s" % (chat_id, text))
 
@@ -256,9 +256,9 @@ class VoiceChatService(RealtimeService):
         first_resp = True
         cumulated_responses = []
         chat_start_time = int(time.time() * 1000)
-        chat_id, responses = self._chat_llm(text, chat_id)
+        chat_id, responses = await self._chat_llm(text, chat_id)
         # chat_id, responses = self._chat_rag_with_llm(text, chat_id)
-        for response in responses:
+        async for response in responses:
             # logger.info("chat_response: chat_id=%s, response=%s" %
             # (chat_id, json.dumps(response.model_dump(), ensure_ascii=False)))
             logger.info(
@@ -527,7 +527,7 @@ class VoiceChatService(RealtimeService):
                 self._on_tts_complete(chat_id)
 
         if sentence_end is True:
-            self._thread_executor.submit(
+            self._async_executor.submit(
                 self._chat_process,
                 chat_text,
                 sentence_id,
@@ -667,11 +667,11 @@ class VoiceChatService(RealtimeService):
 
         return messages
 
-    def _chat_llm(
+    async def _chat_llm(
         self,
         query: str,
         chat_id: str,
-    ) -> Tuple[str, Stream[ChatCompletionChunk]]:
+    ) -> Tuple[str, AsyncStream[ChatCompletionChunk]]:
         if self._tools:
             model = "qwen-plus"
         else:
@@ -679,7 +679,7 @@ class VoiceChatService(RealtimeService):
 
         historical_messages = self._chat_store.get_messages(self._session_id)
 
-        return self._text_chat_flow.chat(
+        return await self._text_chat_flow.chat(
             model=model,
             query=query,
             chat_id=chat_id,
