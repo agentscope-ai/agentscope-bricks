@@ -14,7 +14,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="modelstudio-mcp-server",
-    version="0.1.2.2",
+    version="0.1.2.3",
     description="Modelstudio MCP Server runner with uvicorn support",
     long_description="A Model Context Protocol (MCP) server for Modelstudio "
     "services, supporting both direct execution and uvicorn "
