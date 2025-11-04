@@ -154,9 +154,18 @@ class AzureTtsClient(TtsClient):
             f" tts_request_id={self.tts_request_id}, object={id(self)}",
         )
 
-        self.tts_request.input_stream.close()
+        try:
+            self.tts_request.input_stream.close()
+        except Exception as e:
+            logger.warning(f"Error closing TTS input stream: {e}")
 
-        self.wait_all_tasks_completed()
+        # Use try-except to safely wait for tasks completion
+        try:
+            self.wait_all_tasks_completed()
+        except Exception as e:
+            logger.warning(
+                f"Error waiting for TTS tasks: {e}",
+            )
 
         logger.info(
             f"tts_stop end: chat_id={self.config.chat_id},"
@@ -172,9 +181,13 @@ class AzureTtsClient(TtsClient):
         if self.state == RealtimeState.IDLE:
             return
 
-        self.tts_request.input_stream.close()
+        try:
+            self.tts_request.input_stream.close()
+        except Exception as e:
+            logger.warning(f"Error closing TTS input stream: {e}")
 
-        threading.Thread(target=self.wait_all_tasks_completed).start()
+        # Don't wait for tasks in a new thread to avoid Azure SDK
+        # thread-safety issues. The synthesizer will handle cleanup.
 
         logger.info(
             f"tts_async_stop end: chat_id={self.config.chat_id},"
@@ -189,9 +202,16 @@ class AzureTtsClient(TtsClient):
         if self.state == RealtimeState.IDLE:
             return
 
-        self.tts_request.input_stream.close()
+        try:
+            self.tts_request.input_stream.close()
+        except Exception as e:
+            logger.warning(f"Error closing TTS input stream: {e}")
 
-        self.synthesizer.stop_speaking_async()
+        try:
+            self.synthesizer.stop_speaking_async()
+        except Exception as e:
+            logger.warning(f"Error stopping TTS synthesizer: {e}")
+
         logger.info(
             f"tts_close end: chat_id={self.config.chat_id},"
             f" tts_request_id={self.tts_request_id}, object={id(self)}",

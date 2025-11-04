@@ -6,7 +6,7 @@ import time
 from typing import Tuple, List
 from dataclasses import dataclass
 
-from openai import Stream
+from openai import AsyncStream
 from openai.types.chat import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall
 from pydantic import BaseModel
@@ -91,6 +91,18 @@ class VoiceChatService(RealtimeService):
             if os.environ.get("OUTPUT_FILE_DIR")
             else None
         )
+        # Validate and create output directory if configured
+        if self._output_file_dir:
+            try:
+                os.makedirs(self._output_file_dir, exist_ok=True)
+                logger.info(
+                    f"Output directory ready: {self._output_file_dir}",
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to create output directory: {e}",
+                )
+                self._output_file_dir = None
         self._output_file_streams = {}
         self._parameters = ModelstudioVoiceChatParameters()
         self._upstream = ModelstudioVoiceChatUpstream()
@@ -233,7 +245,7 @@ class VoiceChatService(RealtimeService):
     async def _send_data(self, data: bytes):
         await self.ws.send_bytes(data)
 
-    def _chat_process(self, text: str, chat_id: str):
+    async def _chat_process(self, text: str, chat_id: str):
 
         logger.info("chat_start: chat_id=%s, text=%s" % (chat_id, text))
 
@@ -244,9 +256,9 @@ class VoiceChatService(RealtimeService):
         first_resp = True
         cumulated_responses = []
         chat_start_time = int(time.time() * 1000)
-        chat_id, responses = self._chat_llm(text, chat_id)
+        chat_id, responses = await self._chat_llm(text, chat_id)
         # chat_id, responses = self._chat_rag_with_llm(text, chat_id)
-        for response in responses:
+        async for response in responses:
             # logger.info("chat_response: chat_id=%s, response=%s" %
             # (chat_id, json.dumps(response.model_dump(), ensure_ascii=False)))
             logger.info(
@@ -515,7 +527,7 @@ class VoiceChatService(RealtimeService):
                 self._on_tts_complete(chat_id)
 
         if sentence_end is True:
-            self._thread_executor.submit(
+            self._async_executor.submit(
                 self._chat_process,
                 chat_text,
                 sentence_id,
@@ -550,17 +562,25 @@ class VoiceChatService(RealtimeService):
 
         self._tts_audio_queue.put((chat_id, data_index, data))
         if self._output_file_dir:
-            if data_index == 0:
-                file_path = os.path.join(
-                    self._output_file_dir,
-                    "server_%s.pcm" % chat_id,
+            try:
+                if data_index == 0:
+                    # Ensure directory exists before creating file
+                    os.makedirs(self._output_file_dir, exist_ok=True)
+                    file_path = os.path.join(
+                        self._output_file_dir,
+                        "server_%s.pcm" % chat_id,
+                    )
+                    fs = open(file_path, "wb")
+                    self._output_file_streams[chat_id] = fs
+                    self._thread_executor.submit(fs.write, data)
+                else:
+                    fs = self._output_file_streams[chat_id]
+                    self._thread_executor.submit(fs.write, data)
+            except Exception as e:
+                logger.error(
+                    f"Failed to write output file for chat_id={chat_id},"
+                    f" data_index={data_index}: {e}",
                 )
-                fs = open(file_path, "wb")
-                self._output_file_streams[chat_id] = fs
-                self._thread_executor.submit(fs.write, data)
-            else:
-                fs = self._output_file_streams[chat_id]
-                self._thread_executor.submit(fs.write, data)
 
     def _on_tts_complete(self, chat_id: str) -> None:
         logger.info("on_tts_complete: chat_id=%s" % chat_id)
@@ -647,11 +667,11 @@ class VoiceChatService(RealtimeService):
 
         return messages
 
-    def _chat_llm(
+    async def _chat_llm(
         self,
         query: str,
         chat_id: str,
-    ) -> Tuple[str, Stream[ChatCompletionChunk]]:
+    ) -> Tuple[str, AsyncStream[ChatCompletionChunk]]:
         if self._tools:
             model = "qwen-plus"
         else:
@@ -659,7 +679,7 @@ class VoiceChatService(RealtimeService):
 
         historical_messages = self._chat_store.get_messages(self._session_id)
 
-        return self._text_chat_flow.chat(
+        return await self._text_chat_flow.chat(
             model=model,
             query=query,
             chat_id=chat_id,
