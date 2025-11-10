@@ -219,7 +219,6 @@ class VoiceChatService(RealtimeService):
         if self._asr_client:
             self._asr_client.stop()
 
-
     async def _send_text(self, text: str):
         logger.info("send_text: {%s}" % text)
         await self.ws.send_text(text)
