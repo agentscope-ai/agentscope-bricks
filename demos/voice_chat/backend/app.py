@@ -3,11 +3,10 @@ import json
 import os
 import queue
 import time
-import threading
 from typing import Tuple, List
 from dataclasses import dataclass
 
-from openai import Stream
+from openai import AsyncStream
 from openai.types.chat import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall
 from pydantic import BaseModel
@@ -25,7 +24,6 @@ from agentscope_bricks.components.realtime_clients.realtime_component import (
 from text_chat_flow import TextChatFlow
 from tts_client_factory import (
     TtsClientFactory,
-    TtsClientPool,
 )
 from agentscope_bricks.models.llm import BaseLLM
 from agentscope_bricks.utils.schemas.realtime import (
@@ -61,6 +59,9 @@ from agentscope_bricks.utils.schemas.oai_llm import (
     UserMessage,
     OpenAIMessage,
 )
+import faulthandler
+
+faulthandler.enable()
 
 
 class AsrEvent(BaseModel):
@@ -89,6 +90,18 @@ class VoiceChatService(RealtimeService):
             if os.environ.get("OUTPUT_FILE_DIR")
             else None
         )
+        # Validate and create output directory if configured
+        if self._output_file_dir:
+            try:
+                os.makedirs(self._output_file_dir, exist_ok=True)
+                logger.info(
+                    f"Output directory ready: {self._output_file_dir}",
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to create output directory: {e}",
+                )
+                self._output_file_dir = None
         self._output_file_streams = {}
         self._parameters = ModelstudioVoiceChatParameters()
         self._upstream = ModelstudioVoiceChatUpstream()
@@ -102,8 +115,7 @@ class VoiceChatService(RealtimeService):
         self._async_executor = AsyncTaskExecutor(self._thread_executor)
         self._input_stats = DataStats(log_count_period=10)
         self._tts_output_stats = DataStats(log_count_period=10)
-        self._tts_client_pool = None
-        self._tts_clients_lock = threading.Lock()
+        self._text_chat_flow = TextChatFlow()
         logger.info("create voice chat")
 
     async def process_message(self, request: ModelstudioVoiceChatRequest):
@@ -171,19 +183,6 @@ class VoiceChatService(RealtimeService):
             self._downstream.tts_options,
         )
 
-        tts_callbacks = {
-            "on_data": self._on_tts_data,
-            "on_complete": self._on_tts_complete,
-        }
-        if self._downstream.tts_vendor == TtsVendor.AZURE:
-            self._tts_client_pool = TtsClientPool()
-            self._tts_client_pool.initialize(
-                1,
-                self._downstream.tts_vendor,
-                self._downstream.tts_options,
-                tts_callbacks,
-            )
-
         self._thread_executor.submit(self._output_stream_cycle)
 
         asr_callbacks = {"on_event": self._on_asr_event}
@@ -220,17 +219,6 @@ class VoiceChatService(RealtimeService):
         if self._asr_client:
             self._asr_client.stop()
 
-        # Clean up all TTS clients
-        with self._tts_clients_lock:
-            for chat_id in list(self._tts_clients.keys()):
-                if chat_id in self._tts_clients:
-                    self._tts_clients[chat_id].close()
-                    self._tts_clients.pop(chat_id, None)
-
-        if self._tts_client_pool:
-            self._tts_client_pool.release()
-            self._tts_client_pool = None
-
     async def _send_text(self, text: str):
         logger.info("send_text: {%s}" % text)
         await self.ws.send_text(text)
@@ -238,7 +226,7 @@ class VoiceChatService(RealtimeService):
     async def _send_data(self, data: bytes):
         await self.ws.send_bytes(data)
 
-    def _chat_process(self, text: str, chat_id: str):
+    async def _chat_process(self, text: str, chat_id: str):
 
         logger.info("chat_start: chat_id=%s, text=%s" % (chat_id, text))
 
@@ -249,9 +237,9 @@ class VoiceChatService(RealtimeService):
         first_resp = True
         cumulated_responses = []
         chat_start_time = int(time.time() * 1000)
-        chat_id, responses = self._chat_llm(text, chat_id)
+        chat_id, responses = await self._chat_llm(text, chat_id)
         # chat_id, responses = self._chat_rag_with_llm(text, chat_id)
-        for response in responses:
+        async for response in responses:
             # logger.info("chat_response: chat_id=%s, response=%s" %
             # (chat_id, json.dumps(response.model_dump(), ensure_ascii=False)))
             logger.info(
@@ -330,14 +318,8 @@ class VoiceChatService(RealtimeService):
             )
             self._chat_store.add_messages(self._session_id, messages)
 
-        if chat_id:
-            with self._tts_clients_lock:
-                if chat_id in self._tts_clients:
-                    # Ensure TTS client is completed before cleanup
-                    tts_client = self._tts_clients[chat_id]
-                    tts_client.async_stop()
-                    # Wait a short time to ensure async stop completes
-                    time.sleep(0.1)
+        if chat_id and chat_id in self._tts_clients:
+            self._tts_clients[chat_id].async_stop()
 
         logger.info("chat_end: chat_id=%s, text=%s" % (chat_id, text))
 
@@ -429,61 +411,29 @@ class VoiceChatService(RealtimeService):
         )
 
     def _start_tts_client(self, chat_id):
-        try:
-            with self._tts_clients_lock:
-                # Clean up completed or cancelled TTS clients, not all clients
-                tts_to_remove = []
-                for tts_chat_id in self._tts_clients:
-                    client = self._tts_clients[tts_chat_id]
-                    # Check client status, clean up if completed or idle
-                    if (
-                        hasattr(client, "state")
-                        and client.state == RealtimeState.IDLE
-                    ):
-                        client.close()
-                        tts_to_remove.append(tts_chat_id)
+        for tts_chat_id in self._tts_clients:
+            self._tts_clients[tts_chat_id].close()
+        self._tts_clients.clear()
 
-                for tts_chat_id in tts_to_remove:
-                    self._tts_clients.pop(tts_chat_id, None)
+        self._downstream.tts_options.chat_id = chat_id
+        callbacks = {
+            "on_data": self._on_tts_data,
+            "on_complete": self._on_tts_complete,
+        }
 
-                # If current chat_id already has TTS client, reuse it directly
-                if chat_id in self._tts_clients:
-                    return
+        tts_client = TtsClientFactory.create_client(
+            self._downstream.tts_vendor,
+            self._downstream.tts_options,
+            callbacks,
+        )
+        tts_client.start()
 
-            self._downstream.tts_options.chat_id = chat_id
-            callbacks = {
-                "on_data": self._on_tts_data,
-                "on_complete": self._on_tts_complete,
-            }
-            if self._tts_client_pool:
-                tts_client = self._tts_client_pool.get()
-                if tts_client is None:
-                    logger.error("Failed to get TTS client from pool")
-                    return
-                # Ensure client's chat_id is set correctly
-                tts_client.set_chat_id(chat_id)
-            else:
-                tts_client = TtsClientFactory.create_client(
-                    self._downstream.tts_vendor,
-                    self._downstream.tts_options,
-                    callbacks,
-                )
-            tts_client.start()
-
-            with self._tts_clients_lock:
-                self._tts_clients[chat_id] = tts_client
-        except Exception as e:
-            logger.error(
-                "Error starting TTS client for chat_id=%s: %s"
-                % (chat_id, str(e)),
-            )
+        self._tts_clients[chat_id] = tts_client
 
     def _cancel_tts(self, chat_id):
-        logger.info("cancel tts: chat_id=%s" % chat_id)
-        with self._tts_clients_lock:
-            if chat_id in self._tts_clients:
-                self._tts_clients[chat_id].close()
-                self._tts_clients.pop(chat_id, None)
+        logger.info("cancel tts")
+        self._tts_clients[chat_id].close()
+        self._tts_clients.pop(chat_id, None)
 
     def _on_asr_event(self, sentence_end: bool, sentence_text: str) -> None:
         asr_event_time = int(round(time.time() * 1000))
@@ -538,16 +488,9 @@ class VoiceChatService(RealtimeService):
         )
 
         # interrupt
-        with self._tts_clients_lock:
-            tts_to_cancel = []
-            for tts_chat_id in self._tts_clients:
-                tts_to_cancel.append(tts_chat_id)
-
-            for tts_chat_id in tts_to_cancel:
-                client = self._tts_clients.get(tts_chat_id)
-                if client:
-                    client.close()
-                    self._tts_clients.pop(tts_chat_id, None)
+        for tts_chat_id in self._tts_clients:
+            self._tts_clients[tts_chat_id].close()
+        self._tts_clients.clear()
 
         if not self._tts_audio_queue.empty():
             logger.info(
@@ -563,7 +506,7 @@ class VoiceChatService(RealtimeService):
                 self._on_tts_complete(chat_id)
 
         if sentence_end is True:
-            self._thread_executor.submit(
+            self._async_executor.submit(
                 self._chat_process,
                 chat_text,
                 sentence_id,
@@ -598,17 +541,25 @@ class VoiceChatService(RealtimeService):
 
         self._tts_audio_queue.put((chat_id, data_index, data))
         if self._output_file_dir:
-            if data_index == 0:
-                file_path = os.path.join(
-                    self._output_file_dir,
-                    "server_%s.pcm" % chat_id,
+            try:
+                if data_index == 0:
+                    # Ensure directory exists before creating file
+                    os.makedirs(self._output_file_dir, exist_ok=True)
+                    file_path = os.path.join(
+                        self._output_file_dir,
+                        "server_%s.pcm" % chat_id,
+                    )
+                    fs = open(file_path, "wb")
+                    self._output_file_streams[chat_id] = fs
+                    self._thread_executor.submit(fs.write, data)
+                else:
+                    fs = self._output_file_streams[chat_id]
+                    self._thread_executor.submit(fs.write, data)
+            except Exception as e:
+                logger.error(
+                    f"Failed to write output file for chat_id={chat_id},"
+                    f" data_index={data_index}: {e}",
                 )
-                fs = open(file_path, "wb")
-                self._output_file_streams[chat_id] = fs
-                self._thread_executor.submit(fs.write, data)
-            else:
-                fs = self._output_file_streams[chat_id]
-                self._thread_executor.submit(fs.write, data)
 
     def _on_tts_complete(self, chat_id: str) -> None:
         logger.info("on_tts_complete: chat_id=%s" % chat_id)
@@ -695,11 +646,11 @@ class VoiceChatService(RealtimeService):
 
         return messages
 
-    def _chat_llm(
+    async def _chat_llm(
         self,
         query: str,
         chat_id: str,
-    ) -> Tuple[str, Stream[ChatCompletionChunk]]:
+    ) -> Tuple[str, AsyncStream[ChatCompletionChunk]]:
         if self._tools:
             model = "qwen-plus"
         else:
@@ -707,7 +658,7 @@ class VoiceChatService(RealtimeService):
 
         historical_messages = self._chat_store.get_messages(self._session_id)
 
-        return TextChatFlow.chat(
+        return await self._text_chat_flow.chat(
             model=model,
             query=query,
             chat_id=chat_id,
