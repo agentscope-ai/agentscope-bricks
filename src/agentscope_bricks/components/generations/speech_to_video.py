@@ -202,14 +202,15 @@ class SpeechToVideo(Component[SpeechToVideoInput, SpeechToVideoOutput]):
             task_response.status_code != HTTPStatus.OK
             or not task_response.output
             or (
-                hasattr(task_response.output, "task_status")
-                and task_response.output.task_status in ["FAILED", "CANCELED"]
+                isinstance(task_response.output, dict)
+                and task_response.output.get("task_status", "UNKNOWN")
+                in ["FAILED", "CANCELED"]
             )
         ):
             raise RuntimeError(f"Failed to submit task: {task_response}")
 
         # Poll for task completion using async methods
-        max_wait_time = 600  # 10 minutes timeout for video generation
+        max_wait_time = 15 * 60  # 10 minutes timeout for video generation
         poll_interval = 5  # 5 seconds polling interval
         start_time = time.time()
 
@@ -228,7 +229,8 @@ class SpeechToVideo(Component[SpeechToVideoInput, SpeechToVideoOutput]):
                 or not res.output
                 or (
                     isinstance(res.output, dict)
-                    and res.output.get("task_status") in ["FAILED", "CANCELED"]
+                    and res.output.get("task_status", "UNKNOWN")
+                    in ["FAILED", "CANCELED"]
                 )
             ):
                 raise RuntimeError(f"Failed to fetch result: {res}")
