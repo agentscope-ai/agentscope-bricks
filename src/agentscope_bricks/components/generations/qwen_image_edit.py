@@ -35,7 +35,7 @@ class QwenImageEditInput(BaseModel):
     )
     watermark: Optional[bool] = Field(
         default=None,
-        description="是否添加水印，默认不设置",
+        description="是否添加水印，默认不设置。可设置为true或false。",
     )
     ctx: Optional[Context] = Field(
         default=None,
