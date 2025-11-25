@@ -206,10 +206,10 @@ if __name__ == "__main__":
     async def main() -> None:
         # 示例：使用公开可访问的测试图片（请替换为你自己的公开图片）
         test_image_urls = [
-            "https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/1x6k9vz8h4b3a0/7c8e4f2a-9b1d-4f3e-8c7a-1e2d3f4g5h6i.png?Expires=...&OSSAccessKeyId=...&Signature=...",  # ❌ 注意：此链接可能失效
+            #"https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/1x6k9vz8h4b3a0/7c8e4f2a-9b1d-4f3e-8c7a-1e2d3f4g5h6i.png?Expires=...&OSSAccessKeyId=...&Signature=...",  # ❌ 注意：此链接可能失效
             # 建议改用你自己上传的公开图片，例如：
-            # "https://your-public-bucket.oss-cn-shanghai.aliyuncs.com/test1.jpg",
-            # "https://your-public-bucket.oss-cn-shanghai.aliyuncs.com/test2.jpg",
+             "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
+             "https://dashscope.oss-cn-beijing.aliyuncs.com/images/beach.jpg",
         ]
 
         # 如果没有可用的公开图片，先注释掉上面并使用单图测试
