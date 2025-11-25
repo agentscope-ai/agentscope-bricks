@@ -18,6 +18,9 @@ from agentscope_bricks.components.generations.image_edit_wan25 import (
 from agentscope_bricks.components.generations.qwen_image_edit import (
     QwenImageEdit,
 )
+from agentscope_bricks.components.generations.qwen_image_edit_new import (  # ← 新增导入
+    QwenImageEditNew,
+)
 from agentscope_bricks.components.generations.qwen_image_generation import (
     QwenImageGen,
 )
@@ -102,7 +105,7 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
     ),
     "modelstudio_qwen_image": McpServerMeta(
         instructions="基于通义千问大模型的智能图像生成服务，提供高质量的图像处理和编辑功能",
-        components=[QwenImageGen, QwenImageEdit],
+        components=[QwenImageGen, QwenImageEdit, QwenImageEditNew],  # ← 新增 QwenImageEditNew
     ),
     "modelstudio_web_search": McpServerMeta(
         instructions="提供实时互联网搜索服务，提供准确及时的信息检索功能",
