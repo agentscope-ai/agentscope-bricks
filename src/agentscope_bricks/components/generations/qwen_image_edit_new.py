@@ -67,8 +67,8 @@ class QwenImageEditNew(Component[QwenImageEditNewInput, QwenImageEditNewOutput])
 
     name: str = "modelstudio_qwen_image_edit_new"  # ⚠️ 必须唯一！
     description: str = (
-        "通义千问-图像编辑模型（新版），支持批量处理多张图像。"
-        "通过统一的文本指令对多张图像执行相同的编辑操作，如增删物体、调色、风格迁移等。"
+        "通义千问-图像编辑模型，支持批量处理多张图像。"
+        "通义千问-图像编辑模型支持精准的中英双语文字编辑、调色、细节增强、风格迁移、增删物体、改变位置和动作等操作，可实现复杂的图文编辑。"
     )
 
     @trace(trace_type="AIGC", trace_name="qwen_image_edit_new")
