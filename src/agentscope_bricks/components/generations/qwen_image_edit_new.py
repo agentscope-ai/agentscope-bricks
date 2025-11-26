@@ -2,7 +2,7 @@
 import asyncio
 import os
 import uuid
-from typing import Any, Optional, List
+from typing import Any, Optional
 
 from dashscope import AioMultiModalConversation
 from mcp.server.fastmcp import Context
@@ -19,7 +19,7 @@ class QwenImageEditNewInput(BaseModel):
     Qwen Image Edit New Input (Supports multiple images)
     """
 
-    image_urls: List[str] = Field(
+    image_urls: list[str] = Field(
         ...,
         description="输入图像的URL地址列表，每个URL需为公网可访问地址，支持 HTTP 或 HTTPS "
         "协议。格式：JPG、JPEG、PNG、BMP、TIFF、WEBP，分辨率[384, 3072]，大小不超过10MB。"
@@ -48,7 +48,7 @@ class QwenImageEditNewOutput(BaseModel):
     Qwen Image Edit New Output
     """
 
-    results: List[str] = Field(
+    results: list[str] = Field(
         title="Results",
         description="输出的编辑后图片URL列表，顺序与输入 image_urls 一致",
     )
@@ -209,7 +209,7 @@ if __name__ == "__main__":
             #"https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/1x6k9vz8h4b3a0/7c8e4f2a-9b1d-4f3e-8c7a-1e2d3f4g5h6i.png?Expires=...&OSSAccessKeyId=...&Signature=...",  # ❌ 注意：此链接可能失效
             # 建议改用你自己上传的公开图片，例如：
              "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
-             "https://dashscope.oss-cn-beijing.aliyuncs.com/images/beach.jpg",
+             "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
         ]
 
         # 如果没有可用的公开图片，先注释掉上面并使用单图测试
