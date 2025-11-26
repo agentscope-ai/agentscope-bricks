@@ -18,7 +18,7 @@ from agentscope_bricks.components.generations.image_edit_wan25 import (
 from agentscope_bricks.components.generations.qwen_image_edit import (
     QwenImageEdit,
 )
-from agentscope_bricks.components.generations.qwen_image_edit_new import (  # ← 新增导入
+from agentscope_bricks.components.generations.qwen_image_edit_new import (  # noqa
     QwenImageEditNew,
 )
 from agentscope_bricks.components.generations.qwen_image_generation import (

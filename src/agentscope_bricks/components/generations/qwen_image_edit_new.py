@@ -21,17 +21,25 @@ class QwenImageEditNewInput(BaseModel):
 
     image_urls: list[str] = Field(
         ...,
-        description="输入图像的URL地址列表，每个URL需为公网可访问地址，支持 HTTP 或 HTTPS "
-        "协议。格式：JPG、JPEG、PNG、BMP、TIFF、WEBP，分辨率[384, 3072]，大小不超过10MB。"
-        "URL不能包含中文字符。",
+        description=(
+            "输入图像的URL地址列表，每个URL需为公网可访问地址，支持 HTTP 或 "
+            "HTTPS 协议。格式：JPG、JPEG、PNG、BMP、TIFF、WEBP，分辨率[384, "
+            "3072]，大小不超过10MB。URL不能包含中文字符。"
+        ),
     )
     prompt: str = Field(
         ...,
-        description="正向提示词，用来描述生成图像中期望包含的元素和视觉特点，超过800个字符自动截断",
+        description=(
+            "正向提示词，用来描述生成图像中期望包含的元素和视觉特点，"
+            "超过800个字符自动截断"
+        ),
     )
     negative_prompt: Optional[str] = Field(
         default=None,
-        description="反向提示词，用来描述不希望在画面中看到的内容，可以对画面进行限制，超过500个字符自动截断",
+        description=(
+            "反向提示词，用来描述不希望在画面中看到的内容，可以对画面进行限制，"
+            "超过500个字符自动截断"
+        ),
     )
     watermark: Optional[bool] = Field(
         default=None,
@@ -39,7 +47,10 @@ class QwenImageEditNewInput(BaseModel):
     )
     ctx: Optional[Context] = Field(
         default=None,
-        description="HTTP request context containing headers for mcp only, don't generate it",
+        description=(
+            "HTTP request context containing headers for mcp only, "
+            "don't generate it"
+        ),
     )
 
 
@@ -60,7 +71,7 @@ class QwenImageEditNewOutput(BaseModel):
 
 
 class QwenImageEditNew(
-    Component[QwenImageEditNewInput, QwenImageEditNewOutput]
+    Component[QwenImageEditNewInput, QwenImageEditNewOutput],
 ):
     """
     Qwen Image Edit New Component for AI-powered batch image editing.
@@ -70,7 +81,8 @@ class QwenImageEditNew(
     name: str = "modelstudio_qwen_image_edit_new"  # ⚠️ 必须唯一！
     description: str = (
         "通义千问-图像编辑模型，支持批量处理多张图像。"
-        "通义千问-图像编辑模型支持精准的中英双语文字编辑、调色、细节增强、风格迁移、增删物体、改变位置和动作等操作，可实现复杂的图文编辑。"
+        "通义千问-图像编辑模型支持精准的中英双语文字编辑、调色、细节增强、"
+        "风格迁移、增删物体、改变位置和动作等操作，可实现复杂的图文编辑。"
     )
 
     @trace(trace_type="AIGC", trace_name="qwen_image_edit_new")
@@ -81,10 +93,11 @@ class QwenImageEditNew(
     ) -> QwenImageEditNewOutput:
         """Batch edit multiple images using Qwen Image Edit API.
 
-        Each image in `image_urls` will be edited independently using the same prompt.
+        Each image in image_urls will be edited
+        independently using the same prompt
 
         Args:
-            args: Contains image_urls (list), prompt, negative_prompt, watermark.
+            args: Contains image_urls (list), prompt, negative_prompt,watermark
             **kwargs: Includes request_id, trace_event, model_name, api_key.
 
         Returns:
@@ -133,12 +146,12 @@ class QwenImageEditNew(
                 )
             except Exception as e:
                 raise RuntimeError(
-                    f"API call failed for image {image_url}: {str(e)}"
+                    f"API call failed for image {image_url}: {str(e)}",
                 )
 
             if response.status_code != 200 or not response.output:
                 raise RuntimeError(
-                    f"Invalid response for {image_url}: {response}"
+                    f"Invalid response for {image_url}: {response}",
                 )
 
             # Parse response to extract image URL
@@ -161,7 +174,7 @@ class QwenImageEditNew(
                 raise RuntimeError("No image found in response content")
             except Exception as parse_error:
                 raise RuntimeError(
-                    f"Failed to parse response for {image_url}: {parse_error}"
+                    f"Failed to parse response for {image_url}: {parse_error}",
                 )
 
         # Concurrently process all images
@@ -177,7 +190,7 @@ class QwenImageEditNew(
             if isinstance(res, Exception):
                 # You may choose to skip, raise, or use placeholder
                 raise RuntimeError(
-                    f"Image {i} ({args.image_urls[i]}) failed: {res}"
+                    f"Image {i} ({args.image_urls[i]}) failed: {res}",
                 )
             else:
                 final_results.append(res)
@@ -212,16 +225,20 @@ if __name__ == "__main__":
     async def main() -> None:
         # 示例：使用公开可访问的测试图片（请替换为你自己的公开图片）
         test_image_urls = [
-            # "https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/1x6k9vz8h4b3a0/7c8e4f2a-9b1d-4f3e-8c7a-1e2d3f4g5h6i.png?Expires=...&OSSAccessKeyId=...&Signature=...",  # ❌ 注意：此链接可能失效
-            # 建议改用你自己上传的公开图片，例如：
-            "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
-            "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
+            (
+                "https://dashscope.oss-cn-beijing.aliyuncs.com/images/"
+                "dog_and_girl.jpeg"
+            ),
+            (
+                "https://dashscope.oss-cn-beijing.aliyuncs.com/images/"
+                "dog_and_girl.jpeg"
+            ),
         ]
 
         # 如果没有可用的公开图片，先注释掉上面并使用单图测试
         if not test_image_urls or "dashscope-result" in test_image_urls[0]:
             print(
-                "⚠️ 警告：示例图片 URL 可能无权限访问，请替换为你的公开图片！"
+                "⚠️ 警告：示例图片 URL 可能无权限访问，请替换为你的公开图片！",
             )
             return
 
@@ -238,7 +255,7 @@ if __name__ == "__main__":
             elapsed = asyncio.get_event_loop().time() - start
 
             print(
-                f"✅ 成功编辑 {len(output.results)} 张图片，耗时: {elapsed:.2f} 秒"
+                f"✅ 成功编辑 {len(output.results)} 张图片，耗时: {elapsed:.2f} 秒",
             )
             print(f"🆔 Request ID: {output.request_id}")
             for i, url in enumerate(output.results, 1):
