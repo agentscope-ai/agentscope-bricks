@@ -59,7 +59,9 @@ class QwenImageEditNewOutput(BaseModel):
     )
 
 
-class QwenImageEditNew(Component[QwenImageEditNewInput, QwenImageEditNewOutput]):
+class QwenImageEditNew(
+    Component[QwenImageEditNewInput, QwenImageEditNewOutput]
+):
     """
     Qwen Image Edit New Component for AI-powered batch image editing.
     Supports multiple input images with the same editing instruction.
@@ -130,10 +132,14 @@ class QwenImageEditNew(Component[QwenImageEditNewInput, QwenImageEditNewOutput])
                     **parameters,
                 )
             except Exception as e:
-                raise RuntimeError(f"API call failed for image {image_url}: {str(e)}")
+                raise RuntimeError(
+                    f"API call failed for image {image_url}: {str(e)}"
+                )
 
             if response.status_code != 200 or not response.output:
-                raise RuntimeError(f"Invalid response for {image_url}: {response}")
+                raise RuntimeError(
+                    f"Invalid response for {image_url}: {response}"
+                )
 
             # Parse response to extract image URL
             try:
@@ -206,15 +212,17 @@ if __name__ == "__main__":
     async def main() -> None:
         # 示例：使用公开可访问的测试图片（请替换为你自己的公开图片）
         test_image_urls = [
-            #"https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/1x6k9vz8h4b3a0/7c8e4f2a-9b1d-4f3e-8c7a-1e2d3f4g5h6i.png?Expires=...&OSSAccessKeyId=...&Signature=...",  # ❌ 注意：此链接可能失效
+            # "https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/1x6k9vz8h4b3a0/7c8e4f2a-9b1d-4f3e-8c7a-1e2d3f4g5h6i.png?Expires=...&OSSAccessKeyId=...&Signature=...",  # ❌ 注意：此链接可能失效
             # 建议改用你自己上传的公开图片，例如：
-             "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
-             "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
+            "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
+            "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg",
         ]
 
         # 如果没有可用的公开图片，先注释掉上面并使用单图测试
         if not test_image_urls or "dashscope-result" in test_image_urls[0]:
-            print("⚠️ 警告：示例图片 URL 可能无权限访问，请替换为你的公开图片！")
+            print(
+                "⚠️ 警告：示例图片 URL 可能无权限访问，请替换为你的公开图片！"
+            )
             return
 
         input_data = QwenImageEditNewInput(
@@ -229,7 +237,9 @@ if __name__ == "__main__":
             output = await editor.arun(input_data)
             elapsed = asyncio.get_event_loop().time() - start
 
-            print(f"✅ 成功编辑 {len(output.results)} 张图片，耗时: {elapsed:.2f} 秒")
+            print(
+                f"✅ 成功编辑 {len(output.results)} 张图片，耗时: {elapsed:.2f} 秒"
+            )
             print(f"🆔 Request ID: {output.request_id}")
             for i, url in enumerate(output.results, 1):
                 print(f"🔗 图片 {i}: {url}")
