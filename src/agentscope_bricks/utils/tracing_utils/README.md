@@ -163,3 +163,16 @@ def llm_func(**kwargs):
         # 设置dict类型属性
         trace_event.set_attribute("func_7.key", json.dumps({'key0': 'value0', 'key1': 'value1'}))
 ```
+
+6. 高代码应用设置root span
+
+在高代码应用中，需要在应用请求的入口处标识root span，否则无法在可观测页面看到相关跟踪信息。使用方法的示例如下：
+```python
+app = FastAPI(
+)
+
+@app.post("/chat")
+@trace(is_root_span=True)
+async def chat(request_data: ChatRequest):
+    pass
+```
