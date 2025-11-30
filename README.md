@@ -1,3 +1,7 @@
+# ⚠️ Announcement
+
+This repository **AgentScope-Bricks** will be **merged** into [agentscope-runtime](https://github.com/agentscope-ai/agentscope-runtime). Future updates, bug fixes, and maintenance will happen in the new repository. Please visit the new repository for the latest features and support.
+
 # AgentScope-Bricks
 
 <p align="center">
