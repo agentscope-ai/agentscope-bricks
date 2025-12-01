@@ -163,7 +163,7 @@ async def main() -> None:
         add_result = await add_memory_example()
         print("Add Memory Result:", add_result)
 
-        time.sleep(5)
+        await asyncio.sleep(5)
         # 2. Delete the newly added memory node
         print("\n=== Deleting Memory ===")
         if add_result.memory_nodes:
@@ -172,7 +172,7 @@ async def main() -> None:
                 delete_result = await delete_memory_example(memory_node_id)
                 print("Delete Memory Result:", delete_result)
 
-        time.sleep(5)
+        await asyncio.sleep(5)
         # 3. List memory
         print("\n=== Listing Memory ===")
         list_result = await list_memory_example()
@@ -182,7 +182,7 @@ async def main() -> None:
             print(f"Memory Node ID: {node.memory_node_id}")
             print(f"Memory Node Content: {node.content}")
 
-        time.sleep(5)
+        await asyncio.sleep(5)
         # 4. Search memory
         user_query = "明天需要提醒我什么事？"
         print("\n=== Searching Memory ===")
