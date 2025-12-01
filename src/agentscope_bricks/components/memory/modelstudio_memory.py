@@ -3,19 +3,18 @@ import os
 from typing import List, Dict, Any, Optional
 
 import aiohttp
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from agentscope_bricks.base.component import Component
 
 # ENV-PRE
-MEMORY_SERVICE_ENDPOINT = os.getenv(
-    "MEMORY_SERVICE_ENDPOINT",
-    "https://dashscope.aliyuncs.com/api/v2/apps/memory",
-)
-ADD_MEMORY_URL = f"{MEMORY_SERVICE_ENDPOINT}/add"
-SEARCH_MEMORY_URL = f"{MEMORY_SERVICE_ENDPOINT}/search"
-LIST_MEMORY_URL = f"{MEMORY_SERVICE_ENDPOINT}/list"
-DELETE_MEMORY_URL = f"{MEMORY_SERVICE_ENDPOINT}/delete"
+MEMORY_SERVICE_ENDPOINT = os.getenv("MEMORY_SERVICE_ENDPOINT", "https://dashscope.aliyuncs.com/api/v2/apps/memory")
+ADD_MEMORY_URL = f'{MEMORY_SERVICE_ENDPOINT}/add'
+SEARCH_MEMORY_URL = f'{MEMORY_SERVICE_ENDPOINT}/memory_nodes/search'
+LIST_MEMORY_URL = f'{MEMORY_SERVICE_ENDPOINT}/memory_nodes'
+DELETE_MEMORY_URL_PATTERN = f'{MEMORY_SERVICE_ENDPOINT}/memory_nodes/{{memory_node_id}}'
+CREATE_PROFILE_SCHEMA_URL = f"{MEMORY_SERVICE_ENDPOINT}/profile_schemas"
+GET_USER_PROFILE_URL_PATTERN = f"{MEMORY_SERVICE_ENDPOINT}/profile_schemas/{{schema_id}}/user_profile"
 
 
 class Message(BaseModel):
@@ -287,16 +286,16 @@ class ListMemory(Component[ListMemoryInput, ListMemoryOutput]):
             # included
             payload = args.model_dump(exclude_none=True)
 
-            # Send request
             async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.list_memory_url,
-                    json=payload,
-                    headers={
-                        "Content-Type": "application/json",
-                        "User-Agent": "agentscope-bricks",
-                        "Authorization": f"Bearer {self.api_key}",
-                    },
+                async with session.get(
+                        self.list_memory_url,
+                        params=payload,
+                        json={},
+                        headers={
+                            "Content-Type": "application/json",
+                            "User-Agent": "agentscope-bricks",
+                            "Authorization": f"Bearer {self.api_key}",
+                        },
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()
@@ -332,7 +331,7 @@ class DeleteMemory(Component[DeleteMemoryInput, DeleteMemoryOutput]):
     def __init__(self) -> None:
         super().__init__()
         self.service_id = os.getenv("MODELSTUDIO_SERVICE_ID", "memory_service")
-        self.delete_memory_url = DELETE_MEMORY_URL
+        self.delete_memory_url_pattern = DELETE_MEMORY_URL_PATTERN
         self.api_key = os.getenv("DASHSCOPE_API_KEY")
         if not self.api_key:
             raise ValueError(
@@ -355,20 +354,18 @@ class DeleteMemory(Component[DeleteMemoryInput, DeleteMemoryOutput]):
             DeleteMemoryOutput: Delete memory output
         """
         try:
-            # Build request body - all fields including extra fields will be
-            # included
-            payload = args.model_dump(exclude_none=True)
+            # Build URL with path param and include body as per example
+            url = self.delete_memory_url_pattern.format(memory_node_id=args.memory_node_id)
 
-            # Send request
             async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.delete_memory_url,
-                    json=payload,
-                    headers={
-                        "Content-Type": "application/json",
-                        "User-Agent": "agentscope-bricks",
-                        "Authorization": f"Bearer {self.api_key}",
-                    },
+                async with session.delete(
+                        url,
+                        json={},
+                        headers={
+                            "Content-Type": "application/json",
+                            "User-Agent": "agentscope-bricks",
+                            "Authorization": f"Bearer {self.api_key}",
+                        },
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()
@@ -384,3 +381,183 @@ class DeleteMemory(Component[DeleteMemoryInput, DeleteMemoryOutput]):
 
         except Exception as e:
             raise Exception(f"Error in DeleteMemory: {str(e)}")
+
+
+class ProfileAttribute(BaseModel):
+    name: str = Field(..., description='Attribute name')
+    description: Optional[str] = Field(None, description='Attribute description')
+    immutable: Optional[bool] = Field(False, description='Whether the attribute is immutable')
+    default_value: Optional[Any] = Field(None, description='Default value for the attribute')
+
+
+class CreateProfileSchemaInput(BaseModel):
+    name: str = Field(..., description='Profile schema name')
+    description: Optional[str] = Field(None, description='Profile schema description')
+    attributes: List[ProfileAttribute] = Field(..., description='List of attribute definitions (>=1)')
+
+    @model_validator(mode='after')
+    def validate_attributes(self) -> 'CreateProfileSchemaInput':
+        if not self.attributes or len(self.attributes) == 0:
+            raise ValueError('attributes must contain at least one item')
+        return self
+
+    class Config:
+        extra = "allow"
+
+
+class CreateProfileSchemaOutput(BaseModel):
+    profile_schema_id: str = Field(..., description='Created profile schema id')
+    request_id: str = Field(..., description='Request id')
+
+
+class CreateProfileSchema(Component[CreateProfileSchemaInput, CreateProfileSchemaOutput]):
+    """
+    Create a user profile schema with attribute definitions.
+    """
+
+    name = 'create_profile_schema'
+    description = 'Create a profile schema with attribute definitions'
+
+    def __init__(self):
+        super().__init__()
+        self.service_id = os.getenv("MODELSTUDIO_SERVICE_ID", "profile_service")
+        self.create_profile_schema_url = CREATE_PROFILE_SCHEMA_URL
+        self.api_key = os.getenv("DASHSCOPE_API_KEY")
+        if not self.api_key:
+            raise ValueError("DASHSCOPE_API_KEY environment variable is required")
+
+    async def _arun(
+            self,
+            args: CreateProfileSchemaInput,
+            **kwargs: Any
+    ) -> CreateProfileSchemaOutput:
+        """
+        Create a profile schema
+
+        Args:
+            args: CreateProfileSchemaInput
+            **kwargs: Additional parameters
+
+        Returns:
+            CreateProfileSchemaOutput: Result including profile_schema_id and request_id
+        """
+        try:
+            payload = args.model_dump(exclude_none=True)
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                        self.create_profile_schema_url,
+                        json=payload,
+                        headers={
+                            "Content-Type": "application/json",
+                            "User-Agent": "agentscope-bricks",
+                            "Authorization": f"Bearer {self.api_key}"
+                        }
+                ) as response:
+                    if response.status != 200:
+                        error_text = await response.text()
+                        raise Exception(f"Create profile schema failed with status {response.status}: {error_text}")
+
+                    result = await response.json()
+                    return CreateProfileSchemaOutput(
+                        profile_schema_id=result.get('profile_schema_id', ''),
+                        request_id=result.get('request_id', '')
+                    )
+        except Exception as e:
+            raise Exception(f"Error in CreateProfileSchema: {str(e)}")
+
+
+class UserProfileAttribute(BaseModel):
+    name: str = Field(..., description='Attribute name')
+    id: str = Field(..., description='Attribute id')
+    value: Optional[Any] = Field(None, description='Attribute value')
+
+
+class UserProfile(BaseModel):
+    schema_description: Optional[str] = Field(None, description='Schema description')
+    schema_name: Optional[str] = Field(None, description='Schema name')
+    attributes: List[UserProfileAttribute] = Field(default_factory=list, description='User attributes')
+
+
+class GetUserProfileInput(BaseModel):
+    schema_id: str = Field(..., description='Profile schema id')
+    user_id: str = Field(..., description='End user id')
+
+
+class GetUserProfileOutput(BaseModel):
+    request_id: str = Field(..., description='Request id')
+    profile: UserProfile = Field(..., description='User profile')
+
+
+class GetUserProfile(Component[GetUserProfileInput, GetUserProfileOutput]):
+    """
+    Get user profile by schema id and user id.
+    """
+
+    name = 'get_user_profile'
+    description = 'Get user profile by schema id and user id'
+
+    def __init__(self):
+        super().__init__()
+        self.service_id = os.getenv("MODELSTUDIO_SERVICE_ID", "profile_service")
+        self.get_user_profile_url_pattern = GET_USER_PROFILE_URL_PATTERN
+        self.api_key = os.getenv("DASHSCOPE_API_KEY")
+        if not self.api_key:
+            raise ValueError("DASHSCOPE_API_KEY environment variable is required")
+
+    async def _arun(
+            self,
+            args: GetUserProfileInput,
+            **kwargs: Any
+    ) -> GetUserProfileOutput:
+        """
+        Get a user profile
+
+        Args:
+            args: GetUserProfileInput
+            **kwargs: Additional parameters
+
+        Returns:
+            GetUserProfileOutput: Profile and request id
+        """
+        try:
+            # Build URL without user_id in path; user_id will be a query parameter
+            url = self.get_user_profile_url_pattern.format(schema_id=args.schema_id)
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                        url,
+                        params={"user_id": args.user_id},
+                        json={},
+                        headers={
+                            "Content-Type": "application/json",
+                            "User-Agent": "agentscope-bricks",
+                            "Authorization": f"Bearer {self.api_key}"
+                        }
+                ) as response:
+                    if response.status != 200:
+                        error_text = await response.text()
+                        raise Exception(f"Get user profile failed with status {response.status}: {error_text}")
+
+                    result = await response.json()
+                    profile_raw = result.get('profile', {})
+                    attributes = [
+                        UserProfileAttribute(
+                            name=item.get('name', ''),
+                            id=item.get('id', ''),
+                            value=item.get('value')
+                        ) for item in profile_raw.get('attributes', [])
+                    ]
+
+                    profile = UserProfile(
+                        schema_description=profile_raw.get('schemaDescription'),
+                        schema_name=profile_raw.get('schemaName'),
+                        attributes=attributes
+                    )
+
+                    return GetUserProfileOutput(
+                        request_id=result.get('requestId', ''),
+                        profile=profile
+                    )
+        except Exception as e:
+            raise Exception(f"Error in GetUserProfile: {str(e)}")
