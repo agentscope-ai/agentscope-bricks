@@ -1056,13 +1056,8 @@ print(f'Action: open {name}')
 # 打开 Windows 搜索栏
 pyautogui.press('win')  # 按下 Win 键
 time.sleep(0.5)
-pyautogui.typewrite(name)  # 直接输入应用名称
-
-# 如果包含中文，则使用粘贴方式（备用方案）
-if contains_chinese(name):
-    pyperclip.copy(name)
-    pyautogui.hotkey(ctrl_key, 'v')  # 使用 Ctrl+V 粘贴
-
+pyperclip.copy(name)
+pyautogui.hotkey(ctrl_key, 'v')  # 使用 Ctrl+V 粘贴
 # 回车确认
 time.sleep(1)
 pyautogui.press('enter')
