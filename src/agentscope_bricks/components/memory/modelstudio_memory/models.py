@@ -38,7 +38,7 @@ class AddMemoryInput(BaseModel):
     timestamp: int = Field(..., description="Timestamp of the memory")
     meta_data: Optional[Dict[str, Any]] = Field(
         None,
-        description="Optional metadata including location and media description",
+        description="Optional metadata",
     )
 
     class Config:
@@ -243,4 +243,3 @@ class GetUserProfileOutput(BaseModel):
 
     class Config:
         populate_by_name = True  # Allow both field names and aliases
-

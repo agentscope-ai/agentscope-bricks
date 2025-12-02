@@ -3,11 +3,14 @@
 Base class for ModelStudio Memory components.
 """
 import logging
-from typing import Any, Dict, Optional
+from types import TracebackType
+from typing import Any, Dict, Optional, Type
 
 import aiohttp
 
-from agentscope_bricks.components.memory.modelstudio_memory.config import MemoryServiceConfig
+from agentscope_bricks.components.memory.modelstudio_memory.config import (
+    MemoryServiceConfig,
+)
 from agentscope_bricks.components.memory.modelstudio_memory.exceptions import (
     MemoryAPIError,
     MemoryAuthenticationError,
@@ -112,7 +115,7 @@ class ModelStudioMemoryBase:
                         f"Request successful: {method} {url}",
                     )
                     return result
-                
+
                 # Handle error responses (4XX, 5XX)
                 # Try to parse JSON error response first
                 error_data = None
@@ -122,12 +125,12 @@ class ModelStudioMemoryBase:
                     # If JSON parsing fails, fall back to text
                     error_text = await response.text()
                     error_data = {"message": error_text}
-                
+
                 # Extract error information
                 error_code = error_data.get("code", "Unknown")
                 error_message = error_data.get("message", "Unknown error")
                 request_id = error_data.get("request_id", "")
-                
+
                 # Format error log
                 error_log = (
                     f"API Error - Status: {response.status}, "
@@ -135,7 +138,7 @@ class ModelStudioMemoryBase:
                     f"Request ID: {request_id}"
                 )
                 logger.error(error_log)
-                
+
                 # Raise appropriate exception based on status code
                 if response.status == 401 or response.status == 403:
                     raise MemoryAuthenticationError(
@@ -205,11 +208,15 @@ class ModelStudioMemoryBase:
             await self._session.close()
             logger.debug("Session closed")
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "ModelStudioMemoryBase":
         """Support async context manager."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         """Support async context manager."""
         await self.close()
-

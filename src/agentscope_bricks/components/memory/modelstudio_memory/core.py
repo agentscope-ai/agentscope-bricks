@@ -46,7 +46,7 @@ class AddMemory(
     """
     Component for storing conversation history as memory nodes.
 
-    This component sends conversation messages to the ModelStudio Memory service
+    This component sends conversation messages to the ModelStudio Memory
     to be processed and stored as searchable memory nodes. The service
     automatically extracts and structures relevant information.
 
@@ -79,9 +79,9 @@ class AddMemory(
         ModelStudioMemoryBase.__init__(self, config)
 
     async def _arun(
-            self,
-            args: AddMemoryInput,
-            **kwargs: Any,
+        self,
+        args: AddMemoryInput,
+        **kwargs: Any,
     ) -> AddMemoryOutput:
         """
         Add memory nodes for the given conversation.
@@ -112,9 +112,11 @@ class AddMemory(
 
             # Debug: print API response structure
             logger.debug(f"API Response: {result}")
-            logger.debug(f"memory_nodes type: {type(result.get('memory_nodes'))}")
+            logger.debug(
+                f"memory_nodes type: {type(result.get('memory_nodes'))}",
+            )
             logger.debug(f"memory_nodes value: {result.get('memory_nodes')}")
-            
+
             # Parse response - handle both list and dict formats
             memory_nodes_raw = result.get("memory_nodes", [])
             if isinstance(memory_nodes_raw, dict):
@@ -124,11 +126,10 @@ class AddMemory(
                 memory_nodes_list = memory_nodes_raw
             else:
                 memory_nodes_list = []
-            
+
             output = AddMemoryOutput(
                 memory_nodes=[
-                    MemoryNode(**node)
-                    for node in memory_nodes_list
+                    MemoryNode(**node) for node in memory_nodes_list
                 ],
                 request_id=result.get("request_id", ""),
             )
@@ -138,7 +139,7 @@ class AddMemory(
             )
             return output
 
-        except Exception as e:
+        except Exception:
             logger.exception(f"Failed to add memory for user {args.user_id}")
             raise
 
@@ -178,9 +179,9 @@ class SearchMemory(
         ModelStudioMemoryBase.__init__(self, config)
 
     async def _arun(
-            self,
-            args: SearchMemoryInput,
-            **kwargs: Any,
+        self,
+        args: SearchMemoryInput,
+        **kwargs: Any,
     ) -> SearchMemoryOutput:
         """
         Search for relevant memory nodes.
@@ -226,7 +227,7 @@ class SearchMemory(
             )
             return output
 
-        except Exception as e:
+        except Exception:
             logger.exception(
                 f"Failed to search memory for user {args.user_id}",
             )
@@ -268,9 +269,9 @@ class ListMemory(
         ModelStudioMemoryBase.__init__(self, config)
 
     async def _arun(
-            self,
-            args: ListMemoryInput,
-            **kwargs: Any,
+        self,
+        args: ListMemoryInput,
+        **kwargs: Any,
     ) -> ListMemoryOutput:
         """
         List memory nodes for a user with pagination.
@@ -320,7 +321,7 @@ class ListMemory(
             )
             return output
 
-        except Exception as e:
+        except Exception:
             logger.exception(f"Failed to list memory for user {args.user_id}")
             raise
 
@@ -360,9 +361,9 @@ class DeleteMemory(
         ModelStudioMemoryBase.__init__(self, config)
 
     async def _arun(
-            self,
-            args: DeleteMemoryInput,
-            **kwargs: Any,
+        self,
+        args: DeleteMemoryInput,
+        **kwargs: Any,
     ) -> DeleteMemoryOutput:
         """
         Delete a memory node.
@@ -400,7 +401,7 @@ class DeleteMemory(
             )
             return output
 
-        except Exception as e:
+        except Exception:
             logger.exception(
                 f"Failed to delete memory node {args.memory_node_id}",
             )
@@ -414,7 +415,7 @@ class CreateProfileSchema(
     """
     Component for creating a user profile schema.
 
-    This component creates a schema that defines the structure of user profiles,
+    This component creates a schema that defines the structure of user profiles
     including attribute definitions.
 
     Environment Variables:
@@ -443,9 +444,9 @@ class CreateProfileSchema(
         ModelStudioMemoryBase.__init__(self, config)
 
     async def _arun(
-            self,
-            args: CreateProfileSchemaInput,
-            **kwargs: Any,
+        self,
+        args: CreateProfileSchemaInput,
+        **kwargs: Any,
     ) -> CreateProfileSchemaOutput:
         """
         Create a profile schema.
@@ -486,7 +487,7 @@ class CreateProfileSchema(
             )
             return output
 
-        except Exception as e:
+        except Exception:
             logger.exception(f"Failed to create profile schema: {args.name}")
             raise
 
@@ -526,9 +527,9 @@ class GetUserProfile(
         ModelStudioMemoryBase.__init__(self, config)
 
     async def _arun(
-            self,
-            args: GetUserProfileInput,
-            **kwargs: Any,
+        self,
+        args: GetUserProfileInput,
+        **kwargs: Any,
     ) -> GetUserProfileOutput:
         """
         Get a user profile.
@@ -587,7 +588,7 @@ class GetUserProfile(
             )
             return output
 
-        except Exception as e:
+        except Exception:
             logger.exception(
                 f"Failed to get profile for user {args.user_id}",
             )

@@ -47,7 +47,7 @@ class MemoryServiceConfig:
         if not api_key:
             raise ValueError(
                 "DASHSCOPE_API_KEY environment variable is required. "
-                "Please set it before using ModelStudio Memory components."
+                "Please set it before using ModelStudio Memory components.",
             )
 
         return cls(
@@ -81,5 +81,6 @@ class MemoryServiceConfig:
 
     def get_user_profile_url(self, schema_id: str) -> str:
         """Get URL for getting user profile."""
-        return f"{self.service_endpoint}/profile_schemas/{schema_id}/user_profile"
-
+        return (
+            f"{self.service_endpoint}/profile_schemas/{schema_id}/user_profile"
+        )

@@ -8,7 +8,7 @@ from typing import Optional
 class MemoryAPIError(Exception):
     """
     Base exception for Memory API errors.
-    
+
     Attributes:
         message: Error message
         status_code: HTTP status code
@@ -31,16 +31,16 @@ class MemoryAPIError(Exception):
     def __str__(self) -> str:
         """Format error message with all available information."""
         parts = [super().__str__()]
-        
+
         if self.error_code:
             parts.append(f"Error Code: {self.error_code}")
-        
+
         if self.status_code:
             parts.append(f"Status Code: {self.status_code}")
-        
+
         if self.request_id:
             parts.append(f"Request ID: {self.request_id}")
-        
+
         return " | ".join(parts)
 
 
@@ -66,4 +66,3 @@ class MemoryNetworkError(MemoryAPIError):
     """Raised when network communication fails."""
 
     pass
-
