@@ -156,8 +156,9 @@ def example_messages() -> List[Message]:
         Message(role="assistant", content="好的，我已经记录下来。"),
         Message(
             role="user",
-            content="还有明天记得提醒我给诺成老师买个生日礼物，诺成老师今年30岁了，\
-            比我大三岁。我们的爱好相同，经常一起踢球，所以我打算给诺成老师买一个精美的足球",
+            content="还有明天记得提醒我给诺成老师买个生日礼物，\
+            诺成老师今年30岁了，比我大三岁。我们的爱好相同，\
+            经常一起踢球，所以我打算给诺成老师买一个精美的足球",
         ),
         Message(role="assistant", content="好的，我明天会提醒你"),
     ]
