@@ -163,8 +163,8 @@ nano ~/.bash_profile  # 如果你用的是 bash
 
 # 添加环境变量例如
 # 云电脑配置
-export DASHSCOPE_API_KEY=""
-export ECD_DESKTOP_ID="your_desktop_id"
+export DASHSCOPE_API_KEY=
+export ECD_DESKTOP_ID=
 # ... 其他配置
 
 # 保存后运行

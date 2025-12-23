@@ -21,6 +21,9 @@ pip install .
 ## 第四章: 进阶使用
 
 在代码目录下advanced_version代码包中
-- 前端 static目录下
+- 前端
+  - 基础gui版本 computer-use-server/static目录下
+  - 高级版本 在代码目录下adk-computer-use代码包中
+    - 具体参考：[README_zh.md](./advanced_version/adk-computer-use/README.md)
 - 后端 backend.py
 具体参考：[README_zh.md](./advanced_version/computer_use_server/README_zh.md)
