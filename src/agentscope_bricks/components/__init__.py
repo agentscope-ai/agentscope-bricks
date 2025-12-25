@@ -72,7 +72,13 @@ from agentscope_bricks.components.generations.image_generation_wan26 import (  #
 from agentscope_bricks.components.generations.fetch_wan import WanVideoFetch
 from agentscope_bricks.components.generations.qwen_image_edit_new import (
     QwenImageEditNew,
-)  # noqa
+)
+from agentscope_bricks.components.generations.image_edit_wan26 import (
+    ImageEditWan26,
+)
+from agentscope_bricks.components.generations.image_generation_zimage import (
+    ZImageGeneration,
+)
 
 
 class McpServerMeta(BaseModel):
@@ -140,6 +146,14 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             TextToVideoWan26Submit,
             ImageToVideoWan26Submit,
             WanVideoFetch,
+            ImageEditWan26,
+        ],
+    ),
+    "modelstudio_Z_image": McpServerMeta(
+        instructions="基于通义Z-Image大模型的智能图像生成服务，是一款轻量级文生图模型，"
+        "可快速生成图像，支持中英文字渲染，并灵活适配多种分辨率与宽高比例。",
+        components=[
+            ZImageGeneration,
         ],
     ),
 }
