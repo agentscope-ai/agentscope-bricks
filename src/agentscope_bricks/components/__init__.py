@@ -72,7 +72,26 @@ from agentscope_bricks.components.generations.image_generation_wan26 import (  #
 from agentscope_bricks.components.generations.fetch_wan import WanVideoFetch
 from agentscope_bricks.components.generations.qwen_image_edit_new import (
     QwenImageEditNew,
-)  # noqa
+)
+from agentscope_bricks.components.generations.image_edit_wan26 import (
+    ImageEditWan26,
+)
+from agentscope_bricks.components.generations.image_generation_zimage import (
+    ZImageGeneration,
+)
+from agentscope_bricks.components.generations.async_image_out_painting import (
+    ImageOutPaintingSubmit,
+    ImageOutPaintingFetch,
+)
+from agentscope_bricks.components.generations.async_image_to_video_fl_wan22 import (  # noqa
+    ImageToVideoByFirstAndLastFrameWan22Submit,
+)
+from agentscope_bricks.components.generations.image_out_painting import (
+    ImageOutPaintingAuto,
+)
+from agentscope_bricks.components.generations.image_text_interleave_generation_wan26 import (  # noqa
+    WanImageInterleaveGeneration,
+)
 
 
 class McpServerMeta(BaseModel):
@@ -89,7 +108,14 @@ class McpServerMeta(BaseModel):
 mcp_server_metas: Dict[str, McpServerMeta] = {
     "modelstudio_wan_image": McpServerMeta(
         instructions="基于通义万相大模型的智能图像生成服务，提供高质量的图像处理和编辑功能",
-        components=[ImageGeneration, ImageEdit, ImageStyleRepaint],
+        components=[
+            ImageGeneration,
+            ImageEdit,
+            ImageStyleRepaint,
+            ImageOutPaintingSubmit,
+            ImageOutPaintingFetch,
+            ImageOutPaintingAuto,
+        ],
     ),
     "modelstudio_wan_video": McpServerMeta(
         instructions="基于通义万相大模型提供AI视频生成服务，支持文本到视频、图像到视频和语音到视频的多模态生成功能",
@@ -100,6 +126,8 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             ImageToVideoFetch,
             SpeechToVideoSubmit,
             SpeechToVideoFetch,
+            ImageToVideoByFirstAndLastFrameWan22Submit,
+            WanVideoFetch,
         ],
     ),
     "modelstudio_wan25_media": McpServerMeta(
@@ -140,6 +168,15 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             TextToVideoWan26Submit,
             ImageToVideoWan26Submit,
             WanVideoFetch,
+            ImageEditWan26,
+            WanImageInterleaveGeneration,
+        ],
+    ),
+    "modelstudio_Z_image": McpServerMeta(
+        instructions="基于通义Z-Image大模型的智能图像生成服务，是一款轻量级文生图模型，"
+        "可快速生成图像，支持中英文字渲染，并灵活适配多种分辨率与宽高比例。",
+        components=[
+            ZImageGeneration,
         ],
     ),
 }
