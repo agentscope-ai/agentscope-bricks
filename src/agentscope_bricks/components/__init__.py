@@ -115,9 +115,6 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             ImageGeneration,
             ImageEdit,
             ImageStyleRepaint,
-            ImageOutPaintingSubmit,
-            ImageOutPaintingFetch,
-            ImageOutPaintingAuto,
         ],
     ),
     "modelstudio_wan_video": McpServerMeta(
@@ -129,8 +126,6 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             ImageToVideoFetch,
             SpeechToVideoSubmit,
             SpeechToVideoFetch,
-            ImageToVideoByFirstAndLastFrameWan22Submit,
-            WanVideoFetch,
         ],
     ),
     "modelstudio_wan25_media": McpServerMeta(
@@ -180,6 +175,18 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
         "可快速生成图像，支持中英文字渲染，并灵活适配多种分辨率与宽高比例。",
         components=[
             ZImageGeneration,
+        ],
+    ),
+    "modelstudio_wan_kf2v": McpServerMeta(
+        instructions="基于通义万相大模型的尾帧视频生成服务，支持通过首帧图像、尾帧图像和文本提示词生成完整视频。",
+        components=[ImageToVideoByFirstAndLastFrameWan22Submit, WanVideoFetch],
+    ),
+    "modelstudio_image_out_painting": McpServerMeta(
+        instructions="基于通义万相大模型的图像扩展生成服务，支持多种扩展方式的图像画面扩展",
+        components=[
+            ImageOutPaintingSubmit,
+            ImageOutPaintingFetch,
+            ImageOutPaintingAuto,
         ],
     ),
 }
