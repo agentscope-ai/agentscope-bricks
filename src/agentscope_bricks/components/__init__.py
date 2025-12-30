@@ -15,6 +15,9 @@ from agentscope_bricks.components.generations.async_text_to_video_wan25 import (
 from agentscope_bricks.components.generations.image_edit_wan25 import (
     ImageEditWan25,
 )
+from agentscope_bricks.components.generations.multichannel_speech_to_text import (  # noqa
+    MultichannelSpeechToText,
+)
 from agentscope_bricks.components.generations.qwen_image_edit import (
     QwenImageEdit,
 )
@@ -127,7 +130,7 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
     ),
     "modelstudio_speech_to_text": McpServerMeta(
         instructions="录音文件的语音识别服务，支持多种音频格式的语音转文字功能",
-        components=[SpeechToText],
+        components=[SpeechToText, MultichannelSpeechToText],
     ),
     "modelstudio_qwen_text_to_speech": McpServerMeta(
         instructions="基于通义千问大模型的语音合成服务，支持多种语言语音合成功能",
