@@ -14,14 +14,19 @@ from agentscope_bricks.utils.api_key_util import ApiNames, get_api_key
 from agentscope_bricks.utils.tracing_utils import TracingUtil
 
 
-class ImageToVideoWan26SubmitInput(BaseModel):
+class ImageToVideoByFirstAndLastFrameWan22SubmitInput(BaseModel):
     """
-    Input model for submitting an image-to-video task using wan2.6-i2v.
+    Input model for submitting a
+    keyframe-to-video task using wan2.2-kf2v-flash.
     """
 
-    image_url: str = Field(
+    first_frame_url: str = Field(
         ...,
-        description="输入图像，支持公网URL、Base64编码",
+        description="首帧图像，支持公网URL、Base64编码。",
+    )
+    last_frame_url: str = Field(
+        ...,
+        description="尾帧图像，支持公网URL、Base64编码。",
     )
     prompt: Optional[str] = Field(
         default=None,
@@ -31,52 +36,36 @@ class ImageToVideoWan26SubmitInput(BaseModel):
         default=None,
         description="反向提示词，用于排除不希望出现的内容，例如“模糊、闪烁、变形、水印”。",
     )
-    audio_url: Optional[str] = Field(
+    resolution: Optional[str] = Field(
         default=None,
-        description="自定义音频文件的公网URL。参数优先级：audio_url > audio。"
-        "若不提供audio_url ，模型将根据视频内容自动生成匹配的背景音乐或音效。",
+        description="视频分辨率，可选值：'480P'、'720P'、'1080P'。默认为 '720P'。",
     )
     template: Optional[str] = Field(
         default=None,
-        description="视频特效模板，如：flying，表示使用“魔法悬浮”特效等。",
-    )
-    resolution: Optional[str] = Field(
-        default=None,
-        description="视频分辨率，可选值：'720P'、'1080P'。默认为 '1080P'。",
-    )
-    duration: Optional[int] = Field(
-        default=None,
-        description="视频时长（秒），可选值：5、10、15。默认为 5。",
+        description="不同模型支持不同的特效模板。调用前请查阅视频特效列表，以免调用失败。",
     )
     prompt_extend: Optional[bool] = Field(
         default=None,
-        description=" Prompt 智能改写。开启后可提升生成效果，并使 shot_type 生效,"
-        "默认值为 true:开启智能改写。false：不开启智能改写。",
-    )
-    shot_type: Optional[str] = Field(
-        default=None,
-        description="镜头类型，仅在 prompt_extend=true 时生效。"
-        "可选值：'single'（单镜头，默认）、'multi'（多镜头切换）。"
-        "参数优先级高于 prompt 中的描述。",
+        description="Prompt 智能改写。开启后可提升生成效果。默认值为 true。",
     )
     watermark: Optional[bool] = Field(
         default=None,
-        description="是否添加水印,false：默认值，不添加水印,true：添加水印。",
+        description="是否添加水印。false（默认）：不添加；true：添加。",
     )
     seed: Optional[int] = Field(
         default=None,
-        description="随机种子，用于结果复现。",
+        description="随机种子，取值范围 [0, 2147483647]。用于提升结果可复现性，但不保证完全一致。",
     )
     ctx: Optional[Context] = Field(
         default=None,
-        description="HTTP request context containing headers for mcp only, "
-        "don't generate it",
+        description="HTTP request context containing "
+        "headers for mcp only, don't generate it",
     )
 
 
-class ImageToVideoWan26SubmitOutput(BaseModel):
+class ImageToVideoByFirstAndLastFrameWan22SubmitOutput(BaseModel):
     """
-    Output of the image-to-video task submission.
+    Output of the keyframe-to-video task submission.
     """
 
     task_id: str = Field(
@@ -95,27 +84,34 @@ class ImageToVideoWan26SubmitOutput(BaseModel):
     )
 
 
-class ImageToVideoWan26Submit(
-    Component[ImageToVideoWan26SubmitInput, ImageToVideoWan26SubmitOutput],
+class ImageToVideoByFirstAndLastFrameWan22Submit(
+    Component[
+        ImageToVideoByFirstAndLastFrameWan22SubmitInput,
+        ImageToVideoByFirstAndLastFrameWan22SubmitOutput,
+    ],
 ):
     """
-    Submit an image-to-video generation task using the wan2.6-i2v model.
+    Submit a keyframe-to-video generation
+    task using the wan2.2-kf2v-flash model.
     """
 
-    name: str = "modelstudio_image_to_video_wan26_submit_task"
+    name: str = (
+        "modelstudio_image_to_video_by_first_and_last_frame_wan22_submit_task"
+    )
     description: str = (
-        "[版本: wan2.6] 通义万相图生视频模型（wan2.6-i2v）异步任务提交工具。基于单张首帧图像和文本提示，生成一段流畅的有声视频。\n"  # noqa
-        "支持视频时长：5秒、10秒或15秒；分辨率：720P、1080P；支持自动配音或传入自定义音频，实现音画同步。\n"
-        "独家支持多镜头叙事：可生成包含多个镜头的视频，并在镜头切换时保持主体一致性。\n"
-        "提供特效模板（如“魔法悬浮”、“气球膨胀”），适用于创意视频制作、娱乐特效展示等场景。\n"
+        "[版本: wan2.2] 通义万相首尾帧生视频模型（wan2.2-kf2v-flash）异步任务提交工具。\n"
+        "基于首帧与尾帧图像及文本提示，生成一段流畅的无声视频（当前不支持音频输出）。\n"
     )
 
-    @trace(trace_type="AIGC", trace_name="image_to_video_wan26_submit")
+    @trace(
+        trace_type="AIGC",
+        trace_name="image_to_video_by_first_and_last_frame_wan22_submit",
+    )
     async def arun(
         self,
-        args: ImageToVideoWan26SubmitInput,
+        args: ImageToVideoByFirstAndLastFrameWan22SubmitInput,
         **kwargs: Any,
-    ) -> ImageToVideoWan26SubmitOutput:
+    ) -> ImageToVideoByFirstAndLastFrameWan22SubmitOutput:
         trace_event = kwargs.pop("trace_event", None)
         request_id = TracingUtil.get_request_id()
 
@@ -126,33 +122,30 @@ class ImageToVideoWan26Submit(
 
         model_name = kwargs.get(
             "model_name",
-            os.getenv("IMAGE_TO_VIDEO_MODEL_NAME", "wan2.6-i2v"),
+            os.getenv("IMAGE_TO_VIDEO_KF2V_MODEL_NAME", "wan2.2-kf2v-flash"),
         )
 
         # 构建 parameters（全部为可选参数）
         parameters = {}
         if args.resolution:
             parameters["resolution"] = args.resolution
-        if args.duration is not None:
-            parameters["duration"] = args.duration
         if args.prompt_extend is not None:
             parameters["prompt_extend"] = args.prompt_extend
-        if args.shot_type:
-            parameters["shot_type"] = args.shot_type
         if args.watermark is not None:
             parameters["watermark"] = args.watermark
         if args.seed is not None:
             parameters["seed"] = args.seed
+        if args.template:
+            parameters["template"] = args.template
         aio_video_synthesis = AioVideoSynthesis()
 
         response = await aio_video_synthesis.async_call(
             model=model_name,
             api_key=api_key,
-            img_url=args.image_url,
+            first_frame_url=args.first_frame_url,
+            last_frame_url=args.last_frame_url,
             prompt=args.prompt,
             negative_prompt=args.negative_prompt,
-            audio_url=args.audio_url,
-            template=args.template,
             **parameters,
         )
 
@@ -174,7 +167,7 @@ class ImageToVideoWan26Submit(
             or response.output.task_status in ["FAILED", "CANCELED"]
         ):
             raise RuntimeError(
-                f"Failed to submit image-to-video task: {response}",
+                f"Failed to submit keyframe-to-video task: {response}",
             )
 
         if not request_id:
@@ -184,7 +177,7 @@ class ImageToVideoWan26Submit(
                 else str(uuid.uuid4())
             )
 
-        result = ImageToVideoWan26SubmitOutput(
+        result = ImageToVideoByFirstAndLastFrameWan22SubmitOutput(
             request_id=request_id,
             task_id=response.output.task_id,
             task_status=response.output.task_status,
@@ -192,25 +185,25 @@ class ImageToVideoWan26Submit(
         return result
 
 
-# ========== Fetch 部分保持不变（仅微调描述） ==========
+# ========== Fetch 部分 ==========
 
 
-class ImageToVideoWan26FetchInput(BaseModel):  # noqa
+class ImageToVideoByFirstAndLastFrameWan22FetchInput(BaseModel):
     task_id: str = Field(
         title="Task ID",
         description="要查询的视频生成任务ID。",
     )
     ctx: Optional[Context] = Field(
         default=None,
-        description="HTTP request context containing headers for mcp only, "
-        "don't generate it",
+        description="HTTP request context containing "
+        "headers for mcp only, don't generate it",
     )
 
 
-class ImageToVideoWan26FetchOutput(BaseModel):
+class ImageToVideoByFirstAndLastFrameWan22FetchOutput(BaseModel):
     video_url: str = Field(
         title="Video URL",
-        description="生成视频的公网可访问URL（MP4格式）。",
+        description="生成视频的公网可访问URL（MP4格式，无声）。有效期24小时，请及时下载。",
     )
     task_id: str = Field(
         title="Task ID",
@@ -227,22 +220,31 @@ class ImageToVideoWan26FetchOutput(BaseModel):
     )
 
 
-class ImageToVideoWan26Fetch(
-    Component[ImageToVideoWan26FetchInput, ImageToVideoWan26FetchOutput],
+class ImageToVideoByFirstAndLastFrameWan22Fetch(
+    Component[
+        ImageToVideoByFirstAndLastFrameWan22FetchInput,
+        ImageToVideoByFirstAndLastFrameWan22FetchOutput,
+    ],
 ):
-    name: str = "modelstudio_image_to_video_wan26_fetch_result"
+    name: str = (
+        "modelstudio_image_to_video_by_first_and_last_frame_wan22_fetch_result"
+    )
     description: str = (
-        "查询通义万相 wan2.6-i2v 图生视频任务的结果。"
-        "输入 Task ID，返回生成的视频 URL 及任务状态。"
-        "请在提交任务后轮询此接口，直到任务状态变为 SUCCEEDED。"
+        "查询通义万相 wan2.2-kf2v-flash 首尾帧生视频任务的结果。\n"
+        "输入 Task ID，返回生成的视频 URL 及任务状态。\n"
+        "请在提交任务后轮询此接口，直到任务状态变为 SUCCEEDED。\n"
+        "注意：video_url 有效期为 24 小时。"
     )
 
-    @trace(trace_type="AIGC", trace_name="image_to_video_wan26_fetch")
+    @trace(
+        trace_type="AIGC",
+        trace_name="image_to_video_by_first_and_last_frame_wan22_fetch",
+    )
     async def arun(
         self,
-        args: ImageToVideoWan26FetchInput,
+        args: ImageToVideoByFirstAndLastFrameWan22FetchInput,
         **kwargs: Any,
-    ) -> ImageToVideoWan26FetchOutput:
+    ) -> ImageToVideoByFirstAndLastFrameWan22FetchOutput:
         trace_event = kwargs.pop("trace_event", None)
         request_id = TracingUtil.get_request_id()
 
@@ -276,12 +278,12 @@ class ImageToVideoWan26Fetch(
             or response.output.task_status in ["FAILED", "CANCELED"]
         ):
             raise RuntimeError(
-                f"Failed to fetch image-to-video result: {response}",
+                f"Failed to fetch keyframe-to-video result: {response}",
             )
 
         request_id = response.request_id or request_id or str(uuid.uuid4())
 
-        return ImageToVideoWan26FetchOutput(
+        return ImageToVideoByFirstAndLastFrameWan22FetchOutput(
             video_url=response.output.video_url,
             task_id=response.output.task_id,
             task_status=response.output.task_status,
