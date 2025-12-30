@@ -42,7 +42,7 @@ class ImageGenerationWan26Input(BaseModel):
     )
     watermark: Optional[bool] = Field(
         default=None,
-        description="是否添加阿里云水印，默认不添加。",
+        description="是否添加水印,false：默认值，不添加水印,true：添加水印。",
     )
     ctx: Optional[Context] = Field(
         default=None,
