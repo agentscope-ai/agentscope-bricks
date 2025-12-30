@@ -30,12 +30,7 @@ class TextToVideoWan26SubmitInput(BaseModel):
     audio_url: Optional[str] = Field(
         default=None,
         description="自定义音频文件URL，模型将使用该音频生成视频。"
-        "参数优先级：audio_url > audio，仅在 audio_url 为空时 audio 生效。",
-    )
-    audio: Optional[bool] = Field(
-        default=None,
-        description="是否自动生成音频。"
-        "参数优先级：audio_url > audio，仅在 audio_url 为空时 audio 生效。",
+        "若不提供audio_url ，模型将根据视频内容自动生成匹配的背景音乐或音效。",
     )
     size: Optional[str] = Field(
         default=None,
@@ -57,7 +52,7 @@ class TextToVideoWan26SubmitInput(BaseModel):
     )
     watermark: Optional[bool] = Field(
         default=None,
-        description="是否添加水印，默认不设置",
+        description="是否在视频中添加水印,false：默认值，不添加水印,true：添加水印。",
     )
     seed: Optional[int] = Field(
         default=None,
@@ -128,8 +123,6 @@ class TextToVideoWan26Submit(
         )
 
         parameters = {}
-        if args.audio is not None:
-            parameters["audio"] = args.audio
         if args.size:
             parameters["size"] = args.size
         if args.duration is not None:
