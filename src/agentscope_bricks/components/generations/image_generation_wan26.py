@@ -122,7 +122,7 @@ class ImageGenerationWan26(
             parameters["negative_prompt"] = args.negative_prompt
         if args.size and args.size != "1024*1024":
             parameters["size"] = args.size
-        if args.n is not None and args.n != 1:
+        if args.n is not None:
             parameters["n"] = args.n
         if args.seed is not None:
             parameters["seed"] = args.seed

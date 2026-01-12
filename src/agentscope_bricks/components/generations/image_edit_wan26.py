@@ -41,8 +41,8 @@ class ImageGenInput(BaseModel):
         description="是否添加水印,false：默认值，不添加水印,true：添加水印。",
     )
     n: Optional[int] = Field(
-        default=4,
-        description="生成图片的数量。取值范围为1~4张 默认4",
+        default=1,
+        description="生成图片的数量。取值范围为1~4张 默认1",
     )
     images: list[str] = Field(
         ...,
@@ -128,7 +128,7 @@ class ImageEditWan26(
             parameters["watermark"] = args.watermark
         if args.prompt_extend is not None:
             parameters["prompt_extend"] = args.prompt_extend
-        if args.n is not None and args.n != 4:
+        if args.n is not None:
             parameters["n"] = args.n
         try:
             response = await AioMultiModalConversation.call(
