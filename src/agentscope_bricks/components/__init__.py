@@ -95,6 +95,9 @@ from agentscope_bricks.components.generations.image_out_painting import (
 from agentscope_bricks.components.generations.image_text_interleave_generation_wan26 import (  # noqa
     WanImageInterleaveGeneration,
 )
+from agentscope_bricks.components.generations.async_video_to_video_wan26 import (  # noqa
+    VideoToVideoW26Submit,
+)
 
 
 class McpServerMeta(BaseModel):
@@ -150,7 +153,7 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             QwenImageGen,
             QwenImageEdit,
             QwenImageEditNew,
-        ],  # ← 新增 QwenImageEditNew
+        ],
     ),
     "modelstudio_web_search": McpServerMeta(
         instructions="提供实时互联网搜索服务，提供准确及时的信息检索功能",
@@ -173,6 +176,7 @@ mcp_server_metas: Dict[str, McpServerMeta] = {
             WanVideoFetch,
             ImageEditWan26,
             WanImageInterleaveGeneration,
+            VideoToVideoW26Submit,
         ],
     ),
     "modelstudio_z_image": McpServerMeta(
